@@ -14,6 +14,7 @@ export default {
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
                 archivo: ['Archivo', 'sans-serif'],
+                instagram: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
             },
             animation: {
                 blob: "blob 7s infinite",

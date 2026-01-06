@@ -4,7 +4,8 @@ import {
     ShoppingCart,
     Layers,
     User,
-    LifeBuoy
+    LifeBuoy,
+    Shield
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -21,6 +22,7 @@ export const Sidebar = ({ active, setActive }: SidebarProps) => {
         { name: 'Mass order', icon: Layers },
         { name: 'Profile', icon: User },
         { name: 'Support', icon: LifeBuoy },
+        { name: 'Admin', icon: Shield },
     ];
 
     return (

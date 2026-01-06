@@ -6,6 +6,7 @@ import { Profile } from './Profile';
 import { MyOrders } from './MyOrders';
 import { MassOrder } from './MassOrder';
 import { Support } from './Support';
+import { Admin } from './Admin';
 
 export const DashboardLayout = () => {
     const [activePage, setActivePage] = useState('New order');
@@ -36,6 +37,8 @@ export const DashboardLayout = () => {
                             <MassOrder />
                         ) : activePage === 'Support' ? (
                             <Support />
+                        ) : activePage === 'Admin' ? (
+                            <Admin />
                         ) : (
                             <NewOrder />
                         )}
