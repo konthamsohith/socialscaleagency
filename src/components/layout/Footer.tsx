@@ -78,7 +78,7 @@ export const Footer = () => {
                         <ul className="space-y-4 font-archivo font-medium text-[14px] leading-[20px] text-[#6D6D6D]">
                             <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">About Us</a></li>
                             <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Careers</a></li>
-                            <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Blog</a></li>
+
                             <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Contact</a></li>
                         </ul>
                     </div>

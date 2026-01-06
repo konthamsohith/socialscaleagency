@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Menu, X } from 'lucide-react';
 import { useLenis } from '@studio-freight/react-lenis';
@@ -10,6 +11,7 @@ export const Navbar = () => {
     const { scrollY } = useScroll();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const lenis = useLenis();
+    const navigate = useNavigate();
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement> | React.MouseEvent<HTMLButtonElement>, href: string) => {
         e.preventDefault();
@@ -22,6 +24,8 @@ export const Navbar = () => {
             if (element) {
                 lenis?.scrollTo(element as HTMLElement);
             }
+        } else {
+            navigate(href);
         }
     };
 
@@ -86,7 +90,7 @@ export const Navbar = () => {
                 </div>
 
                 <div className="hidden md:flex items-center gap-4">
-                    <Button size="sm" onClick={(e) => handleNavClick(e, "#start-growing")} className="font-archivo font-medium text-[16px] leading-[22px] text-white">Get Started</Button>
+                    <Button size="sm" onClick={(e) => handleNavClick(e, "/login")} className="font-archivo font-medium text-[16px] leading-[22px] text-white">Get Started</Button>
                 </div>
 
                 {/* Mobile Toggle */}
@@ -111,7 +115,7 @@ export const Navbar = () => {
                             </a>
                         ))}
                         <div className="h-px bg-slate-100 my-2" />
-                        <Button className="w-full font-archivo font-medium text-[16px] leading-[22px] text-white" onClick={(e) => handleNavClick(e, "#start-growing")}>Get Started</Button>
+                        <Button className="w-full font-archivo font-medium text-[16px] leading-[22px] text-white" onClick={(e) => handleNavClick(e, "/login")}>Get Started</Button>
                     </div>
                 )}
             </div>
