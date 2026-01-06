@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import { auth } from '../../lib/firebase';
-import { Mail, Shield, LogOut, User as UserIcon, MapPin, Phone } from 'lucide-react';
+import { Mail, Shield, LogOut, User as UserIcon, MapPin, Phone, Pencil } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, updateProfile } from 'firebase/auth';
 
 export const Profile = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [displayName, setDisplayName] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
+            if (currentUser) setDisplayName(currentUser.displayName || '');
             setLoading(false);
         });
         return () => unsubscribe();
@@ -24,6 +27,16 @@ export const Profile = () => {
             navigate('/');
         } catch (error) {
             console.error('Error signing out:', error);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!user) return;
+        try {
+            await updateProfile(user, { displayName });
+            setIsEditing(false);
+        } catch (error) {
+            console.error('Error updating profile:', error);
         }
     };
 
@@ -87,6 +100,12 @@ export const Profile = () => {
                                 <h3 className="text-xl font-bold text-slate-900 mb-1">Personal Information</h3>
                                 <p className="text-sm text-slate-500">Manage your personal details.</p>
                             </div>
+                            <button
+                                onClick={() => setIsEditing(!isEditing)}
+                                className={`p-2 rounded-xl transition-colors ${isEditing ? 'bg-electric-purple text-white' : 'text-slate-400 hover:bg-slate-100'}`}
+                            >
+                                <Pencil size={20} />
+                            </button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -96,9 +115,11 @@ export const Profile = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    defaultValue={user.displayName || ''}
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    disabled={!isEditing}
                                     placeholder="Your Name"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-electric-purple focus:ring-4 focus:ring-electric-purple/5 transition-all"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-electric-purple focus:ring-4 focus:ring-electric-purple/5 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                 />
                             </div>
 
@@ -121,7 +142,8 @@ export const Profile = () => {
                                 <input
                                     type="tel"
                                     placeholder="+1 (555) 000-0000"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-electric-purple focus:ring-4 focus:ring-electric-purple/5 transition-all"
+                                    disabled={!isEditing}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-electric-purple focus:ring-4 focus:ring-electric-purple/5 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                 />
                             </div>
 
@@ -132,14 +154,17 @@ export const Profile = () => {
                                 <input
                                     type="text"
                                     placeholder="San Francisco, CA"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-electric-purple focus:ring-4 focus:ring-electric-purple/5 transition-all"
+                                    disabled={!isEditing}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-electric-purple focus:ring-4 focus:ring-electric-purple/5 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-6 border-t border-slate-100">
-                            <Button className="px-8">Save Changes</Button>
-                        </div>
+                        {isEditing && (
+                            <div className="flex justify-end pt-6 border-t border-slate-100">
+                                <Button className="px-8" onClick={handleSave}>Save Changes</Button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
