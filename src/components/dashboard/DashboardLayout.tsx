@@ -10,6 +10,7 @@ import { Admin } from './Admin';
 
 export const DashboardLayout = () => {
     const [activePage, setActivePage] = useState('New order');
+    const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-electric-purple/30 relative overflow-hidden">
@@ -24,10 +25,10 @@ export const DashboardLayout = () => {
             <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-electric-purple/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[100px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
-            <Sidebar active={activePage} setActive={setActivePage} />
+            <Sidebar active={activePage} setActive={(val: string) => setActivePage(val)} />
             <main className="pl-64 relative z-10">
                 <div className="max-w-7xl mx-auto p-8">
-                    <Topbar />
+                    <Topbar onNavigate={(page) => setActivePage(page)} onServiceSelect={(id) => setSelectedServiceId(id)} />
                     <div className="mt-8">
                         {activePage === 'Profile' ? (
                             <Profile />
@@ -40,7 +41,7 @@ export const DashboardLayout = () => {
                         ) : activePage === 'Admin' ? (
                             <Admin />
                         ) : (
-                            <NewOrder />
+                            <NewOrder initialServiceId={selectedServiceId} />
                         )}
                     </div>
                 </div>

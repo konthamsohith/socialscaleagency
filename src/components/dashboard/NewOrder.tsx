@@ -1,13 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ServiceList } from './ServiceList';
-import { NetworkSelector, Network } from './NetworkSelector';
+import { NetworkSelector, Network, networks } from './NetworkSelector';
 import { ServiceCategorySelector } from './ServiceCategorySelector';
 import { ServiceDetails } from './ServiceDetails';
+import { initialServices } from '../../data/services';
 
-export const NewOrder = () => {
+interface NewOrderProps {
+    initialServiceId?: string | null;
+}
+
+export const NewOrder = ({ initialServiceId }: NewOrderProps) => {
     const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedService, setSelectedService] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (initialServiceId) {
+            const service = initialServices.find(s => s.id === initialServiceId);
+            if (service) {
+                const network = networks.find(n => n.name === service.category);
+                if (network) {
+                    setSelectedNetwork(network);
+                    setSelectedCategory(service.category);
+                    setSelectedService(service.id);
+                }
+            }
+        }
+    }, [initialServiceId]);
 
     const handleNetworkSelect = (network: Network) => {
         setSelectedNetwork(network);

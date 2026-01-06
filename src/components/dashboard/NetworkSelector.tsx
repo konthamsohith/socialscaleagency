@@ -8,7 +8,7 @@ export interface Network {
     path: string;
 }
 
-const networks: Network[] = [
+export const networks: Network[] = [
     {
         name: 'Instagram',
         color: 'bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600',
