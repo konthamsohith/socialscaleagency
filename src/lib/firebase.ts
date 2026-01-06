@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDXZZyh6RvIfJX7HTJnfONVuHWI6V2tjgQ",
-    authDomain: "socialscale-dashboard.firebaseapp.com",
-    projectId: "socialscale-dashboard",
-    storageBucket: "socialscale-dashboard.firebasestorage.app",
-    messagingSenderId: "143806360842",
-    appId: "1:143806360842:web:98e3aea49909a31497def3",
-    measurementId: "G-JSHMDEZZR4"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
