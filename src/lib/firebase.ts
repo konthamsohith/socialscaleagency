@@ -12,6 +12,14 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+if (!firebaseConfig.apiKey) {
+    console.error("Firebase Configuration Missing! Check your .env file or Vercel Environment Variables.");
+    // Alert the user visibly
+    if (typeof window !== 'undefined') {
+        alert("CRITICAL ERROR: Firebase Config Missing. Please check Vercel Environment Variables.");
+    }
+}
+
 const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);
 export const auth = getAuth(app);
