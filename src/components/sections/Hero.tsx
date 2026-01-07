@@ -268,7 +268,7 @@ export const Hero: React.FC = () => {
                                         <div className="relative mb-4 inline-block">
                                             <img
                                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwRuiEzzK2gTED0K2ybqP9yB7EVBMaEHGpemWwBVpzN2eKFKNjA2Pf9RdCfJR9vomKL-GINyEp066FNim4OXk0-7IJ6JhIKUYMw6l5377OLNjCAqDc0fYVfWis-kw6dnu0n8r6RePnYNHD_EneFZErCU8tO-QgSKrQFMKeGy5SMfCumUdzpbuVNSfEJOQlVWNjq0UhLmrokeoGQimMoVxGt9VODUcNgrxtfyte692RqdFiC8MLUsJWZCDa6PTA9oUJBNiDz1QD5Mo"
-                                                className="w-20 h-20 rounded-full border-4 border-white object-cover shadow-sm bg-slate-100 grayscale-[0.3]"
+                                                className="w-20 h-20 rounded-full border-4 border-white object-cover shadow-sm bg-slate-100"
                                                 alt="Dylan McKay"
                                             />
                                             <div className="absolute bottom-1 right-1 bg-[#0A66C2] rounded-full p-1 border-[3px] border-white shadow-lg">

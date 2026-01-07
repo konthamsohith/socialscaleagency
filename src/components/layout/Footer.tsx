@@ -1,5 +1,6 @@
 
 import { Facebook, Instagram, Linkedin, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const XIcon = ({ size, className }: { size: number, className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -64,31 +65,31 @@ export const Footer = () => {
 
                     {/* Columns */}
                     <div>
-                        <h4 className="font-archivo font-semibold text-black mb-6">Product</h4>
+                        <h4 className="font-archivo font-semibold text-black mb-6 uppercase text-xs tracking-widest">Product</h4>
                         <ul className="space-y-4 font-archivo font-medium text-[14px] leading-[20px] text-[#6D6D6D]">
                             <li><a href="#benefits" onClick={(e) => handleLinkClick(e, "#benefits")} className="hover:text-black transition-colors">Benefits</a></li>
-                            <li><a href="#services" onClick={(e) => handleLinkClick(e, "#services")} className="hover:text-black transition-colors">Services</a></li>
+                            <li><Link to="/services" className="hover:text-black transition-colors">Services</Link></li>
                             <li><a href="#reviews" onClick={(e) => handleLinkClick(e, "#reviews")} className="hover:text-black transition-colors">Testimonials</a></li>
-                            <li><a href="#pricing" onClick={(e) => handleLinkClick(e, "#pricing")} className="hover:text-black transition-colors">Pricing</a></li>
+                            <li><Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="font-archivo font-semibold text-black mb-6">Company</h4>
+                        <h4 className="font-archivo font-semibold text-black mb-6 uppercase text-xs tracking-widest">Company</h4>
                         <ul className="space-y-4 font-archivo font-medium text-[14px] leading-[20px] text-[#6D6D6D]">
-                            <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">About Us</a></li>
+                            <li><Link to="/about" className="hover:text-black transition-colors">About Us</Link></li>
                             <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Careers</a></li>
-
-                            <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Contact</a></li>
+                            <li><Link to="/blog" className="hover:text-black transition-colors">Blog</Link></li>
+                            <li><Link to="/contact" className="hover:text-black transition-colors">Contact</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="font-archivo font-semibold text-black mb-6">Legal</h4>
+                        <h4 className="font-archivo font-semibold text-black mb-6 uppercase text-xs tracking-widest">Legal</h4>
                         <ul className="space-y-4 font-archivo font-medium text-[14px] leading-[20px] text-[#6D6D6D]">
-                            <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Privacy Policy</a></li>
-                            <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Terms of Service</a></li>
-                            <li><a href="#" onClick={(e) => e.preventDefault()} className="hover:text-black transition-colors">Cookie Policy</a></li>
+                            <li><Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link></li>
+                            <li><Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link></li>
+                            <li><Link to="/cookie-policy" className="hover:text-black transition-colors">Cookie Policy</Link></li>
                         </ul>
                     </div>
                 </div>

@@ -53,7 +53,7 @@ const reviews = [
 const ReviewCard = ({ review }: { review: typeof reviews[0] }) => (
     <div className="w-[350px] md:w-[450px] bg-white rounded-[32px] p-8 md:p-10 flex flex-col h-[500px] shadow-sm border border-slate-100 mx-4 shrink-0 transition-transform duration-300 hover:scale-[1.02] whitespace-normal">
         <div className="mb-6">
-            <img src={review.image} alt={review.name} className="w-14 h-14 rounded-full object-cover grayscale" />
+            <img src={review.image} alt={review.name} className="w-14 h-14 rounded-full object-cover" />
         </div>
         <p className="font-archivo font-medium text-xl md:text-2xl text-[#3D3D3D] leading-[22px] mb-auto">
             "{review.content}"
