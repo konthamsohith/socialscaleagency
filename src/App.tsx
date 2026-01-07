@@ -15,12 +15,15 @@ import { SmoothScroll } from "./components/ui/SmoothScroll";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 
 import { Login } from "./pages/Login";
+import { Onboarding } from "./pages/Onboarding";
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import { Admin } from "./components/dashboard/Admin";
 import { Profile } from "./components/dashboard/Profile";
 import { MyOrders } from "./components/dashboard/MyOrders";
 import { Support } from "./components/dashboard/Support";
 import { MassOrder } from "./components/dashboard/MassOrder";
+import { SuperAdmin } from "./components/dashboard/SuperAdmin";
+import { Notifications } from "./components/dashboard/Notifications";
 
 function App() {
   return (
@@ -42,6 +45,7 @@ function App() {
 
           {/* Auth & Dashboard Routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Admin />} />
             <Route path="orders" element={<MyOrders />} />
@@ -49,6 +53,8 @@ function App() {
             <Route path="support" element={<Support />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Profile />} />
+            <Route path="admin-panel" element={<SuperAdmin />} />
+            <Route path="notifications" element={<Notifications />} />
             {/* Add more dashboard routes here */}
           </Route>
         </Routes>

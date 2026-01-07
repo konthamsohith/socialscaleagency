@@ -1,55 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Package, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bell } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const MOCK_NOTIFICATIONS = [
-    {
-        id: 1,
-        title: 'Order Status Updated',
-        message: 'Your Instagram Followers order (#ORD-7281) is now in progress.',
-        time: '2 mins ago',
-        type: 'success',
-        icon: CheckCircle2,
-        read: false,
-    },
-    {
-        id: 2,
-        title: 'New Service Available',
-        message: 'TikTok Live Stream Views service is now active.',
-        time: '1 hour ago',
-        type: 'info',
-        icon: Info,
-        read: false,
-    },
-    {
-        id: 3,
-        title: 'Payment Confirmed',
-        message: 'Payment for your last mass order has been processed.',
-        time: '3 hours ago',
-        type: 'success',
-        icon: Package,
-        read: true,
-    },
-    {
-        id: 4,
-        title: 'Welcome to SocialScale',
-        message: 'Start your journey by exploring our social growth services.',
-        time: '1 day ago',
-        type: 'info',
-        icon: AlertCircle,
-        read: true,
-    }
-];
+import { useNotifications } from '../../context/NotificationContext';
 
 export const Topbar = () => {
     const [user, setUser] = useState<User | null>(auth.currentUser);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const dropdownRef = useRef<HTMLDivElement>(null);
-
-    const unreadCount = notifications.filter(n => !n.read).length;
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -73,13 +34,13 @@ export const Topbar = () => {
 
 
 
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
-    };
 
-    const markAsRead = (id: number) => {
-        setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
-    };
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        });
+        return () => unsubscribe();
+    }, []);
 
     return (
         <header className="h-16 flex items-center justify-between px-6 border-b border-slate-200 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
@@ -161,9 +122,13 @@ export const Topbar = () => {
                                 </div>
 
                                 <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-                                    <button className="w-full py-2 text-center text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                                    <Link
+                                        to="/dashboard/notifications"
+                                        onClick={() => setShowNotifications(false)}
+                                        className="block w-full py-2 text-center text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                                    >
                                         View all notifications
-                                    </button>
+                                    </Link>
                                 </div>
                             </motion.div>
                         )}

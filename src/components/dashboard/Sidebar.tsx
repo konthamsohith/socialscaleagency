@@ -8,14 +8,18 @@ import {
     PlusCircle,
     FileText,
     Layers,
-    User
+    User,
+    ShieldCheck,
+    Bell
 } from 'lucide-react';
 
 const menuItems = [
     { icon: PlusCircle, label: 'New Order', path: '/dashboard' },
     { icon: FileText, label: 'My Orders', path: '/dashboard/orders' },
     { icon: Layers, label: 'Mass Order', path: '/dashboard/mass-order' },
+    { icon: Bell, label: 'Notifications', path: '/dashboard/notifications' },
     { icon: User, label: 'Profile', path: '/dashboard/profile' },
+    { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboard/admin-panel' },
 ];
 
 export const Sidebar = () => {

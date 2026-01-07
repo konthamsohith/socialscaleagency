@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { servicesData, ServiceCategory } from '../../data/services';
 
-const TikTokIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+export const TikTokIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
     <svg
         width={size}
         height={size}
@@ -25,46 +25,53 @@ const TikTokIcon = ({ size = 24, className = "" }: { size?: number; className?: 
     </svg>
 );
 
-const XIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+export const XIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <path d="M4 4l11.733 16h6.267l-11.733 -16z" />
         <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
     </svg>
 );
 
-const ThreadsIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+export const ThreadsIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
         <path transform="translate(1.8, 1.8) scale(0.85)" d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z" />
     </svg>
 );
 
-const PinterestIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
-        <path fillRule="evenodd" clipRule="evenodd" transform="translate(1.8, 1.8) scale(0.85)" d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.571-.992 3.996-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.649 0-5.788 2.723-5.788 5.543 0 1.096.423 2.272.952 2.91.106.126.12.237.09.429-.099.414-.336 1.349-.382 1.536-.06.244-.266.295-.615.15-2.296-.95-3.731-3.93-3.731-6.326 0-5.152 3.75-9.873 10.835-9.873 5.689 0 9.468 4.09 9.468 8.448 0 5.037-2.834 9.087-6.769 9.087-1.322 0-2.564-.688-2.986-1.503l-.813 3.092c-.296 1.125-1.1 2.534-1.64 3.39 1.232.368 2.559.567 3.941.567 6.618 0 12-5.381 12-12C24.016 5.367 18.636 0 12.017 0z" />
+export const PinterestIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 0a8 8 0 0 0-2.915 15.452c-.07-.633-.134-1.606.027-2.297.146-.625.938-3.977.938-3.977s-.239-.479-.239-1.187c0-1.113.645-1.943 1.448-1.943.682 0 1.012.512 1.012 1.127 0 .686-.437 1.712-.663 2.663-.188.796.4 1.446 1.185 1.446 1.422 0 2.515-1.5 2.515-3.664 0-1.915-1.377-3.254-3.342-3.254-2.276 0-3.612 1.707-3.612 3.471 0 .688.265 1.425.595 1.826a.24.24 0 0 1 .056.23c-.061.252-.196.796-.222.907-.035.146-.116.177-.268.107-1-.465-1.624-1.926-1.624-3.1 0-2.523 1.834-4.84 5.286-4.84 2.775 0 4.932 1.977 4.932 4.62 0 2.757-1.739 4.976-4.151 4.976-.811 0-1.573-.421-1.834-.919l-.498 1.902c-.181.695-.669 1.566-.995 2.097A8 8 0 1 0 8 0" fill="#E60023" />
     </svg>
 );
 
-const DiscordIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+export const TwitchIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+    </svg>
+);
+
+export const DiscordIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
         <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.7728-.6083 1.1582a18.3246 18.3246 0 00-3.3213-.1535 18.3255 18.3255 0 00-3.3512.1691c-.1673-.3939-.408-.8028-.621-1.1893a.077.077 0 00-.0809-.0366 19.728 19.728 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1892.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.1023.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z" />
     </svg>
 );
 
-const SpotifyIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+export const SpotifyIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
         <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.669 11.538a.5.5 0 0 1-.686.165c-1.879-1.147-4.243-1.407-7.028-.77a.499.499 0 0 1-.222-.973c3.048-.696 5.662-.397 7.77.892a.5.5 0 0 1 .166.686m.979-2.178a.624.624 0 0 1-.858.205c-2.15-1.321-5.428-1.704-7.972-.932a.625.625 0 0 1-.362-1.194c2.905-.881 6.517-.454 8.986 1.063a.624.624 0 0 1 .206.858m.084-2.268C10.154 5.56 5.9 5.419 3.438 6.166a.748.748 0 1 1-.434-1.432c2.825-.857 7.523-.692 10.492 1.07a.747.747 0 1 1-.764 1.288" />
     </svg>
 );
 
-const TelegramIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.4-1.08.39-.35-.01-1.02-.2-1.52-.35-.62-.18-1.1-.28-1.05-.59.02-.15.22-.3.61-.45 2.4-1.04 4.01-1.73 4.83-2.06 2.33-.94 2.82-1.11 3.12-1.11.08 0 .28.01.4.09.11.08.15.19.16.27.02.1.03.22.01.33z" />
+export const TelegramIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="12" fill="#24A1DE" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M5.3999 12.0135L17.6534 6.75781C18.2384 6.50581 18.7304 6.94631 18.5504 7.64331L16.4854 17.3888C16.3324 18.1173 15.9184 18.2973 15.3064 17.9553L12.3029 15.7448L10.8539 17.1393C10.693 17.2941 10.5594 17.4253 10.2534 17.4253L10.4694 14.3648L16.0399 9.32431C16.2819 9.10831 15.9877 8.98831 15.6661 9.20231L8.7801 13.5358L5.8118 12.6073C5.1664 12.4058 5.1542 11.9613 5.3999 12.0135Z" fill="white" />
     </svg>
 );
 
-const QuoraIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.52 16.7c-3.07-.45-6.62-1.74-6.62-5.91C6.9 7.42 9.07 4.96 12 4.96c2.93 0 5.1 2.46 5.1 5.83 0 3.37-2.17 5.83-5.1 5.83-.87 0-1.68-.22-2.38-.58-.33 1.14 1.1 2.22 2.5 1.83.69-.19 1.13.16 1.48.74-1.22 1.44-4.82 2.37-5.97 1.48-.68-.53-1.33-2.26.15-2.84.4-.16.92-.26 1.42-.31 1.25-.13 2.84 0 4.32-.24zm-1.5-2.58c1.64 0 2.89-1.51 2.89-3.32 0-1.82-1.25-3.32-2.89-3.32-1.64 0-2.89 1.5-2.89 3.32 0 1.81 1.25 3.32 2.89 3.32z" />
+export const QuoraIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="#B92B27" className={className} xmlns="http://www.w3.org/2000/svg">
+        <path d="M8.73 12.476c-.554-1.091-1.204-2.193-2.473-2.193-.242 0-.484.04-.707.142l-.43-.863c.525-.45 1.373-.808 2.464-.808 1.697 0 2.568.818 3.26 1.86.41-.89.605-2.093.605-3.584 0-3.724-1.165-5.636-3.885-5.636-2.68 0-3.839 1.912-3.839 5.636 0 3.704 1.159 5.596 3.84 5.596.425 0 .811-.046 1.166-.15Zm.665 1.3a7 7 0 0 1-1.83.244C3.994 14.02.5 11.172.5 7.03.5 2.849 3.995 0 7.564 0c3.63 0 7.09 2.828 7.09 7.03 0 2.337-1.09 4.236-2.675 5.464.512.767 1.04 1.277 1.773 1.277.802 0 1.125-.62 1.179-1.105h1.043c.061.647-.262 3.334-3.178 3.334-1.767 0-2.7-1.024-3.4-2.224Z" />
     </svg>
 );
 
@@ -338,51 +345,105 @@ export const Admin = () => {
                 ) : (
                     <motion.div
                         key="packages"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
                         className="space-y-8"
                     >
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={handleBack}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-500/30 hover:shadow-lg transition-all"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </button>
-                            <div>
-                                <h1 className="text-3xl font-bold font-archivo text-slate-900">{selectedCategory?.title} Packages</h1>
-                                <p className="text-slate-500 mt-1">Prices are per 1000 units.</p>
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100">
+                            <div className="flex items-center gap-5">
+                                <button
+                                    onClick={handleBack}
+                                    className="group w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+                                >
+                                    <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+                                </button>
+                                <div>
+                                    <h1 className="text-3xl font-black font-archivo text-slate-900 tracking-tight">
+                                        {selectedCategory?.title} <span className="text-blue-600">Packages</span>
+                                    </h1>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <div className={`w-2 h-2 rounded-full ${selectedCategory?.bg.replace('/10', '') || 'bg-blue-600'}`} />
+                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{selectedNetwork?.title} • Prices per 1,000 units</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="hidden lg:flex items-center gap-3">
+                                <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                                    <ShoppingCart className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-tighter leading-none">Swift Checkout</p>
+                                    <p className="text-xs font-bold text-slate-600">Instant Activation</p>
+                                </div>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4">
-                            {packages.map((pkg, index) => (
-                                <motion.div
-                                    key={pkg.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className="group bg-white border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 transition-all"
-                                >
-                                    <div className="flex-1">
-                                        <h4 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                                            {pkg.name}
-                                        </h4>
-                                        <p className="text-sm text-slate-500 mt-1">High retention, organic growth</p>
-                                    </div>
-                                    <div className="flex items-center gap-8">
-                                        <div className="text-right">
-                                            <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Price per 1k</p>
-                                            <p className="text-2xl font-archivo font-bold text-blue-600">{pkg.price}</p>
+                            {packages.map((pkg, index) => {
+                                // Extract tags from [ bracketed ] names
+                                const tags = pkg.name.match(/\[(.*?)\]/g)?.map(t => t.replace(/[\[\]]/g, '')) || [];
+                                const cleanName = pkg.name.replace(/\[.*?\]/g, '').trim();
+
+                                return (
+                                    <motion.div
+                                        key={pkg.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        className="group relative bg-white border border-slate-200 rounded-3xl p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-500"
+                                    >
+                                        {/* Left Side: Info & Badges */}
+                                        <div className="flex-1 space-y-4 w-full">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {tags.map((tag, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all duration-300 ${tag.includes('Refill') || tag.includes('Guarantee') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                tag.includes('Speed') || tag.includes('Fast') ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                    tag.includes('Recommended') ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                        'bg-slate-50 text-slate-500 border-slate-100'
+                                                            }`}
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                                <span className="ml-auto lg:ml-0 text-[10px] font-mono text-slate-300 font-bold group-hover:text-blue-300 transition-colors uppercase">{pkg.id}</span>
+                                            </div>
+
+                                            <div>
+                                                <h4 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-all duration-300 leading-snug">
+                                                    {cleanName}
+                                                </h4>
+                                                <p className="text-sm text-slate-400 mt-2 font-medium flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-blue-400 transition-colors" />
+                                                    High retention, organic growth & verified delivery
+                                                </p>
+                                            </div>
                                         </div>
-                                        <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95">
-                                            <ShoppingCart className="w-4 h-4" />
-                                            Order Now
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
+
+                                        {/* Right Side: Pricing & CTA */}
+                                        <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto gap-6 lg:gap-12 pt-6 lg:pt-0 border-t lg:border-t-0 border-slate-50">
+                                            <div className="text-left lg:text-right min-w-[120px]">
+                                                <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black leading-none mb-1.5">Value Rate</p>
+                                                <div className="flex items-baseline gap-1 lg:justify-end">
+                                                    <span className="text-3xl font-black font-archivo text-slate-900 tracking-tighter group-hover:text-blue-600 transition-colors">{pkg.price}</span>
+                                                    <span className="text-sm font-bold text-slate-400">Credits</span>
+                                                </div>
+                                            </div>
+
+                                            <button className="relative overflow-hidden flex items-center gap-3 px-8 py-4 bg-slate-900 group-hover:bg-blue-600 text-white rounded-[20px] font-black text-sm transition-all duration-500 shadow-xl shadow-slate-900/10 group-hover:shadow-blue-600/20 active:scale-95">
+                                                <ShoppingCart className="w-4.5 h-4.5 group-hover:rotate-12 transition-transform duration-500" />
+                                                Order Now
+                                            </button>
+                                        </div>
+
+                                        {/* Hover Decorative Element */}
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                                    </motion.div>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 )}

@@ -35,11 +35,23 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "INST-FOL-1", name: "Instagram Followers [ Good Quality ] [ No Guarantee ] No Refill", price: "₹174" },
-                { id: "INST-FOL-2", name: "Instagram Followers [ Good Quality ] [ 30D Refill ] [ Fast Speed ]", price: "₹226" },
-                { id: "INST-FOL-3", name: "Instagram Followers [ Good Quality ] [ 90D Refill ] Fast Speed", price: "₹240" },
-                { id: "INST-FOL-4", name: "Instagram Followers [ High Quality ] [ 365D Refill ] [ Recommended ]", price: "₹253" },
-                { id: "INST-FOL-5", name: "Instagram Followers [ High Quality ] [ Lifetime Refill ] Low Drops", price: "₹343" }
+                { id: "INST-FOL-1", name: "Instagram Followers [ Good Quality ] [ No Guarantee ] No Refill", price: "5" },
+                { id: "INST-FOL-2", name: "Instagram Followers [ Good Quality ] [ 30D Refill ] [ Fast Speed ]", price: "6" },
+                { id: "INST-FOL-3", name: "Instagram Followers [ Good Quality ] [ 90D Refill ] Fast Speed", price: "7" },
+                { id: "INST-FOL-4", name: "Instagram Followers [ High Quality ] [ 365D Refill ] [ Recommended ]", price: "8" },
+                { id: "INST-FOL-5", name: "Instagram Followers [ High Quality ] [ Lifetime Refill ] Low Drops", price: "10" }
+            ]
+        },
+        {
+            id: "INST-LIKES",
+            title: "Likes",
+            description: "Boost your post engagement instantly",
+            icon: Heart,
+            color: "text-pink-600",
+            bg: "bg-pink-600/10",
+            packages: [
+                { id: "INST-LIK-1", name: "Instagram Likes [ Instant ] [ Real ]", price: "5" },
+                { id: "INST-LIK-2", name: "Instagram Likes [ High Quality ] [ Split Available ]", price: "7" }
             ]
         },
         {
@@ -50,8 +62,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             packages: [
-                { id: "INST-STO-1", name: "Instagram Story Views [ High Speed ]", price: "₹45" },
-                { id: "INST-STO-2", name: "Instagram Story Shares [ Global ]", price: "₹120" }
+                { id: "INST-STO-1", name: "Instagram Story Views [ High Speed ]", price: "45" },
+                { id: "INST-STO-2", name: "Instagram Story Shares [ Global ]", price: "120" }
             ]
         },
         {
@@ -62,8 +74,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-purple-500",
             bg: "bg-purple-500/10",
             packages: [
-                { id: "INST-VOT-1", name: "Instagram Story Poll Votes [ Option A/B ]", price: "₹85" },
-                { id: "INST-VOT-2", name: "Instagram Story Slider Votes [ 100% ]", price: "₹95" }
+                { id: "INST-VOT-1", name: "Instagram Story Poll Votes [ Option A/B ]", price: "85" },
+                { id: "INST-VOT-2", name: "Instagram Story Slider Votes [ 100% ]", price: "95" }
             ]
         },
         {
@@ -74,7 +86,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "INST-REP-1", name: "Instagram Content Reposts [ Organic ]", price: "₹350" }
+                { id: "INST-REP-1", name: "Instagram Content Reposts [ Organic ]", price: "350" }
             ]
         },
         {
@@ -85,7 +97,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
             packages: [
-                { id: "INST-COM-1", name: "Instagram Random Comments [ Positive ]", price: "₹550" }
+                { id: "INST-COM-1", name: "Instagram Random Comments [ Positive ]", price: "550" }
             ]
         },
         {
@@ -96,8 +108,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-orange-500",
             bg: "bg-orange-500/10",
             packages: [
-                { id: "INST-LIV-1", name: "Instagram Live Views [ 30 Mins ]", price: "₹450" },
-                { id: "INST-LIV-2", name: "Instagram Live Views [ 60 Mins ]", price: "₹750" }
+                { id: "INST-LIV-1", name: "Instagram Live Views [ 30 Mins ]", price: "450" },
+                { id: "INST-LIV-2", name: "Instagram Live Views [ 60 Mins ]", price: "750" }
             ]
         },
         {
@@ -108,7 +120,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "INST-CHN-1", name: "Instagram Broadcast Channel Members", price: "₹420" }
+                { id: "INST-CHN-1", name: "Instagram Broadcast Channel Members", price: "420" }
             ]
         }
     ],
@@ -121,8 +133,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-900",
             bg: "bg-slate-900/10",
             packages: [
-                { id: "TIK-FOL-1", name: "TikTok Followers [ Real Looking ] [ Fast ]", price: "₹210" },
-                { id: "TIK-FOL-2", name: "TikTok Followers [ High Quality ] [ 30D Refill ]", price: "₹290" }
+                { id: "TIK-FOL-1", name: "TikTok Followers [ Real Looking ] [ Fast ]", price: "210" },
+                { id: "TIK-FOL-2", name: "TikTok Followers [ High Quality ] [ 30D Refill ]", price: "290" }
             ]
         },
         {
@@ -133,8 +145,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             packages: [
-                { id: "TIK-LIK-1", name: "TikTok Likes [ High Quality ]", price: "₹140" },
-                { id: "TIK-LIK-2", name: "TikTok Likes [ Real Accounts ]", price: "₹210" }
+                { id: "TIK-LIK-1", name: "TikTok Likes [ High Quality ]", price: "140" },
+                { id: "TIK-LIK-2", name: "TikTok Likes [ Real Accounts ]", price: "210" }
             ]
         },
         {
@@ -145,8 +157,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "TIK-VIW-1", name: "TikTok Views [ Instant ]", price: "₹5" },
-                { id: "TIK-VIW-2", name: "TikTok Views [ High Retention ]", price: "₹15" }
+                { id: "TIK-VIW-1", name: "TikTok Views [ Instant ]", price: "5" },
+                { id: "TIK-VIW-2", name: "TikTok Views [ High Retention ]", price: "15" }
             ]
         }
     ],
@@ -159,8 +171,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-700",
             bg: "bg-blue-700/10",
             packages: [
-                { id: "LNK-FOL-1", name: "LinkedIn Profile Followers [ High Quality ]", price: "₹450" },
-                { id: "LNK-FOL-2", name: "LinkedIn Company Page Followers", price: "₹520" }
+                { id: "LNK-FOL-1", name: "LinkedIn Profile Followers [ High Quality ]", price: "20" },
+                { id: "LNK-FOL-2", name: "LinkedIn Company Page Followers", price: "25" }
             ]
         },
         {
@@ -171,7 +183,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "LNK-LIK-1", name: "LinkedIn Post Likes [ Real Professionals ]", price: "₹650" }
+                { id: "LNK-LIK-1", name: "LinkedIn Post Likes [ Real Professionals ]", price: "10" }
             ]
         },
         {
@@ -182,7 +194,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "LNK-SHR-1", name: "LinkedIn Post Shares [ Targeted ]", price: "₹1200" }
+                { id: "LNK-SHR-1", name: "LinkedIn Post Shares [ Targeted ]", price: "1200" }
             ]
         }
     ],
@@ -195,8 +207,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "YT-SUB-1", name: "YouTube Subscribers [ High Quality ] [ Non-Drop ]", price: "₹850" },
-                { id: "YT-SUB-2", name: "YouTube Subscribers [ Lifetime Refill ]", price: "₹1200" }
+                { id: "YT-SUB-1", name: "YouTube Subscribers [ High Quality ] [ Non-Drop ]", price: "850" },
+                { id: "YT-SUB-2", name: "YouTube Subscribers [ Lifetime Refill ]", price: "1200" }
             ]
         },
         {
@@ -207,8 +219,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-500",
             bg: "bg-red-500/10",
             packages: [
-                { id: "YT-VIW-1", name: "YouTube Views [ Real ] [ High Retention ]", price: "₹280" },
-                { id: "YT-VIW-2", name: "YouTube Views [ Google Ads Method ]", price: "₹550" }
+                { id: "YT-VIW-1", name: "YouTube Views [ Real ] [ High Retention ]", price: "280" },
+                { id: "YT-VIW-2", name: "YouTube Views [ Google Ads Method ]", price: "550" }
             ]
         },
         {
@@ -219,8 +231,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-700",
             bg: "bg-red-700/10",
             packages: [
-                { id: "YT-WTC-1", name: "YouTube Watch Time [ 1000 Hours ] [ 4-15 Mins Video ]", price: "₹950" },
-                { id: "YT-WTC-2", name: "YouTube Watch Time [ 4000 Hours Package ]", price: "₹3400" }
+                { id: "YT-WTC-1", name: "YouTube Watch Time [ 1000 Hours ] [ 4-15 Mins Video ]", price: "950" },
+                { id: "YT-WTC-2", name: "YouTube Watch Time [ 4000 Hours Package ]", price: "3400" }
             ]
         }
     ],
@@ -233,8 +245,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-900",
             bg: "bg-slate-900/10",
             packages: [
-                { id: "X-FOL-1", name: "X Followers [ Real Accounts ]", price: "₹320" },
-                { id: "X-FOL-2", name: "X Followers [ Nitro / Recommended ]", price: "₹480" }
+                { id: "X-FOL-1", name: "X Followers [ Real Accounts ]", price: "320" },
+                { id: "X-FOL-2", name: "X Followers [ Nitro / Recommended ]", price: "480" }
             ]
         },
         {
@@ -245,7 +257,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-800",
             bg: "bg-slate-800/10",
             packages: [
-                { id: "X-REP-1", name: "X Reposts [ retweets ] [ Fast ]", price: "₹240" }
+                { id: "X-REP-1", name: "X Reposts [ retweets ] [ Fast ]", price: "240" }
             ]
         },
         {
@@ -256,7 +268,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-600",
             bg: "bg-pink-600/10",
             packages: [
-                { id: "X-LIK-1", name: "X Likes [ High Quality ]", price: "₹180" }
+                { id: "X-LIK-1", name: "X Likes [ High Quality ]", price: "180" }
             ]
         }
     ],
@@ -269,7 +281,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-900",
             bg: "bg-slate-900/10",
             packages: [
-                { id: "THR-FOL-1", name: "Threads Followers [ High Quality ]", price: "₹240" }
+                { id: "THR-FOL-1", name: "Threads Followers [ High Quality ]", price: "240" }
             ]
         },
         {
@@ -280,7 +292,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             packages: [
-                { id: "THR-LIK-1", name: "Threads Likes [ Fast ]", price: "₹120" }
+                { id: "THR-LIK-1", name: "Threads Likes [ Fast ]", price: "120" }
             ]
         }
     ],
@@ -293,7 +305,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "PIN-FOL-1", name: "Pinterest Followers [ Real Looking ]", price: "₹190" }
+                { id: "PIN-FOL-1", name: "Pinterest Followers [ Real Looking ]", price: "190" }
             ]
         },
         {
@@ -304,7 +316,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-500",
             bg: "bg-red-500/10",
             packages: [
-                { id: "PIN-REP-1", name: "Pinterest Repins / Saves", price: "₹160" }
+                { id: "PIN-REP-1", name: "Pinterest Repins / Saves", price: "160" }
             ]
         }
     ],
@@ -317,8 +329,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-indigo-600",
             bg: "bg-indigo-600/10",
             packages: [
-                { id: "DSC-MEM-1", name: "Discord Server Members [ Offline ]", price: "₹150" },
-                { id: "DSC-MEM-2", name: "Discord Server Members [ Online ]", price: "₹380" }
+                { id: "DSC-MEM-1", name: "Discord Server Members [ Offline ]", price: "150" },
+                { id: "DSC-MEM-2", name: "Discord Server Members [ Online ]", price: "380" }
             ]
         },
         {
@@ -329,7 +341,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-green-500",
             bg: "bg-green-500/10",
             packages: [
-                { id: "DSC-ONL-1", name: "Discord Online Members [ 30 Days ]", price: "₹550" }
+                { id: "DSC-ONL-1", name: "Discord Online Members [ 30 Days ]", price: "550" }
             ]
         }
     ],
@@ -342,7 +354,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "FB-LIKES-1", name: "Facebook Page Likes & Followers [ High Quality ]", price: "₹280" }
+                { id: "FB-LIKES-1", name: "Facebook Page Likes & Followers [ High Quality ]", price: "280" }
             ]
         },
         {
@@ -353,7 +365,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "FB-FOL-1", name: "Facebook Profile Followers", price: "₹240" }
+                { id: "FB-FOL-1", name: "Facebook Profile Followers", price: "240" }
             ]
         }
     ],
@@ -366,7 +378,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-green-500",
             bg: "bg-green-500/10",
             packages: [
-                { id: "SPT-FOL-1", name: "Spotify Artist Followers [ Non-Drop ]", price: "₹260" }
+                { id: "SPT-FOL-1", name: "Spotify Artist Followers [ Non-Drop ]", price: "260" }
             ]
         },
         {
@@ -377,8 +389,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-green-600",
             bg: "bg-green-600/10",
             packages: [
-                { id: "SPT-STR-1", name: "Spotify Plays / Streams [ Global ]", price: "₹180" },
-                { id: "SPT-STR-2", name: "Spotify Streams [ USA Targeted ]", price: "₹450" }
+                { id: "SPT-STR-1", name: "Spotify Plays / Streams [ Global ]", price: "180" },
+                { id: "SPT-STR-2", name: "Spotify Streams [ USA Targeted ]", price: "450" }
             ]
         }
     ],
@@ -391,7 +403,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-sky-500",
             bg: "bg-sky-500/10",
             packages: [
-                { id: "TG-MEM-1", name: "Telegram Channel Members [ High Quality ]", price: "₹180" }
+                { id: "TG-MEM-1", name: "Telegram Channel Members [ High Quality ]", price: "180" }
             ]
         },
         {
@@ -402,7 +414,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-sky-600",
             bg: "bg-sky-600/10",
             packages: [
-                { id: "TG-VIW-1", name: "Telegram Post Views [ Last 5 Posts ]", price: "₹45" }
+                { id: "TG-VIW-1", name: "Telegram Post Views [ Last 5 Posts ]", price: "45" }
             ]
         }
     ],
@@ -415,7 +427,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-700",
             bg: "bg-red-700/10",
             packages: [
-                { id: "QR-FOL-1", name: "Quora Profile Followers", price: "₹340" }
+                { id: "QR-FOL-1", name: "Quora Profile Followers", price: "340" }
             ]
         },
         {
@@ -426,7 +438,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "QR-VOT-1", name: "Quora Answer Upvotes", price: "₹480" }
+                { id: "QR-VOT-1", name: "Quora Answer Upvotes", price: "480" }
             ]
         }
     ]
