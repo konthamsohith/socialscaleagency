@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { BookOpen, Search, Filter } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 
 const categories = [
   "All Modules",
@@ -64,7 +64,7 @@ export const BlogHero = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-base md:text-xl font-archivo font-normal text-slate-500 leading-relaxed mb-12 max-w-2xl px-4 md:px-0"
           >
-            Decoding the social algorithms. Expert analysis, technical 
+            Decoding the social algorithms. Expert analysis, technical
             frameworks, and high-velocity growth protocols for the digital frontier.
           </motion.p>
 
@@ -90,11 +90,10 @@ export const BlogHero = () => {
               {categories.map((cat, i) => (
                 <button
                   key={i}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest transition-all ${
-                    i === 0
+                  className={`px-4 py-2 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest transition-all ${i === 0
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
                       : "bg-white border border-slate-200 text-slate-500 hover:border-blue-600/30 hover:text-blue-600 shadow-sm"
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>

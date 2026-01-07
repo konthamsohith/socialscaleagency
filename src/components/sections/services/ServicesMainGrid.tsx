@@ -1,11 +1,9 @@
 import { motion } from "framer-motion";
-import { 
-  Linkedin, 
-  Instagram, 
-  Youtube, 
-  MessageCircle, 
-  ArrowRight,
-  TrendingUp,
+import {
+  Linkedin,
+  Instagram,
+  Youtube,
+  MessageCircle,
   Zap,
   Activity,
   Layers,
@@ -123,7 +121,7 @@ export const ServicesMainGrid = () => {
               <span className="text-blue-600 italic">Domination.</span>
             </motion.h2>
           </div>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -150,7 +148,7 @@ export const ServicesMainGrid = () => {
               className="group relative h-full"
             >
               <div className="relative h-full bg-white rounded-[2.5rem] border border-slate-100 p-8 md:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.02)] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:border-blue-500/20 group-hover:shadow-[0_30px_60px_rgba(0,55,255,0.08)] group-hover:-translate-y-2">
-                
+
                 <div className="flex justify-between items-start mb-10">
                   <div className="flex flex-col gap-2">
                     <div className="inline-flex items-center px-3 py-1 bg-blue-50/50 backdrop-blur-sm border border-blue-100 rounded-lg">
@@ -204,7 +202,7 @@ export const ServicesMainGrid = () => {
         </div>
 
         {/* Technical Footer Strip */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

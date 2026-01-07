@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ArrowRight, Sparkles, Cpu, Activity, Zap } from "lucide-react";
+import { ArrowRight, Cpu, Activity } from "lucide-react";
 import { Button } from "../../ui/Button";
 
 export const ServicesHero = () => {
@@ -14,8 +14,8 @@ export const ServicesHero = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
-    <section 
-      ref={containerRef} 
+    <section
+      ref={containerRef}
       className="relative pt-24 pb-16 md:pt-32 md:pb-20 lg:pt-48 lg:pb-32 overflow-hidden brand-bg min-h-[90vh] flex items-center"
     >
       <style>{`
@@ -58,7 +58,7 @@ export const ServicesHero = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-lg md:text-xl font-archivo font-normal text-slate-500 leading-relaxed mb-12 max-w-lg"
             >
-              Architecting high-velocity social ecosystems through neural optimization 
+              Architecting high-velocity social ecosystems through neural optimization
               and algorithmic authority. We don't just grow accounts—we build legacies.
             </motion.p>
 
@@ -105,11 +105,11 @@ export const ServicesHero = () => {
               </div>
               <div className="space-y-3">
                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: "98.4%" }}
                     transition={{ duration: 2, delay: 1 }}
-                    className="h-full bg-blue-600 rounded-full" 
+                    className="h-full bg-blue-600 rounded-full"
                   />
                 </div>
                 <p className="text-[11px] font-mono text-slate-500 uppercase tracking-tighter">Neural Signal Resonance: OPTIMIZED</p>

@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { Mail, MessageSquare, Terminal, Zap } from "lucide-react";
+import { Mail, MessageSquare, Terminal } from "lucide-react";
 
 export const ContactHero = () => {
   const containerRef = useRef(null);
@@ -22,7 +22,7 @@ export const ContactHero = () => {
         <div className="absolute inset-0 bg-[#F8FAFC]" />
         <div className="absolute inset-0 brand-bg opacity-40" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:40px_40px]" />
-        
+
         {/* Animated Perspective Grid */}
         <div className="absolute bottom-0 left-0 right-0 h-full bg-[perspective(1000px)_rotateX(60deg)] overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f608_1px,transparent_1px),linear-gradient(to_bottom,#3b82f608_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:linear-gradient(to_top,black,transparent)]" />

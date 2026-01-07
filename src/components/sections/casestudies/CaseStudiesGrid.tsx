@@ -1,12 +1,10 @@
 import { motion } from "framer-motion";
-import { 
-  ArrowRight, 
-  ExternalLink, 
-  Target, 
-  Zap, 
-  TrendingUp, 
-  Users, 
-  Layout, 
+import {
+  ArrowRight,
+  Target,
+  Zap,
+  TrendingUp,
+  Layout,
   Globe,
   Quote
 } from "lucide-react";
@@ -110,7 +108,7 @@ export const CaseStudiesGrid = () => {
               {/* Visual Module */}
               <div className="w-full lg:w-1/2 relative group">
                 <div className="absolute -inset-4 bg-slate-50 rounded-[2.5rem] -z-10 group-hover:bg-blue-50 transition-colors duration-700" />
-                
+
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
                   <motion.img
                     whileHover={{ scale: 1.05 }}
@@ -119,7 +117,7 @@ export const CaseStudiesGrid = () => {
                     alt={study.client}
                     className="w-full h-full object-cover transition-all duration-700"
                   />
-                  
+
                   {/* Platform Badge */}
                   <div className="absolute top-6 left-6">
                     <div className="flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-xl border border-white/10 rounded-full text-white">

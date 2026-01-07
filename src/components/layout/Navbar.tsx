@@ -146,12 +146,12 @@ export const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           <Button
             size="sm"
-            onClick={(e) => handleNavClick(e, "/contact")}
-            className="group/btn relative px-6 py-2.5 bg-slate-950 text-white rounded-full overflow-hidden transition-all duration-500 border border-slate-950"
+            onClick={(e) => handleNavClick(e, "/login")}
+            className="group/btn relative px-6 py-2.5 bg-blue-600 text-white rounded-full overflow-hidden transition-all duration-500 border border-blue-600"
           >
             <div className="relative z-10 flex items-center gap-3">
               <span className="font-archivo font-black uppercase tracking-[0.2em] text-[10px] text-white">
-                Initialize
+                Get Started
               </span>
               <div className="w-px h-3 bg-white/10 group-hover/btn:bg-white/20 transition-colors duration-500" />
               <ArrowRight
@@ -161,7 +161,7 @@ export const Navbar = () => {
             </div>
 
             {/* Minimalist Blue Shutter */}
-            <div className="absolute inset-0 bg-blue-600 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
+            <div className="absolute inset-0 bg-blue-700 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
           </Button>
         </div>
 
@@ -188,12 +188,12 @@ export const Navbar = () => {
             ))}
             <div className="h-px bg-slate-100 my-2" />
             <Button
-              className="group/btn relative w-full py-4 bg-slate-950 text-white rounded-xl overflow-hidden transition-all duration-500 border border-slate-950"
-              onClick={(e) => handleNavClick(e, "/contact")}
+              className="group/btn relative w-full py-4 bg-blue-600 text-white rounded-xl overflow-hidden transition-all duration-500 border border-blue-600"
+              onClick={(e) => handleNavClick(e, "/login")}
             >
               <div className="relative z-10 flex items-center justify-center gap-3">
                 <span className="font-archivo font-black uppercase tracking-[0.2em] text-[10px] text-white">
-                  Initialize
+                  Get Started
                 </span>
                 <div className="w-px h-3 bg-white/10 group-hover/btn:bg-white/20 transition-colors duration-500" />
                 <ArrowRight
@@ -203,7 +203,7 @@ export const Navbar = () => {
               </div>
 
               {/* Minimalist Blue Shutter */}
-              <div className="absolute inset-0 bg-blue-600 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
+              <div className="absolute inset-0 bg-blue-700 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
             </Button>
           </div>
         )}

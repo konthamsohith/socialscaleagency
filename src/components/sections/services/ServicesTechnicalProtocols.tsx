@@ -1,14 +1,11 @@
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { useRef } from "react";
-import { 
-  Cpu, 
-  BarChart3, 
-  Settings2, 
+import {
+  Cpu,
+  BarChart3,
+  Settings2,
   Headphones,
-  Zap,
-  Activity,
   ShieldCheck,
-  Globe,
   Terminal,
   Server
 } from "lucide-react";
@@ -62,7 +59,7 @@ export const ServicesTechnicalProtocols = () => {
   });
 
   return (
-    <section 
+    <section
       ref={containerRef}
       className="py-24 md:py-32 bg-[#020617] relative overflow-hidden"
     >
@@ -109,7 +106,7 @@ export const ServicesTechnicalProtocols = () => {
               Infrastructure.
             </span>
           </motion.h2>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -162,7 +159,7 @@ export const ServicesTechnicalProtocols = () => {
         </div>
 
         {/* Technical Footer Strip */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

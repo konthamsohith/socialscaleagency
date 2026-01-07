@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Send, User, Mail, MessageSquare, ChevronRight, Activity, ShieldCheck, Zap } from "lucide-react";
+import { Send, User, Mail, MessageSquare, Activity, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "../../ui/Button";
 
 export const ContactForm = () => {
@@ -87,8 +87,8 @@ export const ContactForm = () => {
                     <label className="text-[10px] font-mono font-black text-slate-400 uppercase tracking-widest ml-4">Full_Name</label>
                     <div className="relative group">
                       <User size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="IDENTIFY..."
                         className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl pl-14 pr-6 py-4 md:py-5 text-sm font-archivo text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all placeholder:text-slate-300"
                       />
@@ -98,8 +98,8 @@ export const ContactForm = () => {
                     <label className="text-[10px] font-mono font-black text-slate-400 uppercase tracking-widest ml-4">Email_Address</label>
                     <div className="relative group">
                       <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" />
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         placeholder="UPLINK_ADDR..."
                         className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl pl-14 pr-6 py-4 md:py-5 text-sm font-archivo text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all placeholder:text-slate-300"
                       />
@@ -126,7 +126,7 @@ export const ContactForm = () => {
                   <label className="text-[10px] font-mono font-black text-slate-400 uppercase tracking-widest ml-4">Message_Payload</label>
                   <div className="relative group">
                     <MessageSquare size={16} className="absolute left-5 top-5 md:top-6 text-slate-300 group-focus-within:text-blue-600 transition-colors" />
-                    <textarea 
+                    <textarea
                       rows={5}
                       placeholder="ENTER_DATA..."
                       className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl pl-14 pr-6 py-4 md:py-5 text-sm font-archivo text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all placeholder:text-slate-300 resize-none"

@@ -1,0 +1,13 @@
+﻿src/components/dashboard/Profile.tsx(9,21): error TS6133: 'setLoading' is declared but its value is never read.
+src/components/sections/blog/BlogHero.tsx(3,28): error TS6133: 'Filter' is declared but its value is never read.
+src/components/sections/casestudies/CaseStudiesGrid.tsx(4,3): error TS6133: 'ExternalLink' is declared but its value is never read.
+src/components/sections/casestudies/CaseStudiesGrid.tsx(8,3): error TS6133: 'Users' is declared but its value is never read.
+src/components/sections/contact/ContactForm.tsx(2,43): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/components/sections/contact/ContactHero.tsx(3,41): error TS6133: 'Zap' is declared but its value is never read.
+src/components/sections/services/ServicesHero.tsx(3,22): error TS6133: 'Sparkles' is declared but its value is never read.
+src/components/sections/services/ServicesHero.tsx(3,47): error TS6133: 'Zap' is declared but its value is never read.
+src/components/sections/services/ServicesMainGrid.tsx(7,3): error TS6133: 'ArrowRight' is declared but its value is never read.
+src/components/sections/services/ServicesMainGrid.tsx(8,3): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/components/sections/services/ServicesTechnicalProtocols.tsx(8,3): error TS6133: 'Zap' is declared but its value is never read.
+src/components/sections/services/ServicesTechnicalProtocols.tsx(9,3): error TS6133: 'Activity' is declared but its value is never read.
+src/components/sections/services/ServicesTechnicalProtocols.tsx(11,3): error TS6133: 'Globe' is declared but its value is never read.
