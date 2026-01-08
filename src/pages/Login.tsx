@@ -154,7 +154,7 @@ export const Login = () => {
                                 >
                                     <div className="bg-[#007AFF] p-6 pb-20 relative overflow-hidden">
                                         <div className="flex items-center justify-between mb-4">
-                                            <h4 className="text-white text-md font-bold uppercase tracking-tight">Website Design</h4>
+                                            <h4 className="text-white text-md font-bold uppercase tracking-tight">sSOCIALS</h4>
                                             <div className="flex gap-1.5 opacity-60">
                                                 {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white" />)}
                                             </div>
