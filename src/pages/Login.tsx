@@ -117,7 +117,7 @@ export const Login = () => {
                                     }
                                 }
                             }}
-                            className="bg-white rounded-[2rem] p-6 shadow-2xl shadow-blue-900/20 border border-white/10"
+                            className="relative"
                         >
                             <div className="relative w-full aspect-[4/3] scale-[0.85] xxl:scale-100 flex items-center justify-center">
                                 {/* Background Pattern: Top Left */}
