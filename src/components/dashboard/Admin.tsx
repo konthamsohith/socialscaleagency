@@ -345,42 +345,42 @@ export const Admin = () => {
                 ) : (
                     <motion.div
                         key="packages"
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.02 }}
-                        className="space-y-8"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-6"
                     >
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100">
-                            <div className="flex items-center gap-5">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
+                            <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleBack}
-                                    className="group w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-500/30 transition-all duration-300"
                                 >
-                                    <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+                                    <ArrowLeft className="w-5 h-5" />
                                 </button>
                                 <div>
-                                    <h1 className="text-3xl font-black font-archivo text-slate-900 tracking-tight">
-                                        {selectedCategory?.title} <span className="text-blue-600">Packages</span>
+                                    <h1 className="text-2xl font-bold font-archivo text-slate-900 tracking-tight">
+                                        Followers <span className="text-blue-600">Packages</span>
                                     </h1>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className={`w-2 h-2 rounded-full ${selectedCategory?.bg.replace('/10', '') || 'bg-blue-600'}`} />
-                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{selectedNetwork?.title} • Prices per 1,000 units</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedNetwork?.title} • PRICES PER 1,000 UNITS</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="hidden lg:flex items-center gap-3">
-                                <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                                    <ShoppingCart className="w-5 h-5 text-blue-600" />
+                            <div className="hidden lg:flex items-center gap-2.5">
+                                <div className="p-2.5 bg-blue-50 rounded-xl">
+                                    <ShoppingCart className="w-4.5 h-4.5 text-blue-600" />
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-tighter leading-none">Swift Checkout</p>
-                                    <p className="text-xs font-bold text-slate-600">Instant Activation</p>
+                                <div className="leading-tight">
+                                    <p className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">Swift Checkout</p>
+                                    <p className="text-[11px] font-bold text-slate-600">Instant Activation</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 gap-3">
                             {packages.map((pkg, index) => {
                                 // Extract tags from [ bracketed ] names
                                 const tags = pkg.name.match(/\[(.*?)\]/g)?.map(t => t.replace(/[\[\]]/g, '')) || [];
@@ -389,58 +389,53 @@ export const Admin = () => {
                                 return (
                                     <motion.div
                                         key={pkg.id}
-                                        initial={{ opacity: 0, y: 20 }}
+                                        initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        className="group relative bg-white border border-slate-200 rounded-3xl p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-500"
+                                        transition={{ delay: index * 0.03 }}
+                                        className="group relative bg-white border border-slate-100 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-4 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
                                     >
-                                        {/* Left Side: Info & Badges */}
-                                        <div className="flex-1 space-y-4 w-full">
-                                            <div className="flex flex-wrap items-center gap-2">
+                                        <div className="flex-1 space-y-3 w-full">
+                                            <div className="flex flex-wrap items-center gap-1.5">
                                                 {tags.map((tag, i) => (
                                                     <span
                                                         key={i}
-                                                        className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all duration-300 ${tag.includes('Refill') || tag.includes('Guarantee') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                                tag.includes('Speed') || tag.includes('Fast') ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                    tag.includes('Recommended') ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                                        'bg-slate-50 text-slate-500 border-slate-100'
+                                                        className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${tag.toLowerCase().includes('refill') || tag.toLowerCase().includes('guarantee') ? 'bg-emerald-50 text-emerald-500' :
+                                                                tag.toLowerCase().includes('speed') || tag.toLowerCase().includes('fast') ? 'bg-blue-50 text-blue-500' :
+                                                                    tag.toLowerCase().includes('recommended') ? 'bg-amber-50 text-amber-500' :
+                                                                        'bg-slate-50 text-slate-400'
                                                             }`}
                                                     >
                                                         {tag}
                                                     </span>
                                                 ))}
-                                                <span className="ml-auto lg:ml-0 text-[10px] font-mono text-slate-300 font-bold group-hover:text-blue-300 transition-colors uppercase">{pkg.id}</span>
+                                                <span className="text-[8px] font-mono text-slate-200 font-bold uppercase ml-1 opacity-0 group-hover:opacity-100 transition-opacity">{pkg.id}</span>
                                             </div>
 
                                             <div>
-                                                <h4 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-all duration-300 leading-snug">
+                                                <h4 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-tight">
                                                     {cleanName}
                                                 </h4>
-                                                <p className="text-sm text-slate-400 mt-2 font-medium flex items-center gap-2">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-blue-400 transition-colors" />
+                                                <p className="text-[11px] text-slate-400 mt-1 font-medium flex items-center gap-1.5">
+                                                    <span className="w-1 h-1 rounded-full bg-slate-200 group-hover:bg-blue-400 transition-colors" />
                                                     High retention, organic growth & verified delivery
                                                 </p>
                                             </div>
                                         </div>
 
-                                        {/* Right Side: Pricing & CTA */}
-                                        <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto gap-6 lg:gap-12 pt-6 lg:pt-0 border-t lg:border-t-0 border-slate-50">
-                                            <div className="text-left lg:text-right min-w-[120px]">
-                                                <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black leading-none mb-1.5">Value Rate</p>
+                                        <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto gap-10">
+                                            <div className="text-right min-w-[100px]">
+                                                <p className="text-[8px] text-slate-400 uppercase tracking-widest font-black mb-1">Value Rate</p>
                                                 <div className="flex items-baseline gap-1 lg:justify-end">
-                                                    <span className="text-3xl font-black font-archivo text-slate-900 tracking-tighter group-hover:text-blue-600 transition-colors">{pkg.price}</span>
-                                                    <span className="text-sm font-bold text-slate-400">Credits</span>
+                                                    <span className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{pkg.price}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400">Credits</span>
                                                 </div>
                                             </div>
 
-                                            <button className="relative overflow-hidden flex items-center gap-3 px-8 py-4 bg-slate-900 group-hover:bg-blue-600 text-white rounded-[20px] font-black text-sm transition-all duration-500 shadow-xl shadow-slate-900/10 group-hover:shadow-blue-600/20 active:scale-95">
-                                                <ShoppingCart className="w-4.5 h-4.5 group-hover:rotate-12 transition-transform duration-500" />
+                                            <button className="flex items-center gap-2.5 px-7 py-3.5 bg-[#0F172A] hover:bg-blue-600 text-white rounded-[18px] font-black text-xs transition-all duration-300 shadow-md active:scale-95 whitespace-nowrap">
+                                                <ShoppingCart className="w-4 h-4" />
                                                 Order Now
                                             </button>
                                         </div>
-
-                                        {/* Hover Decorative Element */}
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                                     </motion.div>
                                 );
                             })}
