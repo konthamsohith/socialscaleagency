@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,9 +9,18 @@ import {
     ArrowRight,
     ArrowLeft,
     Facebook,
-    ShoppingCart
+    ShoppingCart,
+    Users,
+    DollarSign,
+    TrendingUp,
+    BarChart3,
+    Search,
+    Filter,
+    Download
 } from 'lucide-react';
 import { servicesData, ServiceCategory } from '../../data/services';
+import { apiService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const TikTokIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
     <svg
@@ -187,15 +196,88 @@ const networks = [
     }
 ];
 
+type ViewType = 'dashboard' | 'platforms' | 'categories' | 'packages';
+
 export const Admin = () => {
     const [searchParams] = useSearchParams();
     const searchQuery = searchParams.get('q')?.toLowerCase() || '';
-    const [view, setView] = useState<'platforms' | 'categories' | 'packages'>('platforms');
+    const [view, setView] = useState<ViewType>('dashboard');
     const [selectedNetwork, setSelectedNetwork] = useState<typeof networks[0] | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
-    // const [selectedPackage, setSelectedPackage] = useState<any | null>(null); // Removed
-    // const [showSuccess, setShowSuccess] = useState<string | null>(null); // Removed
+    const [loading, setLoading] = useState(true);
+    const [adminData, setAdminData] = useState<{
+        totalRevenue: number;
+        totalUsers: number;
+        activeOrders: number;
+        netMargin: number;
+        users: { id: string; name: string; email: string; spend: number; orders: number; joined: string; status: string }[];
+    }>({
+        totalRevenue: 0,
+        totalUsers: 0,
+        activeOrders: 0,
+        netMargin: 0,
+        users: []
+    });
     const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Redirect if not admin
+    useEffect(() => {
+        if (user && user.role !== 'SUPER_ADMIN') {
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
+
+    useEffect(() => {
+        const fetchAdminData = async () => {
+            try {
+                setLoading(true);
+                const [analyticsRes, usersRes, ordersRes] = await Promise.all([
+                    apiService.getAnalyticsSummary().catch(() => ({ data: { revenue: 0, realCost: 0 } })),
+                    apiService.getAllUsers(1, 100).catch(() => ({ data: { users: [], pagination: { total: 0 } } })),
+                    apiService.getOrders({ status: 'active' }).catch(() => ({ data: [], pagination: { total: 0 } }))
+                ]);
+
+                const analytics = analyticsRes.data || { revenue: 0, realCost: 0 };
+                const users = usersRes.data?.users || [];
+                const orders = ordersRes.data || [];
+
+                const netMargin = analytics.revenue > 0 ? ((analytics.revenue - analytics.realCost) / analytics.revenue * 100).toFixed(1) : '0';
+
+                setAdminData({
+                    totalRevenue: analytics.revenue || 0,
+                    totalUsers: usersRes.data?.pagination?.total || 0,
+                    activeOrders: ordersRes.pagination?.total || orders.length || 0,
+                    netMargin: parseFloat(netMargin),
+                    users: users.map(user => ({
+                        id: user.userId,
+                        name: user.name,
+                        email: user.email,
+                        spend: user.credits?.balance || 0,
+                        orders: 0, // TODO: Calculate from orders data
+                        joined: new Date(user.createdAt).toLocaleDateString(),
+                        status: user.status === 'active' ? 'Active' : 'Inactive'
+                    }))
+                });
+            } catch (error) {
+                console.error('Failed to fetch admin data:', error);
+                // Set default values on error
+                setAdminData({
+                    totalRevenue: 0,
+                    totalUsers: 0,
+                    activeOrders: 0,
+                    netMargin: 0,
+                    users: []
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (view === 'dashboard') {
+            fetchAdminData();
+        }
+    }, [view]);
 
     const filteredNetworks = networks.filter(network =>
         network.title.toLowerCase().includes(searchQuery) ||
@@ -222,16 +304,213 @@ export const Admin = () => {
         } else if (view === 'categories') {
             setView('platforms');
             setSelectedNetwork(null);
+        } else if (view === 'platforms') {
+            setView('dashboard');
         }
     };
 
     const categories = selectedNetwork ? servicesData[selectedNetwork.id] || [] : [];
     const packages = selectedCategory?.packages || [];
 
+    const getButtonClass = (buttonType: ViewType) => view === buttonType ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600 hover:text-slate-900';
+
     return (
         <div className="space-y-8">
             <AnimatePresence mode="wait">
-                {view === 'platforms' ? (
+                {view === 'dashboard' ? (
+                    <motion.div
+                        key="dashboard"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="space-y-8"
+                    >
+                        <div>
+                            <h1 className="text-3xl font-bold font-archivo text-slate-900">Admin Management</h1>
+                            <p className="text-slate-500 mt-2">Oversee users, analytics, and service catalog.</p>
+                        </div>
+
+                        <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+                            <button
+                                onClick={() => setView('dashboard')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${getButtonClass('dashboard')}`}
+                            >
+                                User Analytics
+                            </button>
+                            <button
+                                onClick={() => setView('platforms')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${getButtonClass('platforms')}`}
+                            >
+                                Price Management
+                            </button>
+                        </div>
+
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white border border-slate-200 rounded-2xl p-6"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-green-100 rounded-xl">
+                                        <DollarSign className="w-6 h-6 text-green-600" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.totalRevenue.toLocaleString()} Credits`}</p>
+                                    <p className="text-sm text-slate-500 mt-1">Total Revenue</p>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bg-white border border-slate-200 rounded-2xl p-6"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-blue-100 rounded-xl">
+                                        <Users className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.totalUsers}</p>
+                                    <p className="text-sm text-slate-500 mt-1">Total Users</p>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-white border border-slate-200 rounded-2xl p-6"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-orange-100 rounded-xl">
+                                        <BarChart3 className="w-6 h-6 text-orange-600" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.activeOrders}</p>
+                                    <p className="text-sm text-slate-500 mt-1">Active Orders</p>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="bg-white border border-slate-200 rounded-2xl p-6"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-purple-100 rounded-xl">
+                                        <TrendingUp className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.netMargin}%`}</p>
+                                    <p className="text-sm text-slate-500 mt-1">Net Margin</p>
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        {/* Users Table */}
+                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                            <div className="p-6 border-b border-slate-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900">Users</h2>
+                                        <p className="text-sm text-slate-500 mt-1">Manage and monitor user accounts</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative">
+                                            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search users..."
+                                                className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">
+                                            <Filter className="w-4 h-4" />
+                                            Filters
+                                        </button>
+                                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                                            <Download className="w-4 h-4" />
+                                            Export CSV
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-slate-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Spend</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Orders</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Joined</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                                    Loading users...
+                                                </td>
+                                            </tr>
+                                        ) : adminData.users.length > 0 ? (
+                                            adminData.users.map((user, index) => (
+                                                <motion.tr
+                                                    key={user.id}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: index * 0.05 }}
+                                                    className="hover:bg-slate-50"
+                                                >
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center">
+                                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600 mr-3">
+                                                                {user.name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-sm font-medium text-slate-900">{user.name}</div>
+                                                                <div className="text-sm text-slate-500">{user.email}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                                        {user.spend.toLocaleString()} Credits
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                                        {user.orders}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                                        {user.joined}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                            {user.status}
+                                                        </span>
+                                                    </td>
+                                                </motion.tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                                    No users found
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </motion.div>
+                ) : view === 'platforms' ? (
                     <motion.div
                         key="platforms"
                         initial={{ opacity: 0, x: -20 }}

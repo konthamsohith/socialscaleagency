@@ -11,21 +11,29 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Check if all required Firebase config is present
+const hasFirebaseConfig = Object.values(firebaseConfig).every(value => value && value.trim() !== '');
+
 let app;
 let auth: any;
 let db: any;
 
-try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-} catch (error) {
-    console.error("Firebase initialization failed:", error);
-    // Prevent crash, export mock or undefined
-    auth = { currentUser: null };
-    db = {};
+if (hasFirebaseConfig) {
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+    } catch (error) {
+        console.error("Firebase initialization failed:", error);
+        auth = null;
+        db = null;
+    }
+} else {
+    console.warn("Firebase config not found, skipping initialization");
+    auth = null;
+    db = null;
 }
 
-const googleProvider = new GoogleAuthProvider();
+const googleProvider = hasFirebaseConfig ? new GoogleAuthProvider() : null;
 
 export { auth, db, googleProvider };

@@ -11,8 +11,8 @@ import {
     Globe,
     Activity
 } from 'lucide-react';
-import { auth, db } from '../../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
+import { apiService } from '../../services/api';
 import { networks } from '../../data/services';
 
 const formatNumber = (num: number) => {
@@ -24,6 +24,7 @@ const formatNumber = (num: number) => {
 export const PlaceOrder = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth();
     // const { addNotification } = useNotifications();
     const [pkg, setPkg] = useState<any>(null);
     const [network, setNetwork] = useState<any>(null);
@@ -82,29 +83,32 @@ export const PlaceOrder = () => {
             return;
         }
 
+        // Check if user has enough credits
+        const userCredits = user?.credits?.balance || 0;
+        if (userCredits < totalCost) {
+            alert(`You don't have enough credits. Required: ${totalCost.toFixed(2)} CR, Available: ${userCredits.toFixed(2)} CR. Please purchase more credits.`);
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const user = auth.currentUser;
             if (!user) throw new Error('User not authenticated');
 
-            const orderData = {
-                userId: user.uid,
-                userEmail: user.email,
-                serviceId: pkg.id,
-                serviceName: pkg.name,
-                network: network.title || 'Unknown',
+            const orderData: any = {
+                service: pkg.id, // Service ID from the package
                 link: link,
-                quantity: quantity,
-                price: totalCost,
-                status: 'pending',
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                quantity: quantity
             };
 
-            const docRef = await addDoc(collection(db, 'orders'), orderData);
+            // Only include companyId if it exists (don't send undefined)
+            if (user.companyId) {
+                orderData.companyId = user.companyId;
+            }
 
-            setSuccessOrderIds(prev => [...prev, docRef.id]);
+            const order = await apiService.createOrder(orderData);
+
+            setSuccessOrderIds(prev => [...prev, order.data.order._id]);
 
             // Redirect to My Orders after a short delay
             setTimeout(() => {

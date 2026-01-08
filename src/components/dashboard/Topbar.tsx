@@ -1,53 +1,56 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell } from 'lucide-react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+import { Bell, ChevronDown, User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from '../../context/NotificationContext';
 
 export const Topbar = () => {
-    const [user, setUser] = useState<User | null>(auth.currentUser);
+    const { user, logout } = useAuth();
     const [showNotifications, setShowNotifications] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const notifRef = useRef<HTMLDivElement>(null);
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-        });
-        return () => unsubscribe();
-    }, []);
+    const getDisplayRole = (userType?: string) => {
+        const roleMap = {
+            creator: 'Content Creator',
+            business: 'Business Owner',
+            agency: 'Marketing Agency'
+        };
+        return userType ? roleMap[userType as keyof typeof roleMap] : 'User';
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
                 setShowNotifications(false);
+            }
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setShowUserMenu(false);
             }
         };
 
-        if (showNotifications) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
+        document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showNotifications]);
-
-
-
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-        });
-        return () => unsubscribe();
     }, []);
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
 
     return (
         <header className="h-16 flex items-center justify-between px-6 border-b border-slate-200 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
             <div className="flex-1" />
 
             <div className="flex items-center gap-4">
-                <div className="relative" ref={dropdownRef}>
+                <div className="relative" ref={notifRef}>
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
                         className={`relative w-10 h-10 flex items-center justify-center rounded-lg transition-all ${showNotifications ? 'bg-blue-50 text-blue-600' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-900'
@@ -136,28 +139,79 @@ export const Topbar = () => {
                 </div>
 
                 <div className="w-px h-6 bg-slate-200" />
-                <div className="flex items-center gap-3">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-medium text-slate-900">
-                            {user?.displayName || 'User'}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                            {user?.email || 'Pro Plan'}
-                        </p>
-                    </div>
-                    {user?.photoURL ? (
-                        <img
-                            src={user.photoURL}
-                            alt={user.displayName || 'User'}
-                            className="w-9 h-9 rounded-lg object-cover shadow-lg shadow-blue-500/20"
-                        />
-                    ) : (
-                        <img
-                            src="/logo1.png"
-                            alt="User"
-                            className="w-9 h-9 rounded-lg object-cover shadow-lg shadow-blue-500/20"
-                        />
-                    )}
+                
+                {/* User Menu */}
+                <div className="relative" ref={userMenuRef}>
+                    <button
+                        onClick={() => setShowUserMenu(!showUserMenu)}
+                        className="flex items-center gap-3 hover:bg-slate-50 rounded-lg p-2 transition-all"
+                    >
+                        <div className="text-right hidden sm:block">
+                            <p className="text-sm font-medium text-slate-900">
+                                {user?.name || 'User'}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                                {user?.email || 'user@example.com'}
+                            </p>
+                        </div>
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg shadow-blue-500/20">
+                            {user?.name ? getInitials(user.name) : <UserIcon size={18} />}
+                        </div>
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                        {showUserMenu && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50"
+                            >
+                                <div className="p-3 border-b border-slate-100 bg-slate-50">
+                                    <p className="text-sm font-semibold text-slate-900">{user?.name || 'User'}</p>
+                                    <p className="text-xs text-slate-500">{user?.email}</p>
+                                    {user?.profile?.userType && (
+                                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                                            {getDisplayRole(user.profile.userType)}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="p-2">
+                                    <Link
+                                        to="/dashboard/profile"
+                                        onClick={() => setShowUserMenu(false)}
+                                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
+                                    >
+                                        <UserIcon size={16} />
+                                        <span className="text-sm font-medium">Profile</span>
+                                    </Link>
+                                    <Link
+                                        to="/dashboard/settings"
+                                        onClick={() => setShowUserMenu(false)}
+                                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
+                                    >
+                                        <Settings size={16} />
+                                        <span className="text-sm font-medium">Settings</span>
+                                    </Link>
+                                </div>
+
+                                <div className="p-2 border-t border-slate-100">
+                                    <button
+                                        onClick={() => {
+                                            setShowUserMenu(false);
+                                            logout();
+                                        }}
+                                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors w-full"
+                                    >
+                                        <LogOut size={16} />
+                                        <span className="text-sm font-medium">Sign Out</span>
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </header>

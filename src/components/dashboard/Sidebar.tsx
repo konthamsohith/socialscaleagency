@@ -1,7 +1,6 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+import { useAuth } from '../../contexts/AuthContext';
 import {
     HelpCircle,
     LogOut,
@@ -10,30 +9,43 @@ import {
     Layers,
     User,
     ShieldCheck,
-    Bell
+    Bell,
+    CreditCard,
+    Wallet
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { apiService } from '../../services/api';
 
-const menuItems = [
+const baseMenuItems = [
     { icon: PlusCircle, label: 'New Order', path: '/dashboard' },
     { icon: FileText, label: 'My Orders', path: '/dashboard/orders' },
     { icon: Layers, label: 'Mass Order', path: '/dashboard/mass-order' },
+    { icon: CreditCard, label: 'Buy Credits', path: '/dashboard/credits' },
     { icon: Bell, label: 'Notifications', path: '/dashboard/notifications' },
     { icon: User, label: 'Profile', path: '/dashboard/profile' },
-    { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboard/admin-panel' },
 ];
+
+const adminMenuItem = { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboard/admin-panel' };
 
 export const Sidebar = () => {
     const location = useLocation();
-    const navigate = useNavigate();
+    const { logout, isAdmin } = useAuth();
+    const [credits, setCredits] = useState<number>(0);
 
-    const handleSignOut = async () => {
+    useEffect(() => {
+        loadCredits();
+    }, []);
+
+    const loadCredits = async () => {
         try {
-            await signOut(auth);
-            navigate('/login');
+            const response = await apiService.getCreditsBalance();
+            setCredits(response.data.balance);
         } catch (error) {
-            console.error('Error signing out:', error);
+            console.error('Failed to load credits:', error);
         }
     };
+
+    const menuItems = isAdmin ? [...baseMenuItems, adminMenuItem] : baseMenuItems;
 
     return (
         <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 shrink-0">
@@ -47,6 +59,21 @@ export const Sidebar = () => {
                         />
                     </div>
                     <span className="font-archivo font-bold text-xl text-slate-900 tracking-tight">SocialScale</span>
+                </Link>
+            </div>
+
+            {/* Credits Display */}
+            <div className="mx-4 mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                <div className="flex items-center gap-2 mb-2">
+                    <Wallet size={16} className="text-blue-600" />
+                    <span className="text-xs font-semibold text-blue-900">Available Credits</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-600">{credits.toLocaleString()}</p>
+                <Link 
+                    to="/dashboard/credits" 
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
+                >
+                    Buy more →
                 </Link>
             </div>
 
@@ -93,7 +120,7 @@ export const Sidebar = () => {
                     <span className="font-medium text-sm">Support</span>
                 </Link>
                 <button
-                    onClick={handleSignOut}
+                    onClick={logout}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all group"
                 >
                     <LogOut className="w-5 h-5 text-red-600/70 group-hover:text-red-600" />

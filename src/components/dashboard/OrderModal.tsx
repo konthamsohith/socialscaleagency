@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Hash, AlertCircle, Loader2, Link as LinkIcon, ShoppingCart } from 'lucide-react';
-import { auth, db } from '../../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
+import { apiService } from '../../services/api';
 
 interface OrderModalProps {
     pkg: {
@@ -20,6 +20,7 @@ interface OrderModalProps {
 }
 
 export const OrderModal = ({ pkg, network, onClose, onSuccess }: OrderModalProps) => {
+    const { user } = useAuth();
     const [link, setLink] = useState('');
     const [quantity, setQuantity] = useState(1000);
     const [loading, setLoading] = useState(false);
@@ -38,33 +39,27 @@ export const OrderModal = ({ pkg, network, onClose, onSuccess }: OrderModalProps
             setError('Minimum order quantity is 100');
             return;
         }
+        if (!user?.companyId) {
+            setError('User company not found');
+            return;
+        }
 
         setLoading(true);
         setError('');
 
         try {
-            const user = auth.currentUser;
-            if (!user) throw new Error('User not authenticated');
-
             const orderData = {
-                userId: user.uid,
-                userEmail: user.email,
-                packageId: pkg.id,
-                packageName: pkg.name,
-                platform: network.title.toLowerCase(),
+                companyId: user.companyId,
+                service: parseInt(pkg.id),
                 link: link.trim(),
-                quantity: quantity,
-                totalCost: parseFloat(totalCost),
-                status: 'pending',
-                date: new Date().toISOString().split('T')[0],
-                createdAt: serverTimestamp()
+                quantity: quantity
             };
 
-            const docRef = await addDoc(collection(db, 'orders'), orderData);
-            onSuccess(docRef.id);
+            const response = await apiService.createOrder(orderData);
+            onSuccess(response.data.order._id);
         } catch (err: any) {
             console.error('Error placing order:', err);
-            setError(err.message || 'Failed to place order. Please try again.');
+            setError(err.response?.data?.message || err.message || 'Failed to place order. Please try again.');
         } finally {
             setLoading(false);
         }
