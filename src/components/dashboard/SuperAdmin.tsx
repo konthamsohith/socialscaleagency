@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users,
@@ -13,9 +14,10 @@ import {
     Wallet,
     Trash2,
     ArrowLeft,
-    X
+    X,
+    ShoppingCart
 } from 'lucide-react';
-import { servicesData } from '../../data/services';
+import { servicesData, networks } from '../../data/services';
 
 // Types
 interface Order {
@@ -215,6 +217,9 @@ export const SuperAdmin = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [txnSearchQuery, setTxnSearchQuery] = useState('');
+    // const [selectedPackage, setSelectedPackage] = useState<any | null>(null);
+    // const [showSuccess, setShowSuccess] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const filteredTransactions = useMemo(() => {
         if (!selectedUser) return [];
@@ -707,6 +712,7 @@ export const SuperAdmin = () => {
                                             <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Price (Credits)</th>
                                             <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Profit</th>
                                             <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Margin</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
@@ -812,6 +818,24 @@ export const SuperAdmin = () => {
                                                             {isActive && showUpArrow && <ArrowUpRight className="w-3 h-3 text-green-600" />}
                                                             {isActive && showDownArrow && <ArrowDownRight className="w-3 h-3 text-red-500" />}
                                                         </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button
+                                                            disabled={!isActive}
+                                                            onClick={() => {
+                                                                const { icon, ...pkgSerial } = pkg;
+                                                                const net = networks.find(n => n.id === pkg.network);
+                                                                const netSerial = net ? { ...net, icon: undefined } : undefined;
+                                                                navigate('/dashboard/place-order', { state: { package: pkgSerial, network: netSerial || { title: 'Social Platform' } } });
+                                                            }}
+                                                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap ${isActive
+                                                                    ? 'bg-slate-900 text-white hover:bg-blue-600'
+                                                                    : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                                                                }`}
+                                                        >
+                                                            <ShoppingCart className="w-3.5 h-3.5" />
+                                                            Order Now
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
@@ -1092,6 +1116,10 @@ export const SuperAdmin = () => {
                     document.body
                 )}
             </AnimatePresence>
+
+            {/* Order Modal Integration Removed */}
+
+            {/* Global Success Notification Removed */}
         </div>
     );
 };

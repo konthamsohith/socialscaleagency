@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Linkedin,
@@ -192,6 +193,9 @@ export const Admin = () => {
     const [view, setView] = useState<'platforms' | 'categories' | 'packages'>('platforms');
     const [selectedNetwork, setSelectedNetwork] = useState<typeof networks[0] | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+    // const [selectedPackage, setSelectedPackage] = useState<any | null>(null); // Removed
+    // const [showSuccess, setShowSuccess] = useState<string | null>(null); // Removed
+    const navigate = useNavigate();
 
     const filteredNetworks = networks.filter(network =>
         network.title.toLowerCase().includes(searchQuery) ||
@@ -400,9 +404,9 @@ export const Admin = () => {
                                                     <span
                                                         key={i}
                                                         className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${tag.toLowerCase().includes('refill') || tag.toLowerCase().includes('guarantee') ? 'bg-emerald-50 text-emerald-500' :
-                                                                tag.toLowerCase().includes('speed') || tag.toLowerCase().includes('fast') ? 'bg-blue-50 text-blue-500' :
-                                                                    tag.toLowerCase().includes('recommended') ? 'bg-amber-50 text-amber-500' :
-                                                                        'bg-slate-50 text-slate-400'
+                                                            tag.toLowerCase().includes('speed') || tag.toLowerCase().includes('fast') ? 'bg-blue-50 text-blue-500' :
+                                                                tag.toLowerCase().includes('recommended') ? 'bg-amber-50 text-amber-500' :
+                                                                    'bg-slate-50 text-slate-400'
                                                             }`}
                                                     >
                                                         {tag}
@@ -431,7 +435,15 @@ export const Admin = () => {
                                                 </div>
                                             </div>
 
-                                            <button className="flex items-center gap-2.5 px-7 py-3.5 bg-[#0F172A] hover:bg-blue-600 text-white rounded-[18px] font-black text-xs transition-all duration-300 shadow-md active:scale-95 whitespace-nowrap">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    // Strip non-serializable icon components from network
+                                                    const networkSerial = selectedNetwork ? { ...selectedNetwork, icon: undefined } : undefined;
+                                                    navigate('/dashboard/place-order', { state: { package: pkg, network: networkSerial } });
+                                                }}
+                                                className="flex items-center gap-2.5 px-7 py-3.5 bg-[#0F172A] hover:bg-blue-600 text-white rounded-[18px] font-black text-xs transition-all duration-300 shadow-md active:scale-95 whitespace-nowrap"
+                                            >
                                                 <ShoppingCart className="w-4 h-4" />
                                                 Order Now
                                             </button>
@@ -443,6 +455,14 @@ export const Admin = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Order Modal */}
+            <AnimatePresence>
+                {/* Order Modal Removed - Replaced by Place Order Page */}
+            </AnimatePresence>
+
+            {/* Success Notification */}
+            {/* Success Notification Removed - Replaced by Place Order Page */}
         </div>
     );
 };

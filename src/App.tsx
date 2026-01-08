@@ -24,6 +24,7 @@ import { Support } from "./components/dashboard/Support";
 import { MassOrder } from "./components/dashboard/MassOrder";
 import { SuperAdmin } from "./components/dashboard/SuperAdmin";
 import { Notifications } from "./components/dashboard/Notifications";
+import { PlaceOrder } from "./components/dashboard/PlaceOrder";
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
             <Route path="settings" element={<Profile />} />
             <Route path="admin-panel" element={<SuperAdmin />} />
             <Route path="notifications" element={<Notifications />} />
+            <Route path="place-order" element={<PlaceOrder />} />
             {/* Add more dashboard routes here */}
           </Route>
         </Routes>

@@ -5,8 +5,28 @@ import {
     Heart,
     Eye,
     Users,
-    Vote
+    Vote,
+    Instagram,
+    Youtube,
+    Facebook,
+    Linkedin,
+    Twitter
 } from 'lucide-react';
+
+export const networks = [
+    { id: 'NET-01', title: 'Instagram', icon: Instagram },
+    { id: 'NET-02', title: 'TikTok', icon: MessageCircle }, // TikTok icon isn't in Lucide standard, using MessageCircle as placeholder or verify
+    { id: 'NET-03', title: 'LinkedIn', icon: Linkedin },
+    { id: 'NET-04', title: 'YouTube', icon: Youtube },
+    { id: 'NET-05', title: 'X (Twitter)', icon: Twitter }, // Assuming Twitter maps to X
+    { id: 'NET-06', title: 'Threads', icon: MessageCircle }, // Placeholder
+    { id: 'NET-07', title: 'Pinterest', icon: Share2 }, // Placeholder
+    { id: 'NET-08', title: 'Discord', icon: MessageCircle }, // Placeholder
+    { id: 'NET-09', title: 'Facebook', icon: Facebook },
+    { id: 'NET-10', title: 'Spotify', icon: Play },
+    { id: 'NET-11', title: 'Telegram', icon: MessageCircle },
+    { id: 'NET-12', title: 'Quora', icon: MessageCircle },
+];
 
 export interface ServicePackage {
     id: string;
