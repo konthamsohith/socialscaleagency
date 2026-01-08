@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import { SEO } from '../components/common/SEO';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowUpRight } from 'lucide-react';
 
 export const Login = () => {
     const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -119,24 +119,47 @@ export const Login = () => {
                             }}
                             className="bg-white rounded-[2rem] p-6 shadow-2xl shadow-blue-900/20 border border-white/10"
                         >
-                            <div className="relative w-full aspect-[4/3] scale-90 xxl:scale-100">
-                                {/* Background Elements */}
+                            <div className="relative w-full aspect-[4/3] scale-[0.85] xxl:scale-100 flex items-center justify-center">
+                                {/* Background Pattern: Top Left */}
+                                <div className="absolute top-[-10%] left-[-10%] opacity-20 pointer-events-none">
+                                    <svg width="200" height="200" viewBox="0 0 200 200">
+                                        {[1, 2, 3, 4, 5].map((i) => (
+                                            <circle key={i} cx="0" cy="0" r={i * 30} fill="none" stroke="#64748b" strokeWidth="1" />
+                                        ))}
+                                    </svg>
+                                </div>
+
+                                {/* Background Pattern: Bottom Right */}
+                                <div className="absolute bottom-[-10%] right-[-10%] opacity-20 pointer-events-none">
+                                    <svg width="200" height="200" viewBox="0 0 200 200">
+                                        {[1, 2, 3, 4, 5].map((i) => (
+                                            <circle key={i} cx="200" cy="200" r={i * 30} fill="none" stroke="#64748b" strokeWidth="1" />
+                                        ))}
+                                    </svg>
+                                </div>
+
+                                {/* Plant Illustration */}
                                 <motion.div
                                     initial={{ opacity: 0 }}
-                                    animate={{ opacity: 0.15 }}
-                                    transition={{ delay: 1 }}
-                                    className="absolute -right-8 -bottom-8 w-48 h-48"
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 1.2 }}
+                                    className="absolute bottom-[2%] right-[5%] w-24 opacity-40 pointer-events-none"
                                 >
-                                    <svg viewBox="0 0 200 200" className="w-full h-full text-blue-900 fill-current">
-                                        <path d="M100 10 C 130 10, 150 40, 150 80 Q 150 120, 180 140 T 160 190 T 100 170 T 40 190 T 20 140 Q 50 120, 50 80 C 50 40, 70 10, 100 10" />
+                                    <svg viewBox="0 0 100 150" className="w-full h-full fill-none stroke-slate-400" strokeWidth="1" strokeLinecap="round">
+                                        <path d="M50 145 V80" />
+                                        <path d="M50 80 Q70 60 85 40" />
+                                        <path d="M50 90 Q30 70 15 50" />
+                                        <path d="M50 110 Q70 90 90 70" />
+                                        <path d="M50 120 Q30 100 10 80" />
+                                        <rect x="35" y="130" width="30" height="20" rx="2" />
                                     </svg>
                                 </motion.div>
 
-                                {/* Floating Coins */}
+                                {/* Floating Coins with Sparkle */}
                                 {[
-                                    { top: '10%', left: '25%', size: 'w-16', delay: 0.8, y: [0, -10, 0] },
-                                    { top: '35%', left: '15%', size: 'w-20', delay: 1.2, y: [0, -15, 0] },
-                                    { top: '25%', left: '70%', size: 'w-12', delay: 1.5, y: [0, -8, 0] },
+                                    { top: '22%', left: '26%', size: 'w-16', delay: 0.8, y: [0, -10, 0], rotate: -15 },
+                                    { top: '50%', left: '16%', size: 'w-18', delay: 1.1, y: [0, -15, 0], rotate: 10 },
+                                    { top: '38%', left: '28%', size: 'w-12', delay: 1.4, y: [0, -8, 0], rotate: -5 },
                                 ].map((coin, i) => (
                                     <motion.div
                                         key={i}
@@ -148,133 +171,147 @@ export const Login = () => {
                                         }}
                                         transition={{
                                             scale: { delay: coin.delay, type: 'spring' },
-                                            y: { repeat: Infinity, duration: 3 + i, ease: "easeInOut" }
+                                            y: { repeat: Infinity, duration: 4 + i, ease: "easeInOut" }
                                         }}
                                         className={`absolute ${coin.size} aspect-square z-20`}
                                         style={{ top: coin.top, left: coin.left }}
                                     >
-                                        <div className="w-full h-full rounded-full bg-white shadow-xl shadow-blue-900/10 border border-slate-100 flex items-center justify-center -rotate-12">
-                                            <div className="w-[80%] h-[80%] rounded-full border-2 border-slate-100 flex items-center justify-center">
-                                                <div className="w-3 h-3 bg-blue-500 rounded-sm rotate-45" />
+                                        <div className={`w-full h-full rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center`} style={{ transform: `rotate(${coin.rotate}deg)` }}>
+                                            <div className="w-[85%] h-[85%] rounded-full border border-slate-100 flex items-center justify-center">
+                                                {/* Sparkle Icon */}
+                                                <svg viewBox="0 0 24 24" className="w-1/2 h-1/2 fill-slate-300">
+                                                    <path d="M12,2L14.4,9.6L22,12L14.4,14.4L12,22L9.6,14.4L2,12L9.6,9.6L12,2Z" />
+                                                </svg>
                                             </div>
                                         </div>
                                     </motion.div>
                                 ))}
 
-                                {/* Main White Card: Website Design */}
+                                {/* Main Dashboard Card */}
                                 <motion.div
-                                    initial={{ opacity: 0, y: 30 }}
+                                    initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.8, ease: "easeOut" }}
-                                    className="absolute inset-0 m-auto w-[85%] h-[85%] bg-white rounded-[2.5rem] shadow-2xl shadow-blue-900/10 border border-white overflow-hidden z-10"
+                                    transition={{ duration: 0.8 }}
+                                    className="relative w-[70%] bg-white rounded-[2rem] shadow-2xl border border-white overflow-hidden z-10"
                                 >
-                                    <div className="h-[40%] bg-blue-600 p-8 relative overflow-hidden">
-                                        <h4 className="text-white text-lg font-black tracking-tight uppercase">Website Design</h4>
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[60%] bg-white/10 rounded-xl border border-white/20 p-2">
-                                            <div className="flex gap-1 mb-2">
-                                                {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-white/40" />)}
+                                    <div className="bg-[#007AFF] p-6 pb-20 relative overflow-hidden">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h4 className="text-white text-md font-bold uppercase tracking-tight">Website Design</h4>
+                                            <div className="flex gap-1.5 opacity-60">
+                                                {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white" />)}
                                             </div>
-                                            <div className="w-full h-[2px] bg-white/20 mb-2" />
-                                            <div className="grid grid-cols-2 gap-2 h-full">
-                                                <div className="bg-white/5 rounded h-8" />
-                                                <div className="border border-white/10 rounded h-12" />
+                                        </div>
+                                        <div className="absolute top-[60%] left-1/2 -translate-x-1/2 w-[75%] h-32 bg-white/10 rounded-xl border border-white/20 p-3">
+                                            <div className="w-full h-[2px] bg-white/20 mb-3" />
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="bg-white/5 rounded-lg h-10" />
+                                                <div className="bg-white/10 rounded-lg h-16 relative">
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="w-[60%] h-[2px] bg-white/20" />
+                                                        <div className="absolute w-[2px] h-[60%] bg-white/20" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="p-8 space-y-8">
-                                        <div className="flex justify-between items-center pb-4 border-b border-slate-100 border-dashed">
+                                    <div className="p-6 pt-12 space-y-6">
+                                        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                                             <div>
-                                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">Project Owner</p>
-                                                <p className="text-sm font-bold text-slate-800 tracking-tight">Sarah Desayi</p>
+                                                <p className="text-[10px] font-bold text-[#007AFF] uppercase tracking-wider mb-0.5">Project Owner</p>
+                                                <p className="text-sm font-bold text-slate-800">Sarah Desayi</p>
                                             </div>
-                                            <div className="w-10 h-10 rounded-full bg-amber-100 overflow-hidden border-2 border-white shadow-sm">
-                                                <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500" />
+                                            <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
+                                                <img src="https://ui-avatars.com/api/?name=Sarah+Desayi&background=ffcc00&color=fff" alt="Sarah" className="w-full h-full object-cover" />
                                             </div>
                                         </div>
 
                                         <div className="space-y-4">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Project Hour</p>
-                                            <div className="flex items-end gap-2 h-20">
-                                                {[40, 70, 45, 60, 35, 80, 50, 95, 40, 65].map((h, i) => (
+                                            <div className="flex justify-between items-center">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Project Hour</p>
+                                            </div>
+                                            <div className="flex items-end gap-1.5 h-16">
+                                                {[30, 50, 40, 60, 25, 100, 45, 85, 30, 40].map((h, i) => (
                                                     <motion.div
                                                         key={i}
                                                         initial={{ height: 0 }}
                                                         animate={{ height: `${h}%` }}
-                                                        transition={{ delay: 1.5 + (i * 0.05), duration: 0.8 }}
-                                                        className="flex-1 bg-blue-500/20 rounded-t-sm relative group"
-                                                    >
-                                                        <div className="absolute bottom-0 left-0 w-full bg-blue-500 rounded-t-sm transition-all h-1/3 group-hover:h-full" />
-                                                    </motion.div>
+                                                        transition={{ delay: 1 + (i * 0.04), duration: 0.6 }}
+                                                        className={`flex-1 ${i === 5 || i === 7 ? 'bg-[#007AFF]' : 'bg-[#007AFF]/20'} rounded-t-sm`}
+                                                    />
                                                 ))}
                                             </div>
                                             <div className="flex justify-between items-end">
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Logged Hours</p>
-                                                <p className="text-2xl font-black text-blue-600 leading-none">16:00</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Logged Hours</p>
+                                                <p className="text-2xl font-bold text-[#007AFF] leading-none">16:00</p>
                                             </div>
                                         </div>
                                     </div>
                                 </motion.div>
 
-                                {/* Overlapping Card: Project Revenue (Dark) */}
+                                {/* Revenue Card (Dark) */}
                                 <motion.div
-                                    initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                                    initial={{ opacity: 0, x: -30, scale: 0.9 }}
                                     animate={{ opacity: 1, x: 0, scale: 1 }}
                                     transition={{ delay: 0.4, duration: 0.8 }}
-                                    className="absolute -left-4 bottom-[15%] w-[50%] bg-[#1E1E1E] rounded-[2rem] p-6 shadow-2xl z-30"
+                                    className="absolute left-[5%] bottom-[12%] w-[45%] bg-[#1A1A1A] rounded-[2rem] p-5 shadow-2xl z-20"
                                 >
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Project Revenue</p>
-                                    <div className="h-16 w-full relative mb-4">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">Project Revenue</p>
+                                    <div className="h-14 w-full relative mb-4">
                                         <svg viewBox="0 0 200 60" className="w-full h-full overflow-visible">
                                             <motion.path
                                                 initial={{ pathLength: 0 }}
                                                 animate={{ pathLength: 1 }}
-                                                transition={{ delay: 1.2, duration: 1.5 }}
-                                                d="M 0 45 Q 40 45 60 25 T 100 35 T 140 10 T 200 30"
+                                                transition={{ delay: 1.2, duration: 2 }}
+                                                d="M 0 45 Q 30 40 50 30 T 90 40 T 130 15 T 200 25"
                                                 fill="none"
-                                                stroke="#3B82F6"
+                                                stroke="#007AFF"
                                                 strokeWidth="3"
                                                 strokeLinecap="round"
                                             />
                                             <motion.circle
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                transition={{ delay: 2.7 }}
-                                                cx="140" cy="10" r="3" fill="white"
+                                                transition={{ delay: 2.8 }}
+                                                cx="130" cy="15" r="3.5" fill="white" stroke="#007AFF" strokeWidth="2"
                                             />
                                         </svg>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1">
-                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                    <div className="space-y-0.5">
+                                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                            <ArrowUpRight className="w-2.5 h-2.5" />
                                             Increasing
                                         </p>
-                                        <p className="text-4xl font-black text-white tracking-tighter">89%</p>
+                                        <p className="text-4xl font-bold text-white tracking-tighter">89%</p>
                                     </div>
                                 </motion.div>
 
-                                {/* Overlapping Card: Project Cost (Donut) */}
+                                {/* Cost Card (Light) */}
                                 <motion.div
-                                    initial={{ opacity: 0, x: 50, y: -30, scale: 0.9 }}
+                                    initial={{ opacity: 0, x: 30, y: -20, scale: 0.9 }}
                                     animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
                                     transition={{ delay: 0.6, duration: 0.8 }}
-                                    className="absolute -right-4 top-[5%] w-[45%] bg-white rounded-[2rem] p-6 shadow-2xl z-30 border border-slate-100"
+                                    className="absolute right-[5%] top-[10%] w-[40%] bg-white rounded-[2rem] p-5 shadow-2xl z-20 border border-slate-50"
                                 >
                                     <div className="flex items-center justify-between mb-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project Cost</p>
-                                        <div className="w-2 h-2 rounded-full bg-red-400" />
+                                        <div className="flex items-center gap-1.5">
+                                            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">Project Cost</p>
+                                            <svg width="6" height="4" viewBox="0 0 6 4" fill="none" className="text-red-500">
+                                                <path d="M1 1L3 3L5 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </div>
                                     </div>
-                                    <div className="relative w-24 h-24 mx-auto mb-4">
+                                    <div className="relative w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                                         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" strokeWidth="12" />
+                                            <circle cx="50" cy="50" r="38" fill="none" stroke="#F1F5F9" strokeWidth="12" />
                                             <motion.circle
                                                 initial={{ pathLength: 0 }}
                                                 animate={{ pathLength: 0.4 }}
-                                                transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }}
-                                                cx="50" cy="50" r="40" fill="none" stroke="#FBBF24" strokeWidth="12" strokeLinecap="round"
+                                                transition={{ delay: 1.8, duration: 1.5 }}
+                                                cx="50" cy="50" r="38" fill="none" stroke="#FFB800" strokeWidth="12" strokeLinecap="round"
                                             />
                                         </svg>
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <p className="text-sm font-black text-slate-900 leading-none">40%</p>
+                                        <div className="absolute flex flex-col items-center">
+                                            <p className="text-sm font-bold text-slate-900 leading-none">40%</p>
                                             <p className="text-[8px] font-bold text-slate-400 uppercase">used</p>
                                         </div>
                                     </div>
