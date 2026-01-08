@@ -119,82 +119,170 @@ export const Login = () => {
                             }}
                             className="bg-white rounded-[2rem] p-6 shadow-2xl shadow-blue-900/20 border border-white/10"
                         >
-                            <motion.div
-                                variants={{
-                                    initial: { opacity: 0, y: 10 },
-                                    animate: { opacity: 1, y: 0 }
-                                }}
-                                className="flex justify-between items-center mb-6"
-                            >
-                                <h3 className="text-lg font-bold text-slate-800">Performance</h3>
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full">
-                                    Last 30 days
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            <div className="relative w-full aspect-[4/3] scale-90 xxl:scale-100">
+                                {/* Background Elements */}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 0.15 }}
+                                    transition={{ delay: 1 }}
+                                    className="absolute -right-8 -bottom-8 w-48 h-48"
+                                >
+                                    <svg viewBox="0 0 200 200" className="w-full h-full text-blue-900 fill-current">
+                                        <path d="M100 10 C 130 10, 150 40, 150 80 Q 150 120, 180 140 T 160 190 T 100 170 T 40 190 T 20 140 Q 50 120, 50 80 C 50 40, 70 10, 100 10" />
                                     </svg>
-                                </div>
-                            </motion.div>
+                                </motion.div>
 
-                            <div className="grid grid-cols-3 gap-6 mb-8">
+                                {/* Floating Coins */}
                                 {[
-                                    { label: 'Impressions', value: '1.2M', trend: '12%' },
-                                    { label: 'Engagement', value: '5.8%', trend: '8%' },
-                                    { label: 'Followers', value: '892k', trend: '24%' }
-                                ].map((stat, i) => (
+                                    { top: '10%', left: '25%', size: 'w-16', delay: 0.8, y: [0, -10, 0] },
+                                    { top: '35%', left: '15%', size: 'w-20', delay: 1.2, y: [0, -15, 0] },
+                                    { top: '25%', left: '70%', size: 'w-12', delay: 1.5, y: [0, -8, 0] },
+                                ].map((coin, i) => (
                                     <motion.div
                                         key={i}
-                                        variants={{
-                                            initial: { opacity: 0, scale: 0.8 },
-                                            animate: { opacity: 1, scale: 1 }
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{
+                                            opacity: 1,
+                                            scale: 1,
+                                            y: coin.y
                                         }}
-                                        className="space-y-0.5"
+                                        transition={{
+                                            scale: { delay: coin.delay, type: 'spring' },
+                                            y: { repeat: Infinity, duration: 3 + i, ease: "easeInOut" }
+                                        }}
+                                        className={`absolute ${coin.size} aspect-square z-20`}
+                                        style={{ top: coin.top, left: coin.left }}
                                     >
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                        <p className="text-xl font-black text-slate-900">{stat.value}</p>
-                                        <p className="text-emerald-500 text-[9px] font-bold flex items-center gap-1">
-                                            <ArrowRight className="w-2.5 h-2.5 -rotate-45" /> {stat.trend}
-                                        </p>
+                                        <div className="w-full h-full rounded-full bg-white shadow-xl shadow-blue-900/10 border border-slate-100 flex items-center justify-center -rotate-12">
+                                            <div className="w-[80%] h-[80%] rounded-full border-2 border-slate-100 flex items-center justify-center">
+                                                <div className="w-3 h-3 bg-blue-500 rounded-sm rotate-45" />
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 ))}
-                            </div>
 
-                            <motion.div
-                                variants={{
-                                    initial: { opacity: 0 },
-                                    animate: { opacity: 1 }
-                                }}
-                                className="relative h-24 w-full mt-2"
-                            >
-                                <svg viewBox="0 0 400 100" className="w-full h-full preserve-3d">
-                                    <defs>
-                                        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1" />
-                                            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    <motion.path
-                                        initial={{ pathLength: 0, opacity: 0 }}
-                                        animate={{ pathLength: 1, opacity: 1 }}
-                                        transition={{ duration: 1.5, delay: 1, ease: "easeInOut" }}
-                                        d="M 0 80 Q 50 80 80 50 T 150 70 T 230 40 T 320 60 T 400 20"
-                                        fill="none"
-                                        stroke="#3B82F6"
-                                        strokeWidth="4"
-                                        strokeLinecap="round"
-                                    />
-                                    <motion.circle
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ delay: 2.5 }}
-                                        cx="230" cy="40" r="3" fill="white" stroke="#3B82F6" strokeWidth="3"
-                                    />
-                                    <motion.circle
-                                        animate={{ r: [3, 5, 3], opacity: [0.5, 0, 0.5] }}
-                                        transition={{ repeat: Infinity, duration: 2 }}
-                                        cx="230" cy="40" r="3" fill="transparent" stroke="#3B82F6" strokeWidth="1"
-                                    />
-                                </svg>
-                            </motion.div>
+                                {/* Main White Card: Website Design */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                    className="absolute inset-0 m-auto w-[85%] h-[85%] bg-white rounded-[2.5rem] shadow-2xl shadow-blue-900/10 border border-white overflow-hidden z-10"
+                                >
+                                    <div className="h-[40%] bg-blue-600 p-8 relative overflow-hidden">
+                                        <h4 className="text-white text-lg font-black tracking-tight uppercase">Website Design</h4>
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[60%] bg-white/10 rounded-xl border border-white/20 p-2">
+                                            <div className="flex gap-1 mb-2">
+                                                {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-white/40" />)}
+                                            </div>
+                                            <div className="w-full h-[2px] bg-white/20 mb-2" />
+                                            <div className="grid grid-cols-2 gap-2 h-full">
+                                                <div className="bg-white/5 rounded h-8" />
+                                                <div className="border border-white/10 rounded h-12" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-8 space-y-8">
+                                        <div className="flex justify-between items-center pb-4 border-b border-slate-100 border-dashed">
+                                            <div>
+                                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">Project Owner</p>
+                                                <p className="text-sm font-bold text-slate-800 tracking-tight">Sarah Desayi</p>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-full bg-amber-100 overflow-hidden border-2 border-white shadow-sm">
+                                                <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500" />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Project Hour</p>
+                                            <div className="flex items-end gap-2 h-20">
+                                                {[40, 70, 45, 60, 35, 80, 50, 95, 40, 65].map((h, i) => (
+                                                    <motion.div
+                                                        key={i}
+                                                        initial={{ height: 0 }}
+                                                        animate={{ height: `${h}%` }}
+                                                        transition={{ delay: 1.5 + (i * 0.05), duration: 0.8 }}
+                                                        className="flex-1 bg-blue-500/20 rounded-t-sm relative group"
+                                                    >
+                                                        <div className="absolute bottom-0 left-0 w-full bg-blue-500 rounded-t-sm transition-all h-1/3 group-hover:h-full" />
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-between items-end">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Logged Hours</p>
+                                                <p className="text-2xl font-black text-blue-600 leading-none">16:00</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+
+                                {/* Overlapping Card: Project Revenue (Dark) */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                                    transition={{ delay: 0.4, duration: 0.8 }}
+                                    className="absolute -left-4 bottom-[15%] w-[50%] bg-[#1E1E1E] rounded-[2rem] p-6 shadow-2xl z-30"
+                                >
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Project Revenue</p>
+                                    <div className="h-16 w-full relative mb-4">
+                                        <svg viewBox="0 0 200 60" className="w-full h-full overflow-visible">
+                                            <motion.path
+                                                initial={{ pathLength: 0 }}
+                                                animate={{ pathLength: 1 }}
+                                                transition={{ delay: 1.2, duration: 1.5 }}
+                                                d="M 0 45 Q 40 45 60 25 T 100 35 T 140 10 T 200 30"
+                                                fill="none"
+                                                stroke="#3B82F6"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                            />
+                                            <motion.circle
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ delay: 2.7 }}
+                                                cx="140" cy="10" r="3" fill="white"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                            Increasing
+                                        </p>
+                                        <p className="text-4xl font-black text-white tracking-tighter">89%</p>
+                                    </div>
+                                </motion.div>
+
+                                {/* Overlapping Card: Project Cost (Donut) */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: 50, y: -30, scale: 0.9 }}
+                                    animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                                    transition={{ delay: 0.6, duration: 0.8 }}
+                                    className="absolute -right-4 top-[5%] w-[45%] bg-white rounded-[2rem] p-6 shadow-2xl z-30 border border-slate-100"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project Cost</p>
+                                        <div className="w-2 h-2 rounded-full bg-red-400" />
+                                    </div>
+                                    <div className="relative w-24 h-24 mx-auto mb-4">
+                                        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" strokeWidth="12" />
+                                            <motion.circle
+                                                initial={{ pathLength: 0 }}
+                                                animate={{ pathLength: 0.4 }}
+                                                transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }}
+                                                cx="50" cy="50" r="40" fill="none" stroke="#FBBF24" strokeWidth="12" strokeLinecap="round"
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <p className="text-sm font-black text-slate-900 leading-none">40%</p>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase">used</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-center text-[9px] font-medium text-slate-500 leading-tight">
+                                        60 of Project<br />budget is left
+                                    </p>
+                                </motion.div>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
