@@ -159,6 +159,17 @@ export const Login = () => {
                                                 {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white" />)}
                                             </div>
                                         </div>
+
+                                        {/* Person Icon Avatar */}
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 1.2 }}
+                                            className="absolute left-8 bottom-6 w-16 h-16 bg-white rounded-full shadow-xl flex items-center justify-center z-20 border-4 border-slate-50"
+                                        >
+                                            <User className="w-8 h-8 text-[#007AFF]" />
+                                        </motion.div>
+
                                         <div className="absolute top-[60%] left-1/2 -translate-x-1/2 w-[75%] h-32 bg-white/10 rounded-xl border border-white/20 p-3">
                                             <div className="w-full h-[2px] bg-white/20 mb-3" />
                                             <div className="grid grid-cols-2 gap-3">
@@ -290,9 +301,6 @@ export const Login = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-center mb-6"
                         >
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 border border-blue-100 mb-4 shadow-sm">
-                                <User className="w-6 h-6 text-blue-600" />
-                            </div>
                             <h2 className="text-2xl font-black text-slate-900 mb-1">
                                 {mode === 'login' ? 'Welcome back' : 'Create account'}
                             </h2>
