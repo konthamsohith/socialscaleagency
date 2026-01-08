@@ -8,6 +8,7 @@ import { Blog } from "./pages/Blog";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { CookiePolicy } from "./pages/CookiePolicy";
+import { CancellationAndRefund } from "./pages/CancellationAndRefund";
 import { ServicesPage } from "./pages/ServicesPage";
 import { PricingPage } from "./pages/PricingPage";
 import { CaseStudies } from "./pages/CaseStudies";
@@ -47,6 +48,7 @@ function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/cancellation-refund" element={<CancellationAndRefund />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/case-studies" element={<CaseStudies />} />
