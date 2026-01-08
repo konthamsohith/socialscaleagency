@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import { SEO } from '../components/common/SEO';
-import { Loader2, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowUpRight, User } from 'lucide-react';
 
 export const Login = () => {
     const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -290,6 +290,9 @@ export const Login = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-center mb-6"
                         >
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 border border-blue-100 mb-4 shadow-sm">
+                                <User className="w-6 h-6 text-blue-600" />
+                            </div>
                             <h2 className="text-2xl font-black text-slate-900 mb-1">
                                 {mode === 'login' ? 'Welcome back' : 'Create account'}
                             </h2>
