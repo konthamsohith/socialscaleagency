@@ -213,7 +213,7 @@ export const Login = () => {
                                     transition={{ delay: 0.4, duration: 0.8 }}
                                     className="absolute left-[5%] bottom-[12%] w-[45%] bg-[#1A1A1A] rounded-[2rem] p-5 shadow-2xl z-20"
                                 >
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">Project Revenue</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">ENGAGEMENT</p>
                                     <div className="h-14 w-full relative mb-4">
                                         <svg viewBox="0 0 200 60" className="w-full h-full overflow-visible">
                                             <motion.path
