@@ -19,6 +19,16 @@ import {
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 
+const formatTimeAgo = (timestamp: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} mins ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+};
+
 export const Notifications = () => {
     const {
         notifications,
@@ -306,7 +316,7 @@ export const Notifications = () => {
                                         {/* Row Actions & Time */}
                                         <div className="absolute right-6 top-6 flex items-center gap-4">
                                             <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
-                                                {notification.time}
+                                                {formatTimeAgo(notification.timestamp)}
                                             </span>
 
                                             <div className="flex items-center gap-1">
@@ -447,7 +457,7 @@ export const Notifications = () => {
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-lg font-bold text-slate-900">{selectedNotification.title}</h3>
-                                    <p className="text-sm text-slate-500">{selectedNotification.time}</p>
+                                    <p className="text-sm text-slate-500">{formatTimeAgo(selectedNotification.timestamp)}</p>
                                 </div>
                                 <button
                                     onClick={() => setSelectedNotification(null)}

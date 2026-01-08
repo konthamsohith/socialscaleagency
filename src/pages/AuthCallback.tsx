@@ -29,7 +29,15 @@ export const AuthCallback = () => {
             const userData = await response.json();
             localStorage.setItem('user', JSON.stringify(userData.data));
             // Trigger auth context update
-            window.location.href = '/dashboard';
+            // Redirect based on user role or admin login flag
+            const isAdminLogin = localStorage.getItem('adminLogin') === 'true';
+            localStorage.removeItem('adminLogin'); // Clean up
+            
+            if (isAdminLogin || userData.data.role === 'SUPER_ADMIN') {
+              window.location.href = '/dashboard/admin-panel';
+            } else {
+              window.location.href = '/dashboard';
+            }
           } else {
             throw new Error('Failed to fetch user data');
           }

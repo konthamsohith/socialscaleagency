@@ -18,24 +18,9 @@ import {
     ShoppingCart
 } from 'lucide-react';
 import { servicesData, networks } from '../../data/services';
+import { apiService } from '../../services/api';
 
 // Types
-interface Order {
-    id: string;
-    service: string;
-    amount: number;
-    price: string;
-    date: string;
-    status: 'Completed' | 'Processing' | 'Pending';
-}
-
-interface OnboardingInfo {
-    goal: string;
-    industry: string;
-    targetAudience: string;
-    topPlatforms: string[];
-}
-
 interface Transaction {
     id: string;
     type: 'Credit' | 'Debit';
@@ -43,128 +28,6 @@ interface Transaction {
     reason: string;
     date: string;
 }
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    spend: string;
-    balance: string;
-    orders: number;
-    status: 'Active' | 'Inactive';
-    joined: string;
-    onboarding: OnboardingInfo;
-    orderHistory: Order[];
-    transactions: Transaction[];
-}
-
-const mockUsers: User[] = [
-    {
-        id: 1,
-        name: "Rahul Sharma",
-        email: "rahul@example.com",
-        spend: "15,420 Credits",
-        balance: "2,500 Credits",
-        orders: 12,
-        status: "Active",
-        joined: "Jan 2, 2024",
-        onboarding: {
-            goal: "Brand Awareness",
-            industry: "Fashion & Lifestyle",
-            targetAudience: "Gen Z",
-            topPlatforms: ["Instagram", "Pinterest"]
-        },
-        orderHistory: [
-            { id: "ORD-001", service: "Instagram Followers", amount: 1000, price: "120 Credits", date: "Jan 10, 2024", status: "Completed" },
-            { id: "ORD-005", service: "Instagram Likes", amount: 500, price: "50 Credits", date: "Jan 15, 2024", status: "Completed" },
-            { id: "ORD-012", service: "Pinterest Pins", amount: 200, price: "80 Credits", date: "Jan 20, 2024", status: "Processing" }
-        ],
-        transactions: [
-            { id: "TXN-001", type: "Credit", amount: "5,000 Credits", reason: "UPI Deposit", date: "Jan 02, 2024" },
-            { id: "TXN-002", type: "Debit", amount: "120 Credits", reason: "Order #ORD-001", date: "Jan 10, 2024" }
-        ]
-    },
-    {
-        id: 2,
-        name: "Priya Patel",
-        email: "priya@example.com",
-        spend: "8,200 Credits",
-        balance: "1,200 Credits",
-        orders: 5,
-        status: "Active",
-        joined: "Jan 5, 2024",
-        onboarding: {
-            goal: "Lead Generation",
-            industry: "SaaS / B2B",
-            targetAudience: "Business Owners",
-            topPlatforms: ["LinkedIn", "Twitter"]
-        },
-        orderHistory: [
-            { id: "ORD-002", service: "LinkedIn Connections", amount: 500, price: "300 Credits", date: "Jan 12, 2024", status: "Completed" }
-        ],
-        transactions: [
-            { id: "TXN-003", type: "Credit", amount: "10,000 Credits", reason: "Bank Deposit", date: "Jan 05, 2024" }
-        ]
-    },
-    {
-        id: 3,
-        name: "Amit Kumar",
-        email: "amit.k@gmail.com",
-        spend: "22,100 Credits",
-        balance: "50 Credits",
-        orders: 28,
-        status: "Active",
-        joined: "Dec 15, 2023",
-        onboarding: {
-            goal: "Influencer Growth",
-            industry: "Entertainment",
-            targetAudience: "Mass Market",
-            topPlatforms: ["YouTube", "Instagram"]
-        },
-        orderHistory: [
-            { id: "ORD-101", service: "YouTube Views", amount: 5000, price: "800 Credits", date: "Dec 20, 2023", status: "Completed" }
-        ],
-        transactions: []
-    },
-    {
-        id: 4,
-        name: "Sneha Reddy",
-        email: "sneha.r@outlook.com",
-        spend: "1,500 Credits",
-        balance: "3,000 Credits",
-        orders: 1,
-        status: "Inactive",
-        joined: "Dec 20, 2023",
-        onboarding: {
-            goal: "Personal Branding",
-            industry: "Education",
-            targetAudience: "Students",
-            topPlatforms: ["LinkedIn"]
-        },
-        orderHistory: [],
-        transactions: []
-    },
-    {
-        id: 5,
-        name: "Vikram Singh",
-        email: "vikram@example.com",
-        spend: "45,000 Credits",
-        balance: "12,400 Credits",
-        orders: 54,
-        status: "Active",
-        joined: "Nov 12, 2023",
-        onboarding: {
-            goal: "E-commerce Sales",
-            industry: "Retail",
-            targetAudience: "Millennials",
-            topPlatforms: ["Instagram", "Facebook", "TikTok"]
-        },
-        orderHistory: [
-            { id: "ORD-205", service: "Facebook Ads Reach", amount: 10000, price: "1200 Credits", date: "Jan 05, 2024", status: "Completed" }
-        ],
-        transactions: []
-    },
-];
 
 export const SuperAdmin = () => {
     const [activeTab, setActiveTab] = useState<'analytics' | 'pricing'>('analytics');
@@ -180,6 +43,11 @@ export const SuperAdmin = () => {
     // User Analytics Filter State
     const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive'>('all');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    // Users State
+    const [users, setUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
     // Initialize prices and simulate costs on mount
     useEffect(() => {
@@ -205,8 +73,23 @@ export const SuperAdmin = () => {
         setActiveStatus(initialActive);
     }, []);
 
-    const [users, setUsers] = useState(mockUsers);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    // Fetch users from API
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoading(true);
+                const response = await apiService.getAllUsers(1, 100); // Get first 100 users
+                setUsers(response.data?.users || []);
+            } catch (error) {
+                console.error('Failed to fetch users:', error);
+                setUsers([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, []);
 
     // Modal States
     const [isManageFundsOpen, setIsManageFundsOpen] = useState(false);
@@ -223,10 +106,10 @@ export const SuperAdmin = () => {
 
     const filteredTransactions = useMemo(() => {
         if (!selectedUser) return [];
-        return selectedUser.transactions.filter(txn =>
+        return selectedUser.transactions?.filter((txn: Transaction) =>
             txn.id.toLowerCase().includes(txnSearchQuery.toLowerCase()) ||
             txn.reason.toLowerCase().includes(txnSearchQuery.toLowerCase())
-        );
+        ) || [];
     }, [selectedUser, txnSearchQuery]);
 
     const filteredUsers = users.filter(user => {
@@ -238,16 +121,16 @@ export const SuperAdmin = () => {
 
     const handleDeleteUser = (userId: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
-            setUsers(prev => prev.filter(u => u.id !== userId));
-            if (selectedUser?.id === userId) setSelectedUser(null);
+            setUsers(prev => prev.filter(u => (u.userId || u.id) !== userId));
+            if ((selectedUser?.userId || selectedUser?.id) === userId) setSelectedUser(null);
         }
     };
 
     const handleToggleStatus = (userId: number) => {
         setUsers(prev => prev.map(u => {
-            if (u.id === userId) {
-                const updated = { ...u, status: u.status === 'Active' ? 'Inactive' : 'Active' } as User;
-                if (selectedUser?.id === userId) setSelectedUser(updated);
+            if ((u.userId || u.id) === userId) {
+                const updated = { ...u, status: u.status === 'active' ? 'inactive' : 'active' };
+                if ((selectedUser?.userId || selectedUser?.id) === userId) setSelectedUser(updated);
                 return updated;
             }
             return u;
@@ -264,9 +147,8 @@ export const SuperAdmin = () => {
         // Simulate premium processing delay
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        const currentBalance = parseInt(selectedUser.balance.replace(/[^0-9]/g, '')) || 0;
+        const currentBalance = selectedUser.credits?.balance || 0;
         const newBalanceNum = fundAction === 'add' ? currentBalance + amount : currentBalance - amount;
-        const newBalance = `${newBalanceNum.toLocaleString()} Credits`;
 
         const newTransaction: Transaction = {
             id: `TXN-${Math.floor(Math.random() * 10000)}`,
@@ -278,11 +160,14 @@ export const SuperAdmin = () => {
 
         const updatedUser = {
             ...selectedUser,
-            balance: newBalance,
-            transactions: [newTransaction, ...selectedUser.transactions]
+            credits: {
+                ...selectedUser.credits,
+                balance: newBalanceNum
+            },
+            transactions: selectedUser.transactions ? [newTransaction, ...selectedUser.transactions] : [newTransaction]
         };
 
-        setUsers(prev => prev.map(u => u.id === selectedUser.id ? updatedUser : u));
+        setUsers(prev => prev.map(u => (u.userId || u.id) === (selectedUser.userId || selectedUser.id) ? updatedUser : u));
         setSelectedUser(updatedUser);
 
         setIsProcessing(false);
@@ -299,15 +184,15 @@ export const SuperAdmin = () => {
 
     // Handle CSV Export
     const handleExportCSV = () => {
-        const headers = ['ID', 'Name', 'Email', 'Spend', 'Orders', 'Status', 'Joined'];
+        const headers = ['ID', 'Name', 'Email', 'Balance', 'Orders', 'Status', 'Joined'];
         const rows = filteredUsers.map(user => [
-            user.id,
+            user.userId || user.id,
             user.name,
             user.email,
-            user.spend.replace(' Credits', ''), // Clean up for CSV
-            user.orders,
+            (user.credits?.balance || 0).toFixed(2),
+            user.orders || 0,
             user.status,
-            user.joined
+            user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
         ]);
 
         const csvContent = [
@@ -358,9 +243,9 @@ export const SuperAdmin = () => {
 
 
 
-    // Derived Metrics - dynamic sum of user spend
+    // Derived Metrics - dynamic sum of user balances (as proxy for revenue)
     const totalRevenueNum = useMemo(() => {
-        return users.reduce((acc, user) => acc + (parseInt(user.spend.replace(/[^0-9]/g, '')) || 0), 0);
+        return users.reduce((acc, user) => acc + (user.credits?.balance || 0), 0);
     }, [users]);
     const totalRevenueStr = `${totalRevenueNum.toLocaleString()} Credits`;
 
@@ -433,20 +318,20 @@ export const SuperAdmin = () => {
                                 </div>
                                 <div className="ml-auto flex gap-3">
                                     <button
-                                        onClick={() => handleToggleStatus(selectedUser.id)}
-                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${selectedUser.status === 'Active' ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'}`}
+                                        onClick={() => handleToggleStatus(selectedUser.userId || selectedUser.id)}
+                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${selectedUser.status === 'active' ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'}`}
                                     >
-                                        {selectedUser.status === 'Active' ? 'Deactivate User' : 'Activate User'}
+                                        {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
                                     </button>
                                     <button
-                                        onClick={() => handleDeleteUser(selectedUser.id)}
+                                        onClick={() => handleDeleteUser(selectedUser.userId || selectedUser.id)}
                                         className="px-4 py-2 rounded-xl text-sm font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center gap-2"
                                     >
                                         <Trash2 className="w-4 h-4" /> Delete
                                     </button>
                                     <div className="h-8 w-px bg-slate-200 mx-1" />
-                                    <span className={`px-4 py-2 rounded-xl text-sm font-bold ${selectedUser.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {selectedUser.status}
+                                    <span className={`px-4 py-2 rounded-xl text-sm font-bold ${selectedUser.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {selectedUser.status === 'active' ? 'Active' : 'Inactive'}
                                     </span>
                                 </div>
                             </div>
@@ -466,7 +351,7 @@ export const SuperAdmin = () => {
                                         <div>
                                             <p className="text-xs text-slate-400 uppercase font-bold">Top Platforms</p>
                                             <div className="flex flex-wrap gap-2 mt-1">
-                                                {selectedUser.onboarding?.topPlatforms?.map(p => (
+                                                {selectedUser.onboarding?.topPlatforms?.map((p: string) => (
                                                     <span key={p} className="text-xs px-2 py-1 bg-slate-100 rounded-md text-slate-600">{p}</span>
                                                 )) || "N/A"}
                                             </div>
@@ -479,7 +364,7 @@ export const SuperAdmin = () => {
                                     <div className="space-y-4">
                                         <div className="flex justify-between">
                                             <span className="text-slate-500">Current Balance</span>
-                                            <span className="font-bold text-green-600 font-mono">{selectedUser.balance}</span>
+                                            <span className="font-bold text-green-600 font-mono">₹{(selectedUser.credits?.balance || 0).toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-slate-500">Total Spend</span>
@@ -528,7 +413,7 @@ export const SuperAdmin = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {selectedUser.orderHistory?.length > 0 ? (
-                                            selectedUser.orderHistory.map(order => (
+                                            selectedUser.orderHistory.map((order: any) => (
                                                 <tr key={order.id} className="hover:bg-slate-50/50">
                                                     <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">{order.id}</td>
                                                     <td className="px-6 py-4 text-sm font-medium text-slate-900">{order.service}</td>
@@ -565,8 +450,8 @@ export const SuperAdmin = () => {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {[
                                     { label: 'Total Revenue', value: totalRevenueStr, icon: Coins, color: 'text-green-600', bg: 'bg-green-50' },
-                                    { label: 'Total Users', value: '154', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-                                    { label: 'Active Orders', value: '42', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
+                                    { label: 'Total Users', value: loading ? '...' : users.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+                                    { label: 'Active Orders', value: loading ? '...' : users.filter(u => u.orders && u.orders.length > 0).length.toString(), icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
                                     { label: 'Net Margin', value: `${avgMargin}%`, icon: Percent, color: 'text-orange-600', bg: 'bg-orange-50' },
                                 ].map((stat, i) => (
                                     <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
@@ -647,33 +532,52 @@ export const SuperAdmin = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
-                                            {filteredUsers.map((user) => (
-                                                <tr
-                                                    key={user.id}
-                                                    onClick={() => setSelectedUser(user)}
-                                                    className="hover:bg-slate-50/50 transition-colors z-10 relative cursor-pointer"
-                                                >
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                                                                {user.name.charAt(0)}
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-bold text-sm text-slate-900">{user.name}</p>
-                                                                <p className="text-xs text-slate-500">{user.email}</p>
-                                                            </div>
+                                            {loading ? (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                            Loading users...
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 font-mono text-sm text-blue-600 font-bold">{user.spend}</td>
-                                                    <td className="px-6 py-4 text-sm font-medium">{user.orders}</td>
-                                                    <td className="px-6 py-4 text-sm text-slate-500">{user.joined}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                                                            {user.status}
-                                                        </span>
-                                                    </td>
                                                 </tr>
-                                            ))}
+                                            ) : filteredUsers.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">No users found.</td>
+                                                </tr>
+                                            ) : (
+                                                filteredUsers.map((user) => (
+                                                    <tr
+                                                        key={user.userId || user.id}
+                                                        onClick={() => setSelectedUser(user)}
+                                                        className="hover:bg-slate-50/50 transition-colors z-10 relative cursor-pointer"
+                                                    >
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                                                                    {user.name.charAt(0)}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-sm text-slate-900">{user.name}</p>
+                                                                    <p className="text-xs text-slate-500">{user.email}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 font-mono text-sm text-blue-600 font-bold">
+                                                            ₹{(user.credits?.balance || 0).toFixed(2)}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm font-medium">{user.orders || 0}</td>
+                                                        <td className="px-6 py-4 text-sm text-slate-500">
+                                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                                                                {user.status === 'active' ? 'Active' : 'Inactive'}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1071,7 +975,7 @@ export const SuperAdmin = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {filteredTransactions.length > 0 ? (
-                                            filteredTransactions.map((txn) => (
+                                            filteredTransactions.map((txn: Transaction) => (
                                                 <tr key={txn.id} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-8 py-5">
                                                         <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md uppercase">{txn.id}</span>

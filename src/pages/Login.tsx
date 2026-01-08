@@ -383,7 +383,12 @@ export const Login = () => {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1'}/auth/google`}
+                                    onClick={() => {
+                                        if (isAdminLogin) {
+                                            localStorage.setItem('adminLogin', 'true');
+                                        }
+                                        window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1'}/auth/google`;
+                                    }}
                                     className="w-full mt-4 h-12 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-3 group"
                                 >
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { RAZORPAY_KEY_ID } from '../config/constants';
 import { CreditCard, Zap, Check, Loader2, TrendingUp, Award } from 'lucide-react';
+import { useNotifications } from '../context/NotificationContext';
 
 declare global {
   interface Window {
@@ -13,6 +14,7 @@ declare global {
 
 export const Credits = () => {
   const { user, refreshUser } = useAuth();
+  const { addNotification } = useNotifications();
   const [plans, setPlans] = useState<any[]>([]);
   const [credits, setCredits] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,14 @@ export const Credits = () => {
             alert('Subscription activated successfully!');
             await refreshUser();
             await loadData();
+
+            // Add notification
+            addNotification({
+              title: 'Subscription Activated',
+              message: `Your ${planId.toUpperCase()} plan subscription has been activated successfully.`,
+              type: 'success',
+              icon: Check
+            });
           } catch (error) {
             console.error('Failed to activate subscription:', error);
             alert('Payment successful but activation failed. Please contact support.');
@@ -102,7 +112,7 @@ export const Credits = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-blue-100 text-sm font-medium mb-2">Available Credits</p>
-            <h1 className="text-5xl font-bold">{credits?.balance || 0}</h1>
+            <h1 className="text-5xl font-bold">{(credits?.balance || 0).toFixed(2)}</h1>
             <p className="text-blue-100 mt-2">Use credits to place orders and grow your social presence</p>
           </div>
           <div className="hidden md:block">

@@ -8,6 +8,7 @@ interface NotificationContextType {
     markAllAsRead: () => void;
     clearAll: () => void;
     deleteNotification: (id: number) => void;
+    addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'time' | 'read'>) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -33,6 +34,18 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         setNotifications(prev => prev.filter(n => n.id !== id));
     };
 
+    const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'time' | 'read'>) => {
+        const now = new Date();
+        const newNotification: Notification = {
+            ...notification,
+            id: Date.now(), // Simple ID generation
+            timestamp: now,
+            time: 'Just now',
+            read: false
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+    };
+
     return (
         <NotificationContext.Provider value={{
             notifications,
@@ -40,7 +53,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
             markAsRead,
             markAllAsRead,
             clearAll,
-            deleteNotification
+            deleteNotification,
+            addNotification
         }}>
             {children}
         </NotificationContext.Provider>

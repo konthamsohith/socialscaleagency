@@ -221,12 +221,11 @@ export const Admin = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    // Redirect if not admin
     useEffect(() => {
-        if (user && user.role !== 'SUPER_ADMIN') {
-            navigate('/dashboard');
+        if (user && user.role !== 'SUPER_ADMIN' && view === 'dashboard') {
+            setView('platforms');
         }
-    }, [user, navigate]);
+    }, [user, view]);
 
     useEffect(() => {
         const fetchAdminData = async () => {
@@ -274,8 +273,10 @@ export const Admin = () => {
             }
         };
 
-        if (view === 'dashboard') {
+        if (view === 'dashboard' && user?.role === 'SUPER_ADMIN') {
             fetchAdminData();
+        } else {
+            setLoading(false);
         }
     }, [view]);
 
@@ -326,17 +327,23 @@ export const Admin = () => {
                         className="space-y-8"
                     >
                         <div>
-                            <h1 className="text-3xl font-bold font-archivo text-slate-900">Admin Management</h1>
-                            <p className="text-slate-500 mt-2">Oversee users, analytics, and service catalog.</p>
+                            <h1 className="text-3xl font-bold font-archivo text-slate-900">
+                                {user?.role === 'SUPER_ADMIN' ? 'Admin Management' : 'Service Catalog'}
+                            </h1>
+                            <p className="text-slate-500 mt-2">
+                                {user?.role === 'SUPER_ADMIN' ? 'Oversee users, analytics, and service catalog.' : 'Browse and purchase social media growth services.'}
+                            </p>
                         </div>
 
                         <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
-                            <button
-                                onClick={() => setView('dashboard')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${getButtonClass('dashboard')}`}
-                            >
-                                User Analytics
-                            </button>
+                            {user?.role === 'SUPER_ADMIN' && (
+                                <button
+                                    onClick={() => setView('dashboard')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${getButtonClass('dashboard')}`}
+                                >
+                                    User Analytics
+                                </button>
+                            )}
                             <button
                                 onClick={() => setView('platforms')}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${getButtonClass('platforms')}`}
@@ -346,76 +353,79 @@ export const Admin = () => {
                         </div>
 
                         {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-white border border-slate-200 rounded-2xl p-6"
-                            >
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="p-3 bg-green-100 rounded-xl">
-                                        <DollarSign className="w-6 h-6 text-green-600" />
+                        {user?.role === 'SUPER_ADMIN' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-white border border-slate-200 rounded-2xl p-6"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-green-100 rounded-xl">
+                                            <DollarSign className="w-6 h-6 text-green-600" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.totalRevenue.toLocaleString()} Credits`}</p>
-                                    <p className="text-sm text-slate-500 mt-1">Total Revenue</p>
-                                </div>
-                            </motion.div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.totalRevenue.toFixed(2)} Credits`}</p>
+                                        <p className="text-sm text-slate-500 mt-1">Total Revenue</p>
+                                    </div>
+                                </motion.div>
 
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="bg-white border border-slate-200 rounded-2xl p-6"
-                            >
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="p-3 bg-blue-100 rounded-xl">
-                                        <Users className="w-6 h-6 text-blue-600" />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="bg-white border border-slate-200 rounded-2xl p-6"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-blue-100 rounded-xl">
+                                            <Users className="w-6 h-6 text-blue-600" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.totalUsers}</p>
-                                    <p className="text-sm text-slate-500 mt-1">Total Users</p>
-                                </div>
-                            </motion.div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.totalUsers}</p>
+                                        <p className="text-sm text-slate-500 mt-1">Total Users</p>
+                                    </div>
+                                </motion.div>
 
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="bg-white border border-slate-200 rounded-2xl p-6"
-                            >
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="p-3 bg-orange-100 rounded-xl">
-                                        <BarChart3 className="w-6 h-6 text-orange-600" />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="bg-white border border-slate-200 rounded-2xl p-6"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-orange-100 rounded-xl">
+                                            <BarChart3 className="w-6 h-6 text-orange-600" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.activeOrders}</p>
-                                    <p className="text-sm text-slate-500 mt-1">Active Orders</p>
-                                </div>
-                            </motion.div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.activeOrders}</p>
+                                        <p className="text-sm text-slate-500 mt-1">Active Orders</p>
+                                    </div>
+                                </motion.div>
 
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="bg-white border border-slate-200 rounded-2xl p-6"
-                            >
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="p-3 bg-purple-100 rounded-xl">
-                                        <TrendingUp className="w-6 h-6 text-purple-600" />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="bg-white border border-slate-200 rounded-2xl p-6"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-purple-100 rounded-xl">
+                                            <TrendingUp className="w-6 h-6 text-purple-600" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.netMargin}%`}</p>
-                                    <p className="text-sm text-slate-500 mt-1">Net Margin</p>
-                                </div>
-                            </motion.div>
-                        </div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.netMargin}%`}</p>
+                                        <p className="text-sm text-slate-500 mt-1">Net Margin</p>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
 
                         {/* Users Table */}
+                        {user?.role === 'SUPER_ADMIN' && (
                         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                             <div className="p-6 border-b border-slate-200">
                                 <div className="flex items-center justify-between">
@@ -509,6 +519,7 @@ export const Admin = () => {
                                 </table>
                             </div>
                         </div>
+                        )}
                     </motion.div>
                 ) : view === 'platforms' ? (
                     <motion.div

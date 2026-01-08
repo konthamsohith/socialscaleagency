@@ -18,6 +18,7 @@ import { auth, db } from '../../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { networks } from '../../data/services';
 import clsx from 'clsx';
+import { useNotifications } from '../../context/NotificationContext';
 
 // Helper for large numbers
 const formatNumber = (num: number) => {
@@ -40,6 +41,7 @@ const getNetworkStyle = (networkName: string = '') => {
 export const PlaceOrder = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { addNotification } = useNotifications();
 
     const [pkg, setPkg] = useState<any>(null);
     const [network, setNetwork] = useState<any>(null);
@@ -104,6 +106,14 @@ export const PlaceOrder = () => {
 
             const docRef = await addDoc(collection(db, 'orders'), orderData);
             setSuccessOrderIds(prev => [...prev, docRef.id]);
+
+            // Add notification
+            addNotification({
+                title: 'Order Created',
+                message: `Your ${network.title} order (#${docRef.id.slice(-6).toUpperCase()}) has been created and is pending processing.`,
+                type: 'info',
+                icon: CheckCircle2
+            });
 
             setTimeout(() => {
                 navigate('/dashboard/orders');

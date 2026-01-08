@@ -68,7 +68,7 @@ export const Sidebar = () => {
                     <Wallet size={16} className="text-blue-600" />
                     <span className="text-xs font-semibold text-blue-900">Available Credits</span>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">{credits.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-blue-600">{credits.toFixed(2)}</p>
                 <Link 
                     to="/dashboard/credits" 
                     className="text-xs text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
