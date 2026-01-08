@@ -238,7 +238,7 @@ export const Login = () => {
                                 >
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-1.5">
-                                            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">Project Cost</p>
+                                            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-wider">CREDITS UTILIZED</p>
                                             <svg width="6" height="4" viewBox="0 0 6 4" fill="none" className="text-red-500">
                                                 <path d="M1 1L3 3L5 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
@@ -260,7 +260,7 @@ export const Login = () => {
                                         </div>
                                     </div>
                                     <p className="text-center text-[9px] font-medium text-slate-500 leading-tight">
-                                        60 of Project<br />budget is left
+                                        60 Credits<br />remaining today
                                     </p>
                                 </motion.div>
                             </div>
