@@ -118,32 +118,7 @@ export const Login = () => {
                             className="relative"
                         >
                             <div className="relative w-full aspect-[4/3] scale-[0.85] xxl:scale-100 flex items-center justify-center">
-                                {/* Floating Coins - Plain */}
-                                {[
-                                    { top: '22%', left: '26%', size: 'w-16', delay: 0.8, y: [0, -10, 0], rotate: -15 },
-                                    { top: '50%', left: '16%', size: 'w-18', delay: 1.1, y: [0, -15, 0], rotate: 10 },
-                                    { top: '38%', left: '28%', size: 'w-12', delay: 1.4, y: [0, -8, 0], rotate: -5 },
-                                ].map((coin, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, scale: 0 }}
-                                        animate={{
-                                            opacity: 1,
-                                            scale: 1,
-                                            y: coin.y
-                                        }}
-                                        transition={{
-                                            scale: { delay: coin.delay, type: 'spring' },
-                                            y: { repeat: Infinity, duration: 4 + i, ease: "easeInOut" }
-                                        }}
-                                        className={`absolute ${coin.size} aspect-square z-20`}
-                                        style={{ top: coin.top, left: coin.left }}
-                                    >
-                                        <div className={`w-full h-full rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center`} style={{ transform: `rotate(${coin.rotate}deg)` }}>
-                                            <div className="w-[85%] h-[85%] rounded-full border border-slate-100" />
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                {/* Floating Coins Removed for Cleaner Look */}
 
                                 {/* Main Dashboard Card */}
                                 <motion.div
