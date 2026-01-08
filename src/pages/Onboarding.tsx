@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { SEO } from '../components/common/SEO';
 import { ArrowRight, Check, User, Briefcase, Building2, Rocket, TrendingUp, DollarSign, Target, Globe, Smartphone, Camera, Heart, MoreHorizontal, Users, Eye } from 'lucide-react';
-import { auth } from '../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useAuth } from '../contexts/AuthContext';
+import { apiService } from '../services/api';
 
 const steps = [
     {
@@ -63,6 +63,7 @@ const goals = [
 
 export const Onboarding = () => {
     const navigate = useNavigate();
+    const { user, refreshUser } = useAuth();
     const [currentStep, setCurrentStep] = useState(0);
     const [userName, setUserName] = useState<string>('');
 
@@ -73,20 +74,33 @@ export const Onboarding = () => {
     const [goal, setGoal] = useState<string | null>(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user?.displayName) {
-                setUserName(user.displayName.split(' ')[0]);
-            } else if (user?.email) {
-                setUserName(user.email.split('@')[0]);
-            }
-        });
-        return () => unsubscribe();
-    }, []);
+        if (user?.name) {
+            setUserName(user.name.split(' ')[0]);
+        } else if (user?.email) {
+            setUserName(user.email.split('@')[0]);
+        }
+    }, [user]);
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (currentStep < steps.length - 1) {
             setCurrentStep(prev => prev + 1);
         } else {
+            // Save onboarding data to user profile
+            try {
+                await apiService.updateProfile({
+                    profile: {
+                        userType,
+                        stage,
+                        industry,
+                        goal
+                    }
+                });
+                // Refresh user data
+                await refreshUser();
+            } catch (error) {
+                console.error('Failed to save onboarding data:', error);
+                // Still navigate even if save fails
+            }
             navigate('/dashboard');
         }
     };

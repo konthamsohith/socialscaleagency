@@ -90,6 +90,7 @@ export const Footer = () => {
                             <li><Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link></li>
                             <li><Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link></li>
                             <li><Link to="/cookie-policy" className="hover:text-black transition-colors">Cookie Policy</Link></li>
+                            <li><Link to="/cancellation-refund" className="hover:text-black transition-colors">Cancellation & Refund</Link></li>
                         </ul>
                     </div>
                 </div>
