@@ -77,9 +77,7 @@ export const Login = () => {
             <div className="h-screen flex bg-white font-archivo overflow-hidden">
                 {/* Left Side: Marketing & Proof */}
                 <div className="hidden lg:flex lg:w-1/2 bg-[#3B82F6] p-12 flex-col justify-center relative overflow-hidden">
-                    {/* Decorative Background Patterns */}
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-900/20 rounded-full blur-[80px]" />
+                    {/* Decorative Background Patterns Removed */}
 
                     <div className="relative z-10 max-w-xl">
                         <motion.h1
@@ -120,42 +118,7 @@ export const Login = () => {
                             className="relative"
                         >
                             <div className="relative w-full aspect-[4/3] scale-[0.85] xxl:scale-100 flex items-center justify-center">
-                                {/* Background Pattern: Top Left */}
-                                <div className="absolute top-[-10%] left-[-10%] opacity-20 pointer-events-none">
-                                    <svg width="200" height="200" viewBox="0 0 200 200">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <circle key={i} cx="0" cy="0" r={i * 30} fill="none" stroke="#64748b" strokeWidth="1" />
-                                        ))}
-                                    </svg>
-                                </div>
-
-                                {/* Background Pattern: Bottom Right */}
-                                <div className="absolute bottom-[-10%] right-[-10%] opacity-20 pointer-events-none">
-                                    <svg width="200" height="200" viewBox="0 0 200 200">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <circle key={i} cx="200" cy="200" r={i * 30} fill="none" stroke="#64748b" strokeWidth="1" />
-                                        ))}
-                                    </svg>
-                                </div>
-
-                                {/* Plant Illustration */}
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 1.2 }}
-                                    className="absolute bottom-[2%] right-[5%] w-24 opacity-40 pointer-events-none"
-                                >
-                                    <svg viewBox="0 0 100 150" className="w-full h-full fill-none stroke-slate-400" strokeWidth="1" strokeLinecap="round">
-                                        <path d="M50 145 V80" />
-                                        <path d="M50 80 Q70 60 85 40" />
-                                        <path d="M50 90 Q30 70 15 50" />
-                                        <path d="M50 110 Q70 90 90 70" />
-                                        <path d="M50 120 Q30 100 10 80" />
-                                        <rect x="35" y="130" width="30" height="20" rx="2" />
-                                    </svg>
-                                </motion.div>
-
-                                {/* Floating Coins with Sparkle */}
+                                {/* Floating Coins - Plain */}
                                 {[
                                     { top: '22%', left: '26%', size: 'w-16', delay: 0.8, y: [0, -10, 0], rotate: -15 },
                                     { top: '50%', left: '16%', size: 'w-18', delay: 1.1, y: [0, -15, 0], rotate: 10 },
@@ -177,12 +140,7 @@ export const Login = () => {
                                         style={{ top: coin.top, left: coin.left }}
                                     >
                                         <div className={`w-full h-full rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center`} style={{ transform: `rotate(${coin.rotate}deg)` }}>
-                                            <div className="w-[85%] h-[85%] rounded-full border border-slate-100 flex items-center justify-center">
-                                                {/* Sparkle Icon */}
-                                                <svg viewBox="0 0 24 24" className="w-1/2 h-1/2 fill-slate-300">
-                                                    <path d="M12,2L14.4,9.6L22,12L14.4,14.4L12,22L9.6,14.4L2,12L9.6,9.6L12,2Z" />
-                                                </svg>
-                                            </div>
+                                            <div className="w-[85%] h-[85%] rounded-full border border-slate-100" />
                                         </div>
                                     </motion.div>
                                 ))}
