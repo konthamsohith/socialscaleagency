@@ -17,7 +17,8 @@ import {
     Search,
     Filter,
     Download,
-    Wallet
+    Wallet,
+    Edit
 } from 'lucide-react';
 import { servicesData, ServiceCategory } from '../../data/services';
 import { apiService } from '../../services/api';
@@ -206,6 +207,9 @@ export const Admin = () => {
     const [selectedNetwork, setSelectedNetwork] = useState<typeof networks[0] | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
     const [loading, setLoading] = useState(true);
+    const [editingPrice, setEditingPrice] = useState<string | null>(null);
+    const [priceInput, setPriceInput] = useState<string>('');
+    const [servicesDataState, setServicesDataState] = useState(servicesData);
     const [adminData, setAdminData] = useState<{
         totalRevenue: number;
         totalUsers: number;
@@ -344,7 +348,174 @@ export const Admin = () => {
         }
     };
 
-    const categories = selectedNetwork ? servicesData[selectedNetwork.id] || [] : [];
+    const getPlatformAndServiceType = (categoryId: string) => {
+        const platformMap: Record<string, string> = {
+            'INST-FOLLOWERS': 'instagram',
+            'INST-LIKES': 'instagram',
+            'INST-STORY': 'instagram',
+            'INST-REPOST': 'instagram',
+            'INST-RANDOM-COMM': 'instagram',
+            'INST-LIVE-VIEWS': 'instagram',
+            'INST-REELS-VIEWS': 'instagram',
+            'INST-CHANNEL-MEM': 'instagram',
+            'INST-STORY-VOTES': 'instagram',
+            'TIK-FOLLOWERS': 'tiktok',
+            'TIK-LIKES': 'tiktok',
+            'TIK-VIEWS': 'tiktok',
+            'LNK-FOLLOWERS': 'linkedin',
+            'LNK-LIKES': 'linkedin',
+            'LNK-SHARES': 'linkedin',
+            'YT-SUBS': 'youtube',
+            'YT-VIEWS': 'youtube',
+            'YT-WATCH': 'youtube',
+            'X-FOLLOWERS': 'twitter',
+            'X-LIKES': 'twitter',
+            'THR-FOL': 'threads',
+            'THR-LIKES': 'threads',
+            'THR-RESHARES': 'threads',
+            'THR-COMMENTS': 'threads',
+            'PIN-FOL': 'pinterest',
+            'PIN-LIKES': 'pinterest',
+            'PIN-REPINS': 'pinterest',
+            'FB-LIKES': 'facebook',
+            'FB-FOLLOWERS': 'facebook',
+            'FB-VIEWS': 'facebook',
+            'SPT-FOLLOWERS': 'spotify',
+            'TG-MEM': 'telegram',
+            'TG-VIEWS': 'telegram',
+            'QR-FOLLOWERS': 'quora',
+            'QR-VIEWS': 'quora',
+            'QR-LIKES': 'quora',
+            'QR-SHARES': 'quora',
+            'QR-UPVOTES': 'quora'
+        };
+
+        const serviceTypeMap: Record<string, string> = {
+            'INST-FOLLOWERS': 'follower',
+            'INST-LIKES': 'like',
+            'INST-STORY': 'view',
+            'INST-REPOST': 'repost',
+            'INST-RANDOM-COMM': 'comment',
+            'INST-LIVE-VIEWS': 'live_view',
+            'INST-REELS-VIEWS': 'view',
+            'INST-CHANNEL-MEM': 'channel_member',
+            'INST-STORY-VOTES': 'vote',
+            'TIK-FOLLOWERS': 'follower',
+            'TIK-LIKES': 'like',
+            'TIK-VIEWS': 'view',
+            'LNK-FOLLOWERS': 'follower',
+            'LNK-LIKES': 'like',
+            'LNK-SHARES': 'share',
+            'YT-SUBS': 'subscriber',
+            'YT-VIEWS': 'view',
+            'YT-WATCH': 'watch_time',
+            'X-FOLLOWERS': 'follower',
+            'X-LIKES': 'like',
+            'THR-FOL': 'follower',
+            'THR-LIKES': 'like',
+            'THR-RESHARES': 'reshare',
+            'THR-COMMENTS': 'comment',
+            'PIN-FOL': 'follower',
+            'PIN-LIKES': 'like',
+            'PIN-REPINS': 'repin',
+            'FB-LIKES': 'like',
+            'FB-FOLLOWERS': 'follower',
+            'FB-VIEWS': 'view',
+            'SPT-FOLLOWERS': 'follower',
+            'TG-MEM': 'member',
+            'TG-VIEWS': 'view',
+            'QR-FOLLOWERS': 'follower',
+            'QR-VIEWS': 'view',
+            'QR-LIKES': 'like',
+            'QR-SHARES': 'share',
+            'QR-UPVOTES': 'upvote'
+        };
+
+        return {
+            platform: platformMap[categoryId] || 'unknown',
+            serviceType: serviceTypeMap[categoryId] || 'unknown'
+        };
+    };
+
+    const handleEditPrice = (pkgId: string, currentPrice: string) => {
+        setEditingPrice(pkgId);
+        setPriceInput(currentPrice);
+    };
+
+    const handleSavePrice = async (pkgId: string) => {
+        if (!selectedCategory || !selectedNetwork) return;
+
+        try {
+            const { platform, serviceType } = getPlatformAndServiceType(selectedCategory.id);
+            const newPrice = parseFloat(priceInput);
+
+            if (isNaN(newPrice) || newPrice <= 0) {
+                alert('Please enter a valid price');
+                return;
+            }
+
+            // Create or update global pricing rule
+            const ruleData = {
+                scope: 'global',
+                servicePricing: [{
+                    platform,
+                    serviceType,
+                    creditsPerUnit: newPrice / 1000, // Convert to per unit
+                    minQuantity: 10,
+                    maxQuantity: 100000
+                }],
+                isActive: true,
+                priority: 1
+            };
+
+            // Check if rule exists
+            const existingRules = await apiService.getPricingRules({
+                scope: 'global',
+                isActive: true
+            });
+
+            const existingRule = existingRules.data.find((rule: any) =>
+                rule.servicePricing.some((p: any) => p.platform === platform && p.serviceType === serviceType)
+            );
+
+            if (existingRule) {
+                await apiService.updatePricingRule(existingRule._id, ruleData);
+            } else {
+                await apiService.createPricingRule(ruleData);
+            }
+
+            // Update local services data
+            setServicesDataState(prev => {
+                const updated = { ...prev };
+                const networkData = updated[selectedNetwork.id];
+                const categoryIndex = networkData.findIndex(cat => cat.id === selectedCategory.id);
+                if (categoryIndex !== -1) {
+                    const pkgIndex = networkData[categoryIndex].packages?.findIndex(pkg => pkg.id === pkgId);
+                    if (pkgIndex !== undefined && pkgIndex !== -1) {
+                        networkData[categoryIndex].packages![pkgIndex] = {
+                            ...networkData[categoryIndex].packages![pkgIndex],
+                            price: newPrice.toString()
+                        };
+                    }
+                }
+                return updated;
+            });
+
+            setEditingPrice(null);
+            setPriceInput('');
+            alert('Price updated successfully!');
+        } catch (error) {
+            console.error('Error updating price:', error);
+            alert('Failed to update price');
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingPrice(null);
+        setPriceInput('');
+    };
+
+    const categories = selectedNetwork ? servicesDataState[selectedNetwork.id] || [] : [];
     const packages = selectedCategory?.packages || [];
 
     const getButtonClass = (buttonType: ViewType) => view === buttonType ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600 hover:text-slate-900';
@@ -776,8 +947,41 @@ export const Admin = () => {
                                             <div className="text-right min-w-[100px]">
                                                 <p className="text-[8px] text-slate-400 uppercase tracking-widest font-black mb-1">Value Rate</p>
                                                 <div className="flex items-baseline gap-1 lg:justify-end">
-                                                    <span className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{pkg.price}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400">Credits</span>
+                                                    {editingPrice === pkg.id ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="number"
+                                                                value={priceInput}
+                                                                onChange={(e) => setPriceInput(e.target.value)}
+                                                                className="w-16 text-sm border border-slate-300 rounded px-1 py-0.5 text-center"
+                                                                min="0"
+                                                                step="0.01"
+                                                            />
+                                                            <button
+                                                                onClick={() => handleSavePrice(pkg.id)}
+                                                                className="text-green-600 hover:text-green-700 text-xs font-bold"
+                                                            >
+                                                                ✓
+                                                            </button>
+                                                            <button
+                                                                onClick={handleCancelEdit}
+                                                                className="text-red-600 hover:text-red-700 text-xs font-bold"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <span className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{pkg.price}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400">Credits</span>
+                                                            <button
+                                                                onClick={() => handleEditPrice(pkg.id, pkg.price)}
+                                                                className="ml-2 text-blue-600 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <Edit className="w-3 h-3" />
+                                                            </button>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
 

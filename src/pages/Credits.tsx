@@ -19,6 +19,8 @@ export const Credits = () => {
   const [credits, setCredits] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     loadData();
@@ -62,7 +64,8 @@ export const Credits = () => {
         handler: async (response: any) => {
           try {
             await apiService.activateSubscription((subscription as any)._id, response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
-            alert('Subscription activated successfully!');
+            setSuccessMessage('Payment successful! Your subscription has been activated.');
+            setShowSuccessModal(true);
             await refreshUser();
             await loadData();
 
@@ -269,6 +272,30 @@ export const Credits = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center"
+          >
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-green-600" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Payment Successful!</h3>
+            <p className="text-slate-600 mb-6">{successMessage}</p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            >
+              Continue
+            </button>
+          </motion.div>
         </div>
       )}
     </div>

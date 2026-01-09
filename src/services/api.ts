@@ -227,6 +227,27 @@ class ApiService {
     return response.data;
   }
 
+  // Admin pricing management
+  async getPricingRules(params?: { scope?: string; companyId?: string; userId?: string; isActive?: boolean }): Promise<{ success: boolean; data: any[] }> {
+    const response = await this.api.get('/pricing/rules', { params });
+    return response.data;
+  }
+
+  async createPricingRule(rule: any): Promise<{ success: boolean; data: any }> {
+    const response = await this.api.post('/pricing/rules', rule);
+    return response.data;
+  }
+
+  async updatePricingRule(id: string, rule: any): Promise<{ success: boolean; data: any }> {
+    const response = await this.api.put(`/pricing/rules/${id}`, rule);
+    return response.data;
+  }
+
+  async deletePricingRule(id: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.api.delete(`/pricing/rules/${id}`);
+    return response.data;
+  }
+
   // ==================== ANALYTICS ====================
   async getDashboardStats(): Promise<{ success: boolean; data: Analytics }> {
     const response = await this.api.get('/analytics/dashboard');
