@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export const AuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -28,15 +30,18 @@ export const AuthCallback = () => {
           if (response.ok) {
             const userData = await response.json();
             localStorage.setItem('user', JSON.stringify(userData.data));
-            // Trigger auth context update
+            
+            // Refresh the auth context
+            await refreshUser();
+            
             // Redirect based on user role or admin login flag
             const isAdminLogin = localStorage.getItem('adminLogin') === 'true';
             localStorage.removeItem('adminLogin'); // Clean up
             
             if (isAdminLogin || userData.data.role === 'SUPER_ADMIN') {
-              window.location.href = '/dashboard/admin-panel';
+              navigate('/dashboard/admin-panel');
             } else {
-              window.location.href = '/dashboard';
+              navigate('/dashboard');
             }
           } else {
             throw new Error('Failed to fetch user data');
@@ -51,7 +56,7 @@ export const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, refreshUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
