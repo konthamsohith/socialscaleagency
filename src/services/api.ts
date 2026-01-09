@@ -330,6 +330,11 @@ class ApiService {
     const response = await this.api.delete('/notifications');
     return response.data;
   }
+
+  async getFampageBalance(): Promise<{ success: boolean; data: { balance: number } }> {
+    const response = await this.api.get('/api-integrations/balance');
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();

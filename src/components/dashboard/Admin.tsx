@@ -16,7 +16,8 @@ import {
     BarChart3,
     Search,
     Filter,
-    Download
+    Download,
+    Wallet
 } from 'lucide-react';
 import { servicesData, ServiceCategory } from '../../data/services';
 import { apiService } from '../../services/api';
@@ -210,12 +211,14 @@ export const Admin = () => {
         totalUsers: number;
         activeOrders: number;
         netMargin: number;
+        fampageBalance: number;
         users: { id: string; name: string; email: string; spend: number; orders: number; joined: string; status: string }[];
     }>({
         totalRevenue: 0,
         totalUsers: 0,
         activeOrders: 0,
         netMargin: 0,
+        fampageBalance: 0,
         users: []
     });
     const navigate = useNavigate();
@@ -231,24 +234,54 @@ export const Admin = () => {
         const fetchAdminData = async () => {
             try {
                 setLoading(true);
-                const [analyticsRes, usersRes, ordersRes] = await Promise.all([
-                    apiService.getAnalyticsSummary().catch(() => ({ data: { revenue: 0, realCost: 0 } })),
-                    apiService.getAllUsers(1, 100).catch(() => ({ data: { users: [], pagination: { total: 0 } } })),
-                    apiService.getOrders({ status: 'active' }).catch(() => ({ data: [], pagination: { total: 0 } }))
-                ]);
+                const promises = [];
 
-                const analytics = analyticsRes.data || { revenue: 0, realCost: 0 };
-                const users = usersRes.data?.users || [];
-                const orders = ordersRes.data || [];
+                if (user?.role === 'SUPER_ADMIN') {
+                    promises.push(
+                        apiService.getAnalyticsSummary().catch(() => ({ data: { revenue: 0, realCost: 0 } })),
+                        apiService.getAllUsers(1, 100).catch(() => ({ data: { users: [], pagination: { total: 0 } } })),
+                        apiService.getOrders({ status: 'active' }).catch(() => ({ data: [], pagination: { total: 0 } }))
+                    );
+                }
+
+                if (user?.email === 'admin@socialscale.com') {
+                    promises.push(apiService.getFampageBalance().catch(() => ({ data: { balance: 0 } })));
+                }
+
+                const results = await Promise.all(promises);
+
+                let analytics = { revenue: 0, realCost: 0 };
+                let users = [];
+                let orders = [];
+                let fampageBalance = 0;
+                let usersPagination = { total: 0 };
+                let ordersPagination = { total: 0 };
+
+                let index = 0;
+                if (user?.role === 'SUPER_ADMIN') {
+                    analytics = (results[index++] as any).data || { revenue: 0, realCost: 0 };
+                    const usersRes = results[index++] as any;
+                    users = usersRes.data?.users || [];
+                    usersPagination = usersRes.data?.pagination || { total: 0 };
+                    const ordersRes = results[index++] as any;
+                    orders = ordersRes.data || [];
+                    ordersPagination = ordersRes.pagination || { total: 0 };
+                    if (user?.email === 'admin@socialscale.com') {
+                        fampageBalance = parseFloat((results[index++] as any)?.data?.balance) || 0;
+                    }
+                } else if (user?.email === 'admin@socialscale.com') {
+                    fampageBalance = parseFloat((results[index++] as any)?.data?.balance) || 0;
+                }
 
                 const netMargin = analytics.revenue > 0 ? ((analytics.revenue - analytics.realCost) / analytics.revenue * 100).toFixed(1) : '0';
 
                 setAdminData({
                     totalRevenue: analytics.revenue || 0,
-                    totalUsers: usersRes.data?.pagination?.total || 0,
-                    activeOrders: ordersRes.pagination?.total || orders.length || 0,
+                    totalUsers: usersPagination.total || 0,
+                    activeOrders: ordersPagination.total || orders.length || 0,
                     netMargin: parseFloat(netMargin),
-                    users: users.map(user => ({
+                    fampageBalance,
+                    users: users.map((user: any) => ({
                         id: user.userId,
                         name: user.name,
                         email: user.email,
@@ -266,6 +299,7 @@ export const Admin = () => {
                     totalUsers: 0,
                     activeOrders: 0,
                     netMargin: 0,
+                    fampageBalance: 0,
                     users: []
                 });
             } finally {
@@ -273,12 +307,12 @@ export const Admin = () => {
             }
         };
 
-        if (view === 'dashboard' && user?.role === 'SUPER_ADMIN') {
+        if ((view === 'dashboard' && user?.role === 'SUPER_ADMIN') || user?.email === 'admin@socialscale.com') {
             fetchAdminData();
         } else {
             setLoading(false);
         }
-    }, [view]);
+    }, [view, user]);
 
     const filteredNetworks = networks.filter(network =>
         network.title.toLowerCase().includes(searchQuery) ||
@@ -353,74 +387,96 @@ export const Admin = () => {
                         </div>
 
                         {/* Stats Cards */}
-                        {user?.role === 'SUPER_ADMIN' && (
+                        {(user?.role === 'SUPER_ADMIN' || user?.email === 'admin@socialscale.com') && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white border border-slate-200 rounded-2xl p-6"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-green-100 rounded-xl">
-                                            <DollarSign className="w-6 h-6 text-green-600" />
+                                {user?.email === 'admin@socialscale.com' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-white border border-slate-200 rounded-2xl p-6"
+                                    >
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="p-3 bg-green-100 rounded-xl">
+                                                <Wallet className="w-6 h-6 text-green-600" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.totalRevenue.toFixed(2)} Credits`}</p>
-                                        <p className="text-sm text-slate-500 mt-1">Total Revenue</p>
-                                    </div>
-                                </motion.div>
+                                        <div>
+                                            <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.fampageBalance.toFixed(2)}`}</p>
+                                            <p className="text-sm text-slate-500 mt-1">Fampage Balance</p>
+                                        </div>
+                                    </motion.div>
+                                )}
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="bg-white border border-slate-200 rounded-2xl p-6"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-blue-100 rounded-xl">
-                                            <Users className="w-6 h-6 text-blue-600" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.totalUsers}</p>
-                                        <p className="text-sm text-slate-500 mt-1">Total Users</p>
-                                    </div>
-                                </motion.div>
+                                {user?.role === 'SUPER_ADMIN' && (
+                                    <>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="bg-white border border-slate-200 rounded-2xl p-6"
+                                        >
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="p-3 bg-green-100 rounded-xl">
+                                                    <DollarSign className="w-6 h-6 text-green-600" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.totalRevenue.toFixed(2)} Credits`}</p>
+                                                <p className="text-sm text-slate-500 mt-1">Total Revenue</p>
+                                            </div>
+                                        </motion.div>
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="bg-white border border-slate-200 rounded-2xl p-6"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-orange-100 rounded-xl">
-                                            <BarChart3 className="w-6 h-6 text-orange-600" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.activeOrders}</p>
-                                        <p className="text-sm text-slate-500 mt-1">Active Orders</p>
-                                    </div>
-                                </motion.div>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="bg-white border border-slate-200 rounded-2xl p-6"
+                                        >
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="p-3 bg-blue-100 rounded-xl">
+                                                    <Users className="w-6 h-6 text-blue-600" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.totalUsers}</p>
+                                                <p className="text-sm text-slate-500 mt-1">Total Users</p>
+                                            </div>
+                                        </motion.div>
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.3 }}
-                                    className="bg-white border border-slate-200 rounded-2xl p-6"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-3 bg-purple-100 rounded-xl">
-                                            <TrendingUp className="w-6 h-6 text-purple-600" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.netMargin}%`}</p>
-                                        <p className="text-sm text-slate-500 mt-1">Net Margin</p>
-                                    </div>
-                                </motion.div>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="bg-white border border-slate-200 rounded-2xl p-6"
+                                        >
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="p-3 bg-orange-100 rounded-xl">
+                                                    <BarChart3 className="w-6 h-6 text-orange-600" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-2xl font-bold text-slate-900">{loading ? '...' : adminData.activeOrders}</p>
+                                                <p className="text-sm text-slate-500 mt-1">Active Orders</p>
+                                            </div>
+                                        </motion.div>
+
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="bg-white border border-slate-200 rounded-2xl p-6"
+                                        >
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="p-3 bg-purple-100 rounded-xl">
+                                                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.netMargin}%`}</p>
+                                                <p className="text-sm text-slate-500 mt-1">Net Margin</p>
+                                            </div>
+                                        </motion.div>
+                                    </>
+                                )}
                             </div>
                         )}
 

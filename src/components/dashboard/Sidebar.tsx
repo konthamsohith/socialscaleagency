@@ -39,15 +39,20 @@ export const Sidebar = () => {
 
     // Update credits when user data changes (after payment)
     useEffect(() => {
-        if (user?.credits?.balance !== undefined) {
+        if (user?.email !== 'admin@socialscale.com' && user?.credits?.balance !== undefined) {
             setCredits(user.credits.balance);
         }
     }, [user?.credits?.balance]);
 
     const loadCredits = async () => {
         try {
-            const response = await apiService.getCreditsBalance();
-            setCredits(response.data.balance);
+            if (user?.email === 'admin@socialscale.com') {
+                const response = await apiService.getFampageBalance();
+                setCredits(parseFloat(response.data.balance) || 0);
+            } else {
+                const response = await apiService.getCreditsBalance();
+                setCredits(parseFloat(response.data.balance) || 0);
+            }
         } catch (error) {
             console.error('Failed to load credits:', error);
         }
