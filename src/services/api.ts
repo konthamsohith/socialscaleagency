@@ -331,7 +331,7 @@ class ApiService {
     return response.data;
   }
 
-  async getFampageBalance(): Promise<{ success: boolean; data: { balance: number } }> {
+  async getFampageBalance(): Promise<{ success: boolean; data: { balance: string; currency: string } }> {
     const response = await this.api.get('/api-integrations/balance');
     return response.data;
   }

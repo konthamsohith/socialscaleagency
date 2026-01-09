@@ -48,10 +48,12 @@ export const Sidebar = () => {
         try {
             if (user?.email === 'admin@socialscale.com') {
                 const response = await apiService.getFampageBalance();
-                setCredits(parseFloat(response.data.balance) || 0);
+                const balance = parseFloat(response.data.balance) || 0;
+                setCredits(balance);
             } else {
                 const response = await apiService.getCreditsBalance();
-                setCredits(parseFloat(response.data.balance) || 0);
+                const balance = parseFloat(response.data.balance as any) || 0;
+                setCredits(balance);
             }
         } catch (error) {
             console.error('Failed to load credits:', error);
