@@ -14,11 +14,11 @@ import {
     Info,
     Check
 } from 'lucide-react';
-import { auth, db } from '../../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { networks } from '../../data/services';
 import clsx from 'clsx';
 import { useNotifications } from '../../context/NotificationContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { apiService } from '../../services/api';
 
 // Helper for large numbers
 const formatNumber = (num: number) => {
@@ -42,6 +42,7 @@ export const PlaceOrder = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { addNotification } = useNotifications();
+    const { user, refreshUser } = useAuth();
 
     const [pkg, setPkg] = useState<any>(null);
     const [network, setNetwork] = useState<any>(null);
@@ -84,33 +85,28 @@ export const PlaceOrder = () => {
         if (quantity < minQty) return setError(`Minimum order quantity is ${minQty}`);
         if (quantity > maxQty) return setError(`Maximum order quantity is ${maxQty}`);
 
+        if (!user) return setError('User not authenticated');
+
         setLoading(true);
 
         try {
-            const user = auth.currentUser;
-            if (!user) throw new Error('User not authenticated');
-
             const orderData = {
-                userId: user.uid,
-                userEmail: user.email,
-                serviceId: pkg.id,
-                serviceName: pkg.name,
-                network: network.title || 'Unknown',
+                service: pkg.id,
                 link: link,
-                quantity: quantity,
-                price: totalCost,
-                status: 'pending',
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                quantity: quantity
             };
 
-            const docRef = await addDoc(collection(db, 'orders'), orderData);
-            setSuccessOrderIds(prev => [...prev, docRef.id]);
+            const response = await apiService.createOrder(orderData);
+            const order = response.data.order;
+            setSuccessOrderIds(prev => [...prev, order._id]);
+
+            // Refresh user data to update credits
+            await refreshUser();
 
             // Add notification
             addNotification({
                 title: 'Order Created',
-                message: `Your ${network.title} order (#${docRef.id.slice(-6).toUpperCase()}) has been created and is pending processing.`,
+                message: `Your ${network.title} order (#${order._id.slice(-6).toUpperCase()}) has been created and is pending processing.`,
                 type: 'info',
                 icon: CheckCircle2
             });
@@ -121,7 +117,8 @@ export const PlaceOrder = () => {
 
         } catch (err: any) {
             console.error('Order submission error:', err);
-            setError(err.message || 'Failed to place order');
+            const errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Failed to place order';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

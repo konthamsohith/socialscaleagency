@@ -1,18 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     FileText,
-    Download,
-    Plus
+    Download
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../../contexts/AuthContext';
+import { apiService } from '../../services/api';
 
 export const Profile = () => {
     const { user, isLoading } = useAuth();
 
     // UI State
     const [activeTab, setActiveTab] = useState('notifications');
+    const [invoices, setInvoices] = useState<any[]>([]);
+    const [loadingInvoices, setLoadingInvoices] = useState(false);
+
+    useEffect(() => {
+        loadInvoices();
+    }, []);
+
+    const loadInvoices = async () => {
+        try {
+            setLoadingInvoices(true);
+            const response = await apiService.getInvoices(1, 10);
+            setInvoices(response.data || []);
+        } catch (error) {
+            console.error('Failed to load invoices:', error);
+        } finally {
+            setLoadingInvoices(false);
+        }
+    };
+
+    const handleDownloadInvoice = async (invoiceId: string, invoiceName: string) => {
+        try {
+            const blob = await apiService.downloadInvoice(invoiceId);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${invoiceName}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to download invoice:', error);
+            alert('Failed to download invoice');
+        }
+    };
 
     const getInitials = (name: string | null) => {
         if (!name) return 'U';
@@ -123,7 +156,7 @@ export const Profile = () => {
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Credits Balance</label>
                                 <div className="font-semibold text-slate-900 pl-1">
-                                    {user.credits?.balance || 0} {user.credits?.currency || 'Credits'}
+                                    {user.credits?.balance || 0}
                                 </div>
                             </div>
 
@@ -260,33 +293,42 @@ export const Profile = () => {
                 <div className="lg:col-span-3">
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 h-full">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-slate-900">Documents</h3>
-                            <button className="flex items-center gap-1.5 text-blue-600 text-sm font-bold hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
-                                <Plus className="w-4 h-4" />
-                                Add
-                            </button>
+                            <h3 className="text-lg font-bold text-slate-900">Invoices</h3>
                         </div>
 
-                        <div className="space-y-4">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="group flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-100">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500">
-                                            <FileText className="w-5 h-5" />
+                        {loadingInvoices ? (
+                            <div className="text-center py-8 text-slate-500 text-sm">Loading invoices...</div>
+                        ) : invoices.length === 0 ? (
+                            <div className="text-center py-8 text-slate-500 text-sm">No invoices found.</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {invoices.map((invoice) => (
+                                    <div key={invoice._id} className="group flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500">
+                                                <FileText className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                                    Invoice #{invoice._id.slice(-8).toUpperCase()}
+                                                </div>
+                                                <div className="text-xs text-slate-400">
+                                                    {new Date(invoice.createdAt).toLocaleDateString()} · {invoice.currency} {invoice.total.toFixed(2)}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Invoice_Oct_{i}.pdf</div>
-                                            <div className="text-xs text-slate-400">123kb</div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => handleDownloadInvoice(invoice._id, `Invoice-${invoice._id.slice(-8)}`)}
+                                                className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-500"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-500">
-                                            <Download className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

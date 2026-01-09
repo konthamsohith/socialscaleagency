@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users,
@@ -8,266 +7,219 @@ import {
     Search,
     Filter,
     Coins,
-    ArrowUpRight,
-    ArrowDownRight,
     Percent,
     Wallet,
-    Trash2,
     ArrowLeft,
     X,
-    ShoppingCart
+    ShoppingCart,
+    Download
 } from 'lucide-react';
-import { servicesData, networks } from '../../data/services';
 import { apiService } from '../../services/api';
 
-// Types
-interface Transaction {
-    id: string;
-    type: 'Credit' | 'Debit';
-    amount: string;
-    reason: string;
-    date: string;
+// Types - Define interface that matches backend User model
+interface AdminUser {
+    _id: string;
+    name: string;
+    email: string;
+    credits: {
+        balance: number;
+        totalPurchased: number;
+        totalSpent: number;
+    };
+    status: 'active' | 'inactive' | 'suspended';
+    createdAt: string;
+    lastLogin?: string;
 }
 
 export const SuperAdmin = () => {
-    const [activeTab, setActiveTab] = useState<'analytics' | 'pricing'>('analytics');
     const [searchQuery, setSearchQuery] = useState('');
-
-    // Pricing State
-    const [prices, setPrices] = useState<Record<string, number>>({});
-    const [costs, setCosts] = useState<Record<string, number>>({});
-    const [activeStatus, setActiveStatus] = useState<Record<string, boolean>>({});
-
-    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
-
-    // User Analytics Filter State
-    const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive'>('all');
+    const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // Users State
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedUser, setSelectedUser] = useState<any | null>(null);
+    const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
-    // Initialize prices and simulate costs on mount
+    // Orders State
+    const [orders, setOrders] = useState<any[]>([]);
+
+    // Fetch users and orders from API
     useEffect(() => {
-        const initialPrices: Record<string, number> = {};
-        const initialCosts: Record<string, number> = {};
-        const initialActive: Record<string, boolean> = {};
-
-        Object.values(servicesData).forEach(categories => {
-            categories.forEach(cat => {
-                cat.packages?.forEach(pkg => {
-                    // Parse price string "₹174" -> 174
-                    const priceVal = parseInt(pkg.price.replace(/[^\d]/g, '')) || 0;
-                    initialPrices[pkg.id] = priceVal;
-                    // Simulate Cost check (random margin between 20-40% for demo)
-                    const randomMargin = 0.6 + (Math.random() * 0.2);
-                    initialCosts[pkg.id] = Math.floor(priceVal * randomMargin);
-                    initialActive[pkg.id] = true;
-                });
-            });
-        });
-        setPrices(initialPrices);
-        setCosts(initialCosts);
-        setActiveStatus(initialActive);
+        fetchData();
     }, []);
 
-    // Fetch users from API
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                setLoading(true);
-                const response = await apiService.getAllUsers(1, 100); // Get first 100 users
-                setUsers(response.data?.users || []);
-            } catch (error) {
-                console.error('Failed to fetch users:', error);
-                setUsers([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            
+            // Fetch users
+            const usersResponse = await apiService.getAllUsers(1, 1000);
+            const fetchedUsers: AdminUser[] = (usersResponse.data?.users || usersResponse.data || []).map((user: any) => ({
+                _id: user._id || user.userId,
+                name: user.name,
+                email: user.email,
+                credits: user.credits,
+                status: user.status,
+                createdAt: user.createdAt,
+                lastLogin: user.lastLogin
+            }));
+            setUsers(fetchedUsers);
 
-        fetchUsers();
-    }, []);
+            // Fetch orders
+            const ordersResponse = await apiService.getOrders();
+            const fetchedOrders = ordersResponse.data || [];
+            setOrders(fetchedOrders);
+        } catch (error) {
+            console.error('Failed to fetch data:', error);
+            setUsers([]);
+            setOrders([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Modal States
     const [isManageFundsOpen, setIsManageFundsOpen] = useState(false);
-    const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
     const [fundAmount, setFundAmount] = useState('');
     const [fundAction, setFundAction] = useState<'add' | 'deduct'>('add');
     const [fundReason, setFundReason] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [txnSearchQuery, setTxnSearchQuery] = useState('');
-    // const [selectedPackage, setSelectedPackage] = useState<any | null>(null);
-    // const [showSuccess, setShowSuccess] = useState<string | null>(null);
-    const navigate = useNavigate();
-
-    const filteredTransactions = useMemo(() => {
-        if (!selectedUser) return [];
-        return selectedUser.transactions?.filter((txn: Transaction) =>
-            txn.id.toLowerCase().includes(txnSearchQuery.toLowerCase()) ||
-            txn.reason.toLowerCase().includes(txnSearchQuery.toLowerCase())
-        ) || [];
-    }, [selectedUser, txnSearchQuery]);
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = 
+            user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
         return matchesSearch && matchesStatus;
     });
 
-    const handleDeleteUser = (userId: number) => {
-        if (confirm('Are you sure you want to delete this user?')) {
-            setUsers(prev => prev.filter(u => (u.userId || u.id) !== userId));
-            if ((selectedUser?.userId || selectedUser?.id) === userId) setSelectedUser(null);
+    const handleDeleteUser = async (userId: string) => {
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
+        
+        try {
+            await apiService.deleteUser(userId);
+            setUsers(users.filter(u => u._id !== userId));
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+            alert('Failed to delete user');
         }
     };
 
-    const handleToggleStatus = (userId: number) => {
-        setUsers(prev => prev.map(u => {
-            if ((u.userId || u.id) === userId) {
-                const updated = { ...u, status: u.status === 'active' ? 'inactive' : 'active' };
-                if ((selectedUser?.userId || selectedUser?.id) === userId) setSelectedUser(updated);
-                return updated;
-            }
-            return u;
-        }));
+    const handleToggleStatus = async (userId: string) => {
+        try {
+            const user = users.find(u => u._id === userId);
+            if (!user) return;
+
+            const newStatus = user.status === 'active' ? 'inactive' : 'active';
+            await apiService.updateUser(userId, { status: newStatus });
+            
+            setUsers(users.map(u => 
+                u._id === userId ? { ...u, status: newStatus } : u
+            ));
+        } catch (error) {
+            console.error('Failed to toggle user status:', error);
+            alert('Failed to update user status');
+        }
     };
 
     const handleManageFunds = async () => {
-        if (!selectedUser || !fundAmount) return;
-        const amount = parseInt(fundAmount);
-        if (isNaN(amount)) return;
+        if (!selectedUser || !fundAmount || parseFloat(fundAmount) <= 0) return;
 
         setIsProcessing(true);
+        setIsSuccess(false);
 
-        // Simulate premium processing delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const amount = parseFloat(fundAmount);
+            const currentBalance = selectedUser.credits?.balance || 0;
+            const newBalance = fundAction === 'add' 
+                ? currentBalance + amount 
+                : currentBalance - amount;
 
-        const currentBalance = selectedUser.credits?.balance || 0;
-        const newBalanceNum = fundAction === 'add' ? currentBalance + amount : currentBalance - amount;
+            if (newBalance < 0) {
+                alert('Insufficient balance for deduction');
+                setIsProcessing(false);
+                return;
+            }
 
-        const newTransaction: Transaction = {
-            id: `TXN-${Math.floor(Math.random() * 10000)}`,
-            type: fundAction === 'add' ? 'Credit' : 'Debit',
-            amount: `${amount.toLocaleString()} Credits`,
-            reason: fundReason || (fundAction === 'add' ? 'Admin Deposit' : 'Admin Deduction'),
-            date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: '2-digit' })
-        };
+            await apiService.updateUser(selectedUser._id, {
+                credits: {
+                    ...selectedUser.credits,
+                    balance: newBalance,
+                    totalPurchased: fundAction === 'add' 
+                        ? (selectedUser.credits?.totalPurchased || 0) + amount 
+                        : selectedUser.credits?.totalPurchased || 0
+                }
+            });
 
-        const updatedUser = {
-            ...selectedUser,
-            credits: {
-                ...selectedUser.credits,
-                balance: newBalanceNum
-            },
-            transactions: selectedUser.transactions ? [newTransaction, ...selectedUser.transactions] : [newTransaction]
-        };
+            // Update local state
+            const updatedUser = {
+                ...selectedUser,
+                credits: {
+                    ...selectedUser.credits,
+                    balance: newBalance,
+                    totalPurchased: fundAction === 'add' 
+                        ? (selectedUser.credits?.totalPurchased || 0) + amount 
+                        : selectedUser.credits?.totalPurchased || 0
+                }
+            };
 
-        setUsers(prev => prev.map(u => (u.userId || u.id) === (selectedUser.userId || selectedUser.id) ? updatedUser : u));
-        setSelectedUser(updatedUser);
+            setSelectedUser(updatedUser);
+            setUsers(users.map(u => u._id === selectedUser._id ? updatedUser : u));
 
-        setIsProcessing(false);
-        setIsSuccess(true);
-
-        // Show success for a bit then close
-        setTimeout(() => {
-            setIsManageFundsOpen(false);
-            setIsSuccess(false);
-            setFundAmount('');
-            setFundReason('');
-        }, 2000);
+            setIsSuccess(true);
+            setTimeout(() => {
+                setIsManageFundsOpen(false);
+                setFundAmount('');
+                setFundReason('');
+                setIsSuccess(false);
+            }, 2000);
+        } catch (error) {
+            console.error('Failed to manage funds:', error);
+            alert('Failed to update user credits');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     // Handle CSV Export
     const handleExportCSV = () => {
-        const headers = ['ID', 'Name', 'Email', 'Balance', 'Orders', 'Status', 'Joined'];
-        const rows = filteredUsers.map(user => [
-            user.userId || user.id,
-            user.name,
-            user.email,
-            (user.credits?.balance || 0).toFixed(2),
-            user.orders || 0,
-            user.status,
-            user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
-        ]);
-
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(row => row.join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'user_analytics.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const csvHeaders = 'Name,Email,Balance,Total Purchased,Status,Joined\n';
+        const csvData = filteredUsers.map(user => 
+            `"${user.name || 'N/A'}","${user.email}","${user.credits?.balance || 0}","${user.credits?.totalPurchased || 0}","${user.status}","${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}"`
+        ).join('\n');
+        
+        const blob = new Blob([csvHeaders + csvData], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `users-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
-    // Filter Logic for Pricing
-    const getAllPackages = useMemo(() => {
-        const all: any[] = [];
-        Object.entries(servicesData).forEach(([netId, cats]) => {
-            cats.forEach(cat => {
-                cat.packages?.forEach(pkg => {
-                    if (selectedCategoryFilter === 'all' || netId === selectedCategoryFilter) {
-                        all.push({ ...pkg, category: cat.title, network: netId, icon: cat.icon, color: cat.color, bg: cat.bg });
-                    }
-                });
-            });
-        });
-        return all.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [searchQuery, selectedCategoryFilter]);
-
-    // Handlers
-    const handlePriceChange = (id: string, val: string) => {
-        const num = parseInt(val) || 0;
-        setPrices(prev => ({ ...prev, [id]: num }));
-    };
-
-    const handleCostChange = (id: string, val: string) => {
-        const num = parseInt(val) || 0;
-        setCosts(prev => ({ ...prev, [id]: num }));
-    };
-
-    const handleToggleActive = (id: string) => {
-        setActiveStatus(prev => ({ ...prev, [id]: !prev[id] }));
-    };
-
-
-
-    // Derived Metrics - dynamic sum of user balances (as proxy for revenue)
+    // Derived Metrics - dynamic sum of user balances and stats
     const totalRevenueNum = useMemo(() => {
-        return users.reduce((acc, user) => acc + (user.credits?.balance || 0), 0);
+        return users.reduce((sum, user) => sum + (user.credits?.totalPurchased || 0), 0);
     }, [users]);
     const totalRevenueStr = `${totalRevenueNum.toLocaleString()} Credits`;
 
-    // Weighted Average Margin Calculation (Total Profit / Total Revenue)
-    const avgMargin = useMemo(() => {
-        const pkgs = getAllPackages;
-        if (pkgs.length === 0) return 0;
-        let totalRevenue = 0;
-        let totalProfit = 0;
+    const activeOrdersCount = useMemo(() => {
+        return orders.filter(order => 
+            order.status === 'pending' || order.status === 'in_progress'
+        ).length;
+    }, [orders]);
 
-        pkgs.forEach(p => {
-            if (activeStatus[p.id]) {
-                const sp = prices[p.id] || 0;
-                const cp = costs[p.id] || 0;
-                totalRevenue += sp;
-                totalProfit += (sp - cp);
-            }
-        });
+    const totalSpent = useMemo(() => {
+        return users.reduce((sum, user) => sum + (user.credits?.totalSpent || 0), 0);
+    }, [users]);
 
-        if (totalRevenue === 0) return 0;
-        return ((totalProfit / totalRevenue) * 100).toFixed(1);
-    }, [getAllPackages, prices, costs, activeStatus]);
+    // Calculate net margin (revenue - spent) / revenue * 100
+    const netMargin = useMemo(() => {
+        if (totalRevenueNum === 0) return '0.0';
+        return (((totalRevenueNum - totalSpent) / totalRevenueNum) * 100).toFixed(1);
+    }, [totalRevenueNum, totalSpent]);
 
     return (
         <div className="space-y-8 pb-20">
@@ -275,491 +227,293 @@ export const SuperAdmin = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold font-archivo text-slate-900">Admin Management</h1>
-                    <p className="text-slate-500 mt-2">Oversee users, analytics, and service catalog.</p>
+                    <p className="text-slate-500 mt-2">Oversee users, analytics, and orders.</p>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-1 p-1 bg-slate-100/50 border border-slate-200 rounded-xl w-fit">
-                <button
-                    onClick={() => setActiveTab('analytics')}
-                    className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === 'analytics' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                >
-                    User Analytics
-                </button>
-                <button
-                    onClick={() => setActiveTab('pricing')}
-                    className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === 'pricing' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                >
-                    Price Management
-                </button>
-            </div>
-
             <AnimatePresence mode="wait">
-                {activeTab === 'analytics' ? (
-                    selectedUser ? (
-                        <motion.div
-                            key="user-detail"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="space-y-6"
-                        >
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => setSelectedUser(null)}
-                                    className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-                                >
-                                    <ArrowLeft className="w-6 h-6 text-slate-600" />
-                                </button>
-                                <div>
-                                    <h2 className="text-2xl font-bold font-archivo text-slate-900">{selectedUser.name}</h2>
-                                    <p className="text-slate-500">{selectedUser.email}</p>
-                                </div>
-                                <div className="ml-auto flex gap-3">
-                                    <button
-                                        onClick={() => handleToggleStatus(selectedUser.userId || selectedUser.id)}
-                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${selectedUser.status === 'active' ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'}`}
-                                    >
-                                        {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteUser(selectedUser.userId || selectedUser.id)}
-                                        className="px-4 py-2 rounded-xl text-sm font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all flex items-center gap-2"
-                                    >
-                                        <Trash2 className="w-4 h-4" /> Delete
-                                    </button>
-                                    <div className="h-8 w-px bg-slate-200 mx-1" />
-                                    <span className={`px-4 py-2 rounded-xl text-sm font-bold ${selectedUser.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {selectedUser.status === 'active' ? 'Active' : 'Inactive'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                    <h3 className="font-bold text-slate-900 mb-4 border-b pb-2">Onboarding Profile</h3>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <p className="text-xs text-slate-400 uppercase font-bold">Primary Goal</p>
-                                            <p className="font-medium text-slate-700">{selectedUser.onboarding?.goal || "N/A"}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-slate-400 uppercase font-bold">Industry</p>
-                                            <p className="font-medium text-slate-700">{selectedUser.onboarding?.industry || "N/A"}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-slate-400 uppercase font-bold">Top Platforms</p>
-                                            <div className="flex flex-wrap gap-2 mt-1">
-                                                {selectedUser.onboarding?.topPlatforms?.map((p: string) => (
-                                                    <span key={p} className="text-xs px-2 py-1 bg-slate-100 rounded-md text-slate-600">{p}</span>
-                                                )) || "N/A"}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                    <h3 className="font-bold text-slate-900 mb-4 border-b pb-2">Activity Summary</h3>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-500">Current Balance</span>
-                                            <span className="font-bold text-green-600 font-mono">₹{(selectedUser.credits?.balance || 0).toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-500">Total Spend</span>
-                                            <span className="font-bold text-blue-600 font-mono">{selectedUser.spend}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-500">Total Orders</span>
-                                            <span className="font-bold text-slate-900">{selectedUser.orders}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                    <h3 className="font-bold text-slate-900 mb-4 border-b pb-2">Account Insights</h3>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-500">Member Since</span>
-                                            <span className="font-medium text-slate-900">{selectedUser.joined}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-500">Last Active</span>
-                                            <span className="font-medium text-slate-900">2 hours ago</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-slate-400 uppercase font-bold mb-1">Account Tier</p>
-                                            <span className={`px-2 py-1 rounded text-xs font-bold inline-block ${parseInt(selectedUser.spend.replace(/[^0-9]/g, '')) > 20000 ? 'bg-purple-100 text-purple-700' : parseInt(selectedUser.spend.replace(/[^0-9]/g, '')) > 5000 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
-                                                {parseInt(selectedUser.spend.replace(/[^0-9]/g, '')) > 20000 ? 'VIP Platinum' : parseInt(selectedUser.spend.replace(/[^0-9]/g, '')) > 5000 ? 'Gold Member' : 'Standard'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                                <div className="p-6 border-b border-slate-100">
-                                    <h3 className="font-bold text-lg text-slate-900">Order History</h3>
-                                </div>
-                                <table className="w-full text-left">
-                                    <thead className="bg-slate-50 border-b border-slate-200">
-                                        <tr>
-                                            {['Order ID', 'Service', 'Amount', 'Price', 'Date', 'Status'].map(h => (
-                                                <th key={h} className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">{h}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {selectedUser.orderHistory?.length > 0 ? (
-                                            selectedUser.orderHistory.map((order: any) => (
-                                                <tr key={order.id} className="hover:bg-slate-50/50">
-                                                    <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">{order.id}</td>
-                                                    <td className="px-6 py-4 text-sm font-medium text-slate-900">{order.service}</td>
-                                                    <td className="px-6 py-4 text-sm text-slate-600">{order.amount}</td>
-                                                    <td className="px-6 py-4 text-sm font-mono text-blue-600 font-bold">{order.price}</td>
-                                                    <td className="px-6 py-4 text-sm text-slate-500">{order.date}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${order.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                                            order.status === 'Processing' ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600'
-                                                            }`}>
-                                                            {order.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={6} className="px-6 py-8 text-center text-slate-500 italic">No orders found.</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="analytics"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="space-y-6"
-                        >
-                            {/* Stats Logic Same as Before but Compact */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                {[
-                                    { label: 'Total Revenue', value: totalRevenueStr, icon: Coins, color: 'text-green-600', bg: 'bg-green-50' },
-                                    { label: 'Total Users', value: loading ? '...' : users.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-                                    { label: 'Active Orders', value: loading ? '...' : users.filter(u => u.orders && u.orders.length > 0).length.toString(), icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
-                                    { label: 'Net Margin', value: `${avgMargin}%`, icon: Percent, color: 'text-orange-600', bg: 'bg-orange-50' },
-                                ].map((stat, i) => (
-                                    <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`p-3 rounded-xl ${stat.bg}`}>
-                                                <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-                                                <p className="text-2xl font-bold font-archivo text-slate-900">{stat.value}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Search & Filters */}
-                            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                                <div className="relative w-full md:w-96">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search users..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                                    />
-                                </div>
-                                <div className="flex gap-3 relative">
-                                    <button
-                                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                        className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-bold transition-all ${isFilterOpen ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}
-                                    >
-                                        <Filter className="w-4 h-4" />
-                                        {filterStatus === 'all' ? 'Filters' : `Status: ${filterStatus}`}
-                                    </button>
-
-                                    {isFilterOpen && (
-                                        <div className="absolute top-full mt-2 w-48 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden">
-                                            <div className="p-2 border-b border-slate-100 bg-slate-50">
-                                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Filter by Status</p>
-                                            </div>
-                                            <div className="p-1">
-                                                {['all', 'Active', 'Inactive'].map((status) => (
-                                                    <button
-                                                        key={status}
-                                                        onClick={() => {
-                                                            setFilterStatus(status as any);
-                                                            setIsFilterOpen(false);
-                                                        }}
-                                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === status ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
-                                                    >
-                                                        {status === 'all' ? 'All Users' : status}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <button
-                                        onClick={handleExportCSV}
-                                        className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
-                                    >
-                                        <span>Export CSV</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Users Table */}
-                            <div className="bg-white border border-slate-200 rounded-2xl overflow-visible min-h-[400px]">
-                                <div className="overflow-visible">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead className="bg-slate-50 border-b border-slate-200">
-                                            <tr>
-                                                {['User', 'Spend', 'Orders', 'Joined', 'Status'].map(h => (
-                                                    <th key={h} className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {loading ? (
-                                                <tr>
-                                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                                                        <div className="flex items-center justify-center gap-2">
-                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                                            Loading users...
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ) : filteredUsers.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">No users found.</td>
-                                                </tr>
-                                            ) : (
-                                                filteredUsers.map((user) => (
-                                                    <tr
-                                                        key={user.userId || user.id}
-                                                        onClick={() => setSelectedUser(user)}
-                                                        className="hover:bg-slate-50/50 transition-colors z-10 relative cursor-pointer"
-                                                    >
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                                                                    {user.name.charAt(0)}
-                                                                </div>
-                                                                <div>
-                                                                    <p className="font-bold text-sm text-slate-900">{user.name}</p>
-                                                                    <p className="text-xs text-slate-500">{user.email}</p>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 font-mono text-sm text-blue-600 font-bold">
-                                                            ₹{(user.credits?.balance || 0).toFixed(2)}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm font-medium">{user.orders || 0}</td>
-                                                        <td className="px-6 py-4 text-sm text-slate-500">
-                                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                                                                {user.status === 'active' ? 'Active' : 'Inactive'}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )
-                ) : (
+                {selectedUser ? (
                     <motion.div
-                        key="pricing"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
+                        key="user-detail"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
                         className="space-y-6"
                     >
-                        {/* Advanced Pricing Table */}
-                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                            <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex gap-4 overflow-x-auto">
-                                <button
-                                    onClick={() => setSelectedCategoryFilter('all')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedCategoryFilter === 'all' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200'}`}
-                                >
-                                    All Networks
-                                </button>
-                                {Object.keys(servicesData).map(net => (
-                                    <button
-                                        key={net}
-                                        onClick={() => setSelectedCategoryFilter(net)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${selectedCategoryFilter === net ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-200'}`}
-                                    >
-                                        {net}
-                                    </button>
-                                ))}
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setSelectedUser(null)}
+                                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                            >
+                                <ArrowLeft className="w-6 h-6 text-slate-600" />
+                            </button>
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">{selectedUser.name || 'Unnamed User'}</h2>
+                                <p className="text-slate-500">{selectedUser.email}</p>
                             </div>
+                        </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-white border-b border-slate-200">
+                        {/* User Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-green-50 rounded-xl">
+                                        <Wallet className="w-6 h-6 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Current Balance</p>
+                                        <p className="text-2xl font-bold text-slate-900">{selectedUser.credits?.balance || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-blue-50 rounded-xl">
+                                        <Coins className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Total Purchased</p>
+                                        <p className="text-2xl font-bold text-slate-900">{selectedUser.credits?.totalPurchased || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-purple-50 rounded-xl">
+                                        <ShoppingCart className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Total Spent</p>
+                                        <p className="text-2xl font-bold text-slate-900">{selectedUser.credits?.totalSpent || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-4">
+                            <button
+                                onClick={() => setIsManageFundsOpen(true)}
+                                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                            >
+                                Manage Funds
+                            </button>
+                            <button
+                                onClick={() => handleToggleStatus(selectedUser._id)}
+                                className={`px-6 py-3 rounded-xl transition-colors font-medium ${
+                                    selectedUser.status === 'active'
+                                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                        : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                }`}
+                            >
+                                {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
+                            </button>
+                            <button
+                                onClick={() => handleDeleteUser(selectedUser._id)}
+                                className="px-6 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors font-medium"
+                            >
+                                Delete User
+                            </button>
+                        </div>
+
+                        {/* User Details Table */}
+                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="p-6 border-b border-slate-200">
+                                <h3 className="text-lg font-bold text-slate-900">User Information</h3>
+                            </div>
+                            <div className="p-6 overflow-x-auto">
+                                <table className="w-full">
+                                    <tbody className="divide-y divide-slate-200">
                                         <tr>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[40%]">Package Details</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cost (Credits)</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Price (Credits)</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Profit</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Margin</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+                                            <td className="py-3 text-slate-600 font-medium whitespace-nowrap">User ID</td>
+                                            <td className="py-3 text-slate-900 font-mono text-sm break-all">{selectedUser._id}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {getAllPackages.map((pkg) => {
-                                            const sp = prices[pkg.id] || 0;
-                                            const cp = costs[pkg.id] || 0;
-                                            const isActive = activeStatus[pkg.id] ?? true;
-                                            const profit = sp - cp;
-                                            const margin = sp > 0 ? ((profit / sp) * 100).toFixed(1) : '0.0';
-                                            // Determine styles based on margin value
-                                            let marginColor = 'bg-slate-100 text-slate-700';
-                                            let showUpArrow = false;
-                                            let showDownArrow = false;
-
-                                            const marginNum = Number(margin);
-
-                                            if (marginNum >= 40) {
-                                                marginColor = 'bg-green-100 text-green-700';
-                                                showUpArrow = true;
-                                            } else if (marginNum >= 20) {
-                                                marginColor = 'bg-blue-50 text-blue-700';
-                                                showUpArrow = true;
-                                            } else if (marginNum >= 0) {
-                                                marginColor = 'bg-amber-100 text-amber-700';
-                                                showDownArrow = true;
-                                            } else {
-                                                marginColor = 'bg-red-100 text-red-700';
-                                                showDownArrow = true;
-                                            }
-
-                                            return (
-                                                <tr key={pkg.id} className={`transition-colors group ${isActive ? 'hover:bg-slate-50/50' : 'bg-slate-50/50'}`}>
-                                                    <td className={`px-6 py-4 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                                                        <div className="flex items-start gap-4">
-                                                            <div className={`p-2 rounded-lg mt-1 ${pkg.bg}`}>
-                                                                <pkg.icon className={`w-4 h-4 ${pkg.color}`} />
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-bold text-sm text-slate-900">{pkg.name}</p>
-                                                                <div className="flex gap-2 mt-1">
-                                                                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">{pkg.id}</span>
-                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold">{pkg.category}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleToggleActive(pkg.id);
-                                                            }}
-                                                            className={`
-                                                                relative w-12 h-7 rounded-full transition-colors duration-300 ease-in-out cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-500/20
-                                                                ${isActive ? 'bg-blue-600 shadow-inner' : 'bg-slate-200 shadow-inner'}
-                                                            `}
-                                                        >
-                                                            <motion.span
-                                                                layout
-                                                                transition={{ type: "spring", stiffness: 700, damping: 30 }}
-                                                                className={`
-                                                                    block w-5 h-5 bg-white rounded-full shadow-lg pointer-events-none
-                                                                    ${isActive ? 'ml-[1.35rem]' : 'ml-1'}
-                                                                `}
-                                                            />
-                                                        </button>
-                                                    </td>
-                                                    <td className={`px-6 py-4 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                                                        <div className="relative group/input">
-                                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] font-bold uppercase tracking-wider">CR</span>
-                                                            <input
-                                                                type="number"
-                                                                disabled={!isActive}
-                                                                value={costs[pkg.id]}
-                                                                onChange={(e) => handleCostChange(pkg.id, e.target.value)}
-                                                                className="w-24 pl-3 pr-8 py-1.5 rounded-lg border border-transparent bg-slate-50 hover:bg-white focus:bg-white focus:border-blue-500 hover:border-slate-300 transition-all font-mono text-sm font-medium outline-none text-slate-600 disabled:bg-transparent"
-                                                            />
-                                                        </div>
-                                                    </td>
-                                                    <td className={`px-6 py-4 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                                                        <div className="relative group/input">
-                                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] font-bold uppercase tracking-wider">CR</span>
-                                                            <input
-                                                                type="number"
-                                                                disabled={!isActive}
-                                                                value={prices[pkg.id]}
-                                                                onChange={(e) => handlePriceChange(pkg.id, e.target.value)}
-                                                                className="w-24 pl-3 pr-8 py-1.5 rounded-lg border border-blue-100 bg-blue-50/30 hover:bg-white focus:bg-white focus:border-blue-500 hover:border-blue-300 transition-all font-mono text-sm font-bold outline-none text-blue-700 disabled:bg-transparent disabled:text-slate-500"
-                                                            />
-                                                        </div>
-                                                    </td>
-                                                    <td className={`px-6 py-4 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                                                        <p className={`font-mono text-sm font-bold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                                            {profit > 0 ? '+' : ''}{profit}
-                                                        </p>
-                                                    </td>
-                                                    <td className={`px-6 py-4 ${!isActive ? 'opacity-50 grayscale' : ''}`}>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${marginColor}`}>
-                                                                {margin}%
-                                                            </span>
-                                                            {isActive && showUpArrow && <ArrowUpRight className="w-3 h-3 text-green-600" />}
-                                                            {isActive && showDownArrow && <ArrowDownRight className="w-3 h-3 text-red-500" />}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button
-                                                            disabled={!isActive}
-                                                            onClick={() => {
-                                                                const { icon, ...pkgSerial } = pkg;
-                                                                const net = networks.find(n => n.id === pkg.network);
-                                                                const netSerial = net ? { ...net, icon: undefined } : undefined;
-                                                                navigate('/dashboard/place-order', { state: { package: pkgSerial, network: netSerial || { title: 'Social Platform' } } });
-                                                            }}
-                                                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap ${isActive
-                                                                ? 'bg-slate-900 text-white hover:bg-blue-600'
-                                                                : 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                                                                }`}
-                                                        >
-                                                            <ShoppingCart className="w-3.5 h-3.5" />
-                                                            Order Now
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
+                                        <tr>
+                                            <td className="py-3 text-slate-600 font-medium whitespace-nowrap">Email</td>
+                                            <td className="py-3 text-slate-900 break-all">{selectedUser.email}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-3 text-slate-600 font-medium whitespace-nowrap">Status</td>
+                                            <td className="py-3">
+                                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
+                                                    selectedUser.status === 'active' 
+                                                        ? 'bg-green-100 text-green-700' 
+                                                        : 'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                    {selectedUser.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-3 text-slate-600 font-medium whitespace-nowrap">Joined</td>
+                                            <td className="py-3 text-slate-900">
+                                                {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'N/A'}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-3 text-slate-600 font-medium whitespace-nowrap">Last Login</td>
+                                            <td className="py-3 text-slate-900">
+                                                {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleDateString() : 'Never'}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </motion.div>
+                ) : (
+                    <div className="space-y-6">
+                        {/* Stats Overview */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            {[
+                                { label: 'Total Revenue', value: totalRevenueStr, icon: Coins, color: 'text-green-600', bg: 'bg-green-50' },
+                                { label: 'Total Users', value: loading ? '...' : users.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+                                { label: 'Active Orders', value: loading ? '...' : activeOrdersCount.toString(), icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
+                                { label: 'Net Margin', value: `${netMargin}%`, icon: Percent, color: 'text-orange-600', bg: 'bg-orange-50' },
+                            ].map((stat, i) => (
+                                <div key={i} className="p-4 md:p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className={`p-2 md:p-3 rounded-xl ${stat.bg} shrink-0`}>
+                                            <stat.icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-xs md:text-sm text-slate-500 truncate">{stat.label}</p>
+                                            <p className="text-xl md:text-2xl font-bold text-slate-900 truncate">{stat.value}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* User Management */}
+                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="p-4 md:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h3 className="text-lg font-bold text-slate-900">All Users</h3>
+                                <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                                    <div className="relative flex-1 min-w-[200px] sm:flex-initial">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search users..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                            className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                                        >
+                                            <Filter className="w-5 h-5 text-slate-600" />
+                                        </button>
+                                        {isFilterOpen && (
+                                            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                                                {(['all', 'active', 'inactive'] as const).map((status) => (
+                                                    <button
+                                                        key={status}
+                                                        onClick={() => {
+                                                            setFilterStatus(status);
+                                                            setIsFilterOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors text-sm ${
+                                                            filterStatus === status ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
+                                                        }`}
+                                                    >
+                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={handleExportCSV}
+                                        className="px-3 md:px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors flex items-center gap-2 whitespace-nowrap text-sm"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        <span className="hidden sm:inline">Export CSV</span>
+                                        <span className="sm:hidden">Export</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-slate-50">
+                                        <tr>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">User</th>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Balance</th>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Purchased</th>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Spent</th>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Joined</th>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={6} className="px-4 md:px-6 py-8 md:py-12 text-center text-slate-500 text-sm">
+                                                    Loading users...
+                                                </td>
+                                            </tr>
+                                        ) : filteredUsers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="px-4 md:px-6 py-8 md:py-12 text-center text-slate-500 text-sm">
+                                                    No users found.
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredUsers.map((user) => (
+                                                <tr 
+                                                    key={user._id} 
+                                                    onClick={() => setSelectedUser(user)}
+                                                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                                                >
+                                                    <td className="px-4 md:px-6 py-3 md:py-4">
+                                                        <div className="min-w-0">
+                                                            <div className="font-medium text-slate-900 text-sm truncate">{user.name || 'Unnamed User'}</div>
+                                                            <div className="text-xs md:text-sm text-slate-500 truncate">{user.email}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap">
+                                                        <span className="font-mono font-medium text-slate-900 text-sm">
+                                                            {user.credits?.balance || 0}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap hidden sm:table-cell">
+                                                        <span className="font-mono text-slate-600 text-sm">
+                                                            {user.credits?.totalPurchased || 0}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap hidden lg:table-cell">
+                                                        <span className="font-mono text-slate-600 text-sm">
+                                                            {user.credits?.totalSpent || 0}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 md:px-6 py-3 md:py-4 text-slate-600 text-sm whitespace-nowrap hidden md:table-cell">
+                                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                                                    </td>
+                                                    <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap">
+                                                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
+                                                            user.status === 'active' 
+                                                                ? 'bg-green-100 text-green-700' 
+                                                                : 'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                            {user.status === 'active' ? 'Active' : 'Inactive'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </AnimatePresence>
 
-            {/* Manage Funds Modal - The "Ultimate" Premium Edition */}
-            {/* Manage Funds Modal - Professional Minimalist Edition */}
+            {/* Manage Funds Modal */}
             <AnimatePresence>
                 {isManageFundsOpen && selectedUser && createPortal(
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
@@ -767,258 +521,102 @@ export const SuperAdmin = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => !isProcessing && !isSuccess && setIsManageFundsOpen(false)}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                            onClick={() => !isProcessing && setIsManageFundsOpen(false)}
                         />
-
                         <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                            className="relative w-full max-w-md bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-slate-200"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
                         >
-                            {/* Processing/Success Subtle Overlays */}
-                            <AnimatePresence>
-                                {isSuccess && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm"
-                                    >
-                                        <motion.div
-                                            initial={{ scale: 0.5, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4"
+                            <div className="p-4 md:p-6 border-b border-slate-200 flex items-center justify-between">
+                                <h3 className="text-lg md:text-xl font-bold text-slate-900">Manage User Funds</h3>
+                                <button
+                                    onClick={() => !isProcessing && setIsManageFundsOpen(false)}
+                                    disabled={isProcessing}
+                                    className="p-2 hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                    <X className="w-5 h-5 text-slate-600" />
+                                </button>
+                            </div>
+
+                            <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+                                <div className="p-4 bg-slate-50 rounded-xl">
+                                    <p className="text-sm text-slate-600">Current Balance</p>
+                                    <p className="text-2xl md:text-3xl font-bold text-slate-900">{selectedUser.credits?.balance || 0} Credits</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Action</label>
+                                    <div className="flex gap-2 md:gap-3">
+                                        <button
+                                            onClick={() => setFundAction('add')}
+                                            disabled={isProcessing}
+                                            className={`flex-1 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
+                                                fundAction === 'add'
+                                                    ? 'bg-green-600 text-white'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                            }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                                                <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-none stroke-current stroke-[3]">
-                                                    <path d="M20 6L9 17L4 12" />
-                                                </svg>
-                                            </div>
-                                        </motion.div>
-                                        <h4 className="text-lg font-bold text-slate-900">Adjustment Complete</h4>
-                                        <p className="text-sm text-slate-500">The balance has been updated</p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {/* Header Section - Refined for Professional Minimalism */}
-                            <div className="relative pt-10 px-8 pb-6 overflow-hidden">
-                                {/* Subtle Decorative Glow */}
-                                <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl opacity-50" />
-                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl opacity-50" />
-
-                                <div className="relative flex justify-between items-start">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100/50">
-                                            <Wallet className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Update Balance</h3>
-                                            <p className="text-sm text-slate-500 mt-0.5">Adjusting credits for <span className="font-semibold text-blue-600">{selectedUser.name}</span></p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setIsManageFundsOpen(false)}
-                                        className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors bg-white/50 backdrop-blur-sm border border-slate-200/50"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="px-8 pb-8 space-y-8">
-                                {/* Type Toggle - More Refined */}
-                                <div className="flex p-1.5 bg-slate-50 border border-slate-200/60 rounded-2xl">
-                                    <button
-                                        onClick={() => setFundAction('add')}
-                                        className={`flex-1 py-3 rounded-[14px] text-sm font-bold transition-all duration-200 ${fundAction === 'add' ? 'bg-white text-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.06)] border border-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        Add Funds
-                                    </button>
-                                    <button
-                                        onClick={() => setFundAction('deduct')}
-                                        className={`flex-1 py-3 rounded-[14px] text-sm font-bold transition-all duration-200 ${fundAction === 'deduct' ? 'bg-white text-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.06)] border border-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        Deduct Funds
-                                    </button>
-                                </div>
-
-                                {/* Amount Input */}
-                                <div className="space-y-4">
-                                    <div className="relative group">
-                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-300 group-focus-within:text-blue-500 transition-colors">
-                                            {fundAction === 'add' ? '+' : '-'}
-                                        </div>
-                                        <input
-                                            type="number"
-                                            value={fundAmount}
-                                            onChange={e => setFundAmount(e.target.value)}
-                                            placeholder="0.00"
-                                            className="w-full pl-12 pr-6 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] text-4xl font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-200"
-                                        />
-                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                            Credits
-                                        </div>
-                                    </div>
-
-                                    {/* Note Input */}
-                                    <div className="space-y-2 px-1">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transaction Note</label>
-                                        <input
-                                            type="text"
-                                            value={fundReason}
-                                            onChange={e => setFundReason(e.target.value)}
-                                            placeholder="e.g. Compensation for order lag"
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:border-blue-500 outline-none transition-all"
-                                        />
+                                            Add Credits
+                                        </button>
+                                        <button
+                                            onClick={() => setFundAction('deduct')}
+                                            disabled={isProcessing}
+                                            className={`flex-1 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
+                                                fundAction === 'deduct'
+                                                    ? 'bg-red-600 text-white'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                            }`}
+                                        >
+                                            Deduct Credits
+                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Summary Grid */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current</p>
-                                        <p className="text-sm font-bold text-slate-900">{selectedUser.balance}</p>
-                                    </div>
-                                    <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100">
-                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Upcoming</p>
-                                        <p className="text-sm font-bold text-blue-600">
-                                            {(() => {
-                                                const cur = parseInt(selectedUser.balance.replace(/[^0-9]/g, '')) || 0;
-                                                const amt = parseInt(fundAmount) || 0;
-                                                return (fundAction === 'add' ? cur + amt : cur - amt).toLocaleString();
-                                            })()} CR
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Action */}
-                                <button
-                                    onClick={handleManageFunds}
-                                    disabled={!fundAmount || isProcessing}
-                                    className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${fundAmount ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/10 active:scale-[0.98]' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
-                                >
-                                    {isProcessing ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            <span>Processing Update...</span>
-                                        </>
-                                    ) : (
-                                        <span>Confirm Adjustment</span>
-                                    )}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>,
-                    document.body
-                )}
-            </AnimatePresence>
-
-            {/* Movement History (Transactions) - Professional Minimalist Edition */}
-            <AnimatePresence>
-                {isTransactionsOpen && selectedUser && createPortal(
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsTransactionsOpen(false)}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.98, y: -10 }}
-                            className="relative bg-white rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.12)] w-full max-w-3xl overflow-hidden border border-slate-200 flex flex-col max-h-[85vh]"
-                        >
-                            {/* Header */}
-                            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-xl font-bold text-slate-900">Movement History</h3>
-                                    <p className="text-sm text-slate-400 mt-0.5">Comprehensive financial logs for <span className="font-semibold text-blue-600">{selectedUser.name}</span></p>
-                                </div>
-                                <button
-                                    onClick={() => setIsTransactionsOpen(false)}
-                                    className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {/* Search Bar - Understated */}
-                            <div className="px-8 py-4 bg-slate-50/50 border-b border-slate-100">
-                                <div className="relative group max-w-md">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Amount</label>
                                     <input
-                                        type="text"
-                                        placeholder="Filter by ref or reason..."
-                                        value={txnSearchQuery}
-                                        onChange={(e) => setTxnSearchQuery(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm transition-all shadow-sm"
+                                        type="number"
+                                        value={fundAmount}
+                                        onChange={(e) => setFundAmount(e.target.value)}
+                                        disabled={isProcessing}
+                                        placeholder="Enter amount"
+                                        className="w-full px-4 py-2 md:py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 text-sm md:text-base"
                                     />
                                 </div>
-                            </div>
 
-                            {/* Table Area */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                <table className="w-full text-left border-separate border-spacing-0">
-                                    <thead className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm">
-                                        <tr>
-                                            <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Reference</th>
-                                            <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Type</th>
-                                            <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Impact</th>
-                                            <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Narrative</th>
-                                            <th className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Timestamp</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {filteredTransactions.length > 0 ? (
-                                            filteredTransactions.map((txn: Transaction) => (
-                                                <tr key={txn.id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-8 py-5">
-                                                        <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md uppercase">{txn.id}</span>
-                                                    </td>
-                                                    <td className="px-8 py-5">
-                                                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold ${txn.type === 'Credit' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                            {txn.type}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-8 py-5">
-                                                        <span className={`text-sm font-bold ${txn.type === 'Credit' ? 'text-blue-600' : 'text-slate-900'}`}>
-                                                            {txn.type === 'Credit' ? '+' : '-'}{txn.amount.split(' ')[0]}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-8 py-5">
-                                                        <p className="text-sm text-slate-600 font-medium truncate max-w-[180px]">{txn.reason}</p>
-                                                    </td>
-                                                    <td className="px-8 py-5 text-right">
-                                                        <span className="text-[10px] font-bold text-slate-400">{txn.date}</span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={5} className="px-8 py-20 text-center text-slate-400 italic text-sm">
-                                                    No activity logs found.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">Reason (Optional)</label>
+                                    <textarea
+                                        value={fundReason}
+                                        onChange={(e) => setFundReason(e.target.value)}
+                                        disabled={isProcessing}
+                                        placeholder="Enter reason for this transaction"
+                                        rows={3}
+                                        className="w-full px-4 py-2 md:py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none disabled:opacity-50 text-sm md:text-base"
+                                    />
+                                </div>
 
-                            {/* Footer */}
-                            <div className="px-8 py-5 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                    Found Logs: <span className="text-slate-900 font-black">{filteredTransactions.length}</span>
-                                </p>
+                                {isSuccess && (
+                                    <div className="p-3 md:p-4 bg-green-50 border border-green-200 rounded-xl">
+                                        <p className="text-green-700 font-medium text-center text-sm md:text-base">
+                                            ✓ Funds updated successfully!
+                                        </p>
+                                    </div>
+                                )}
+
                                 <button
-                                    onClick={() => setIsTransactionsOpen(false)}
-                                    className="px-6 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
+                                    onClick={handleManageFunds}
+                                    disabled={isProcessing || !fundAmount || parseFloat(fundAmount) <= 0}
+                                    className={`w-full px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
+                                        fundAction === 'add'
+                                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                                            : 'bg-red-600 hover:bg-red-700 text-white'
+                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
-                                    Dismiss Console
+                                    {isProcessing ? 'Processing...' : `${fundAction === 'add' ? 'Add' : 'Deduct'} Credits`}
                                 </button>
                             </div>
                         </motion.div>
@@ -1026,10 +624,6 @@ export const SuperAdmin = () => {
                     document.body
                 )}
             </AnimatePresence>
-
-            {/* Order Modal Integration Removed */}
-
-            {/* Global Success Notification Removed */}
         </div>
     );
 };

@@ -13,7 +13,8 @@ export interface User {
   };
   credits?: {
     balance: number;
-    currency: string;
+    totalPurchased: number;
+    totalSpent: number;
   };
   createdAt: string;
   updatedAt: string;

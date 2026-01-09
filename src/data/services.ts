@@ -88,18 +88,6 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             ]
         },
         {
-            id: "INST-VOTES",
-            title: "Story Votes",
-            description: "Real votes for your story polls and sliders",
-            icon: Vote,
-            color: "text-purple-500",
-            bg: "bg-purple-500/10",
-            packages: [
-                { id: "INST-VOT-1", name: "Instagram Story Poll Votes [ Option A/B ]", price: "85" },
-                { id: "INST-VOT-2", name: "Instagram Story Slider Votes [ 100% ]", price: "95" }
-            ]
-        },
-        {
             id: "INST-REPOST",
             title: "Repost",
             description: "Increase reach by having others repost your content",
@@ -132,7 +120,10 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             bg: "bg-orange-500/10",
             packages: [
                 { id: "INST-LIV-1", name: "Instagram Live Views [ 30 Mins ]", price: "450" },
-                { id: "INST-LIV-2", name: "Instagram Live Views [ 60 Mins ]", price: "750" }
+                { id: "INST-LIV-2", name: "Instagram Live Views [ 60 Mins ]", price: "750" },
+                { id: "INST-LIV-3", name: "Instagram Live Views [ 15 minutes ] [Price for 100]", price: "10.4", minQuantity: 100, maxQuantity: 100000 },
+                { id: "INST-LIV-4", name: "Instagram Live Views [ 30 minutes ] [Price for 100]", price: "20.9", minQuantity: 100, maxQuantity: 100000 },
+                { id: "INST-LIV-5", name: "Instagram Live Views [ 60 minutes ] [Price for 100]", price: "43", minQuantity: 100, maxQuantity: 100000 }
             ]
         },
         {
@@ -172,7 +163,11 @@ export const servicesData: Record<string, ServiceCategory[]> = {
                 { id: "4031", name: "Vote For [ 1st Option or 'A' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
                 { id: "4032", name: "Vote For [ 2nd Option or 'B' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
                 { id: "4033", name: "Vote For [ 3rd Option or 'C' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
-                { id: "4034", name: "Vote For [ 4th Option or 'D' ]", price: "268", minQuantity: 10, maxQuantity: 100000 }
+                { id: "4034", name: "Vote For [ 4th Option or 'D' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
+                { id: "4035", name: "Vote For [ 1st Option or 'A' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4036", name: "Vote For [ 2nd Option or 'B' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4037", name: "Vote For [ 3rd Option or 'C' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4038", name: "Vote For [ 4th Option or 'D' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 }
             ]
         }
     ],

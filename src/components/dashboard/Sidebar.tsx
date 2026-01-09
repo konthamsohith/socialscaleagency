@@ -29,12 +29,20 @@ const adminMenuItem = { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboa
 
 export const Sidebar = () => {
     const location = useLocation();
-    const { logout, isAdmin } = useAuth();
+    const { logout, isAdmin, user, refreshUser } = useAuth();
     const [credits, setCredits] = useState<number>(0);
 
     useEffect(() => {
         loadCredits();
+        refreshUser(); // Refresh user data to get latest credits
     }, []);
+
+    // Update credits when user data changes (after payment)
+    useEffect(() => {
+        if (user?.credits?.balance !== undefined) {
+            setCredits(user.credits.balance);
+        }
+    }, [user?.credits?.balance]);
 
     const loadCredits = async () => {
         try {

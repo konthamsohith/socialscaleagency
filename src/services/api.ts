@@ -279,6 +279,57 @@ class ApiService {
     const response = await this.api.delete(`/users/${userId}`);
     return response.data;
   }
+
+  // ==================== INVOICES ====================
+  async getInvoices(page = 1, limit = 10): Promise<{ success: boolean; data: any[]; pagination: any }> {
+    const response = await this.api.get('/invoices', { params: { page, limit } });
+    return response.data;
+  }
+
+  async getInvoiceById(invoiceId: string): Promise<{ success: boolean; data: any }> {
+    const response = await this.api.get(`/invoices/${invoiceId}`);
+    return response.data;
+  }
+
+  async downloadInvoice(invoiceId: string): Promise<Blob> {
+    const response = await this.api.get(`/invoices/${invoiceId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  // ==================== NOTIFICATIONS ====================
+  async getNotifications(page = 1, limit = 20, read?: boolean): Promise<{ success: boolean; data: any[]; pagination: any }> {
+    const params: any = { page, limit };
+    if (typeof read === 'boolean') params.read = read;
+    const response = await this.api.get('/notifications', { params });
+    return response.data;
+  }
+
+  async getUnreadNotificationsCount(): Promise<{ success: boolean; data: { count: number } }> {
+    const response = await this.api.get('/notifications/unread-count');
+    return response.data;
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<{ success: boolean; data: any }> {
+    const response = await this.api.put(`/notifications/${notificationId}/read`);
+    return response.data;
+  }
+
+  async markAllNotificationsAsRead(): Promise<{ success: boolean; message: string }> {
+    const response = await this.api.put('/notifications/mark-all-read');
+    return response.data;
+  }
+
+  async deleteNotification(notificationId: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  }
+
+  async deleteAllNotifications(): Promise<{ success: boolean; message: string }> {
+    const response = await this.api.delete('/notifications');
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();
