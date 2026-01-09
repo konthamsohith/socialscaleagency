@@ -67,6 +67,7 @@ export const AuthCallback = () => {
       >
         <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
         <p className="text-slate-600">Completing sign in...</p>
+        {/* Force redeploy trigger */}
       </motion.div>
     </div>
   );
