@@ -19,7 +19,7 @@ export const AuthCallback = () => {
 
         try {
           // Fetch user data and set in context
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1'}/auth/me`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${accessToken}`
             }
