@@ -1,20 +1,35 @@
 import { useState } from 'react';
 import { Layers, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { apiService } from '../../services/api';
 
 export const MassOrder = () => {
     const [orders, setOrders] = useState('');
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock submission logic
+        
         if (!orders.trim()) {
             setStatus('error');
             return;
         }
-        console.log('Submitting mass orders:', orders);
-        setStatus('success');
-        setTimeout(() => setStatus('idle'), 3000);
+
+        setStatus('loading');
+
+        try {
+            const response = await apiService.createMassOrder(orders);
+            
+            if (response.success) {
+                setStatus('success');
+                setOrders(''); // Clear the form
+                setTimeout(() => setStatus('idle'), 5000);
+            } else {
+                setStatus('error');
+            }
+        } catch (error) {
+            console.error('Failed to create mass orders:', error);
+            setStatus('error');
+        }
     };
 
     return (
@@ -47,10 +62,11 @@ export const MassOrder = () => {
                             <div className="flex items-center justify-between">
                                 <button
                                     type="submit"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+                                    disabled={status === 'loading'}
+                                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
                                 >
                                     <Layers size={18} />
-                                    Submit Orders
+                                    {status === 'loading' ? 'Submitting...' : 'Submit Orders'}
                                 </button>
 
                                 {status === 'success' && (
@@ -62,7 +78,7 @@ export const MassOrder = () => {
                                 {status === 'error' && (
                                     <div className="flex items-center gap-2 text-red-600 font-medium animate-in fade-in slide-in-from-left-2">
                                         <AlertCircle size={18} />
-                                        Please enter valid valid orders.
+                                        Failed to submit orders.
                                     </div>
                                 )}
                             </div>

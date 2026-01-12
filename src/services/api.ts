@@ -162,6 +162,11 @@ class ApiService {
     return response.data;
   }
 
+  async createMassOrder(orders: string): Promise<{ success: boolean; message: string; data: { successfulOrders: any[]; failedOrders: any[]; totalCreditsDeducted: number } }> {
+    const response = await this.api.post('/orders/mass', { orders });
+    return response.data;
+  }
+
   async getOrders(params?: { page?: number; limit?: number; status?: string }): Promise<{ success: boolean; data: Order[]; pagination: any }> {
     const response = await this.api.get('/orders', { params });
     return response.data;
