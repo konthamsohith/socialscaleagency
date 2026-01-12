@@ -20,8 +20,6 @@ import { apiService } from '../../services/api';
 import { networks } from '../../data/services';
 import clsx from 'clsx';
 import { useNotifications } from '../../context/NotificationContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { apiService } from '../../services/api';
 
 // Helper for large numbers
 const formatNumber = (num: number) => {

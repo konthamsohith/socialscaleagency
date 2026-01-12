@@ -1,33 +1,29 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 
 import { motion } from 'framer-motion';
 import {
     FileText,
-    Download,
-    Plus,
-    Save,
-    CreditCard,
-    Check
+    Download
 } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Profile = () => {
     // Auth & Refs
-    const { user, refreshUser, isLoading } = useAuth();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { user, isLoading } = useAuth();
+    // const fileInputRef = useRef<HTMLInputElement>(null);
 
     // State
-    const [saving, setSaving] = useState(false);
+    // const [saving, setSaving] = useState(false);
 
     // Form Data
     const [displayName, setDisplayName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [company, setCompany] = useState('');
-    const [location, setLocation] = useState('');
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-    const [notes, setNotes] = useState('');
+    // const [phone, setPhone] = useState('');
+    // const [company, setCompany] = useState('');
+    // const [location, setLocation] = useState('');
+    // const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    // const [notes, setNotes] = useState('');
 
 
     // UI State
@@ -39,11 +35,11 @@ export const Profile = () => {
     useEffect(() => {
         if (user) {
             setDisplayName(user.name || '');
-            setAvatarUrl(user.photoURL || null);
-            setPhone(user.phone || '');
-            setCompany(user.company || '');
-            setLocation(user.location || '');
-            setNotes(user.notes || '');
+            // setAvatarUrl(user.photoURL || null);
+            // setPhone(user.phone || '');
+            // setCompany(user.company || '');
+            // setLocation(user.location || '');
+            // setNotes(user.notes || '');
         }
     }, [user]);
 
@@ -89,6 +85,7 @@ export const Profile = () => {
             .slice(0, 2);
     };
 
+    /*
     const handleImageClick = () => {
         // fileInputRef.current?.click();
         alert("Avatar upload is coming soon!");
@@ -122,6 +119,7 @@ export const Profile = () => {
             setSaving(false);
         }
     };
+    */
 
     if (isLoading) {
 

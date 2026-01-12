@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -18,6 +18,8 @@ import {
     AlertTriangle
 } from 'lucide-react';
 import { apiService } from '../../services/api';
+import { AdminAnalytics } from './AdminAnalytics';
+import { UserAnalytics } from './UserAnalytics';
 
 // Types - Define interface that matches backend User model
 interface AdminUser {
@@ -37,7 +39,9 @@ interface AdminUser {
 export const SuperAdmin = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [currentView, setCurrentView] = useState<'overview' | 'analytics'>('overview');
 
     // Users State
     const [users, setUsers] = useState<AdminUser[]>([]);
@@ -55,7 +59,7 @@ export const SuperAdmin = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            
+
             // Fetch users
             const usersResponse = await apiService.getAllUsers(1, 1000);
             const fetchedUsers: AdminUser[] = (usersResponse.data?.users || usersResponse.data || []).map((user: any) => ({
@@ -97,7 +101,7 @@ export const SuperAdmin = () => {
     const [deleteSuccessMessage, setDeleteSuccessMessage] = useState('');
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = 
+        const matchesSearch =
             user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             user.email?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
@@ -137,8 +141,8 @@ export const SuperAdmin = () => {
 
             const newStatus = user.status === 'active' ? 'inactive' : 'active';
             await apiService.updateUser(userId, { status: newStatus });
-            
-            setUsers(users.map(u => 
+
+            setUsers(users.map(u =>
                 u._id === userId ? { ...u, status: newStatus } : u
             ));
         } catch (error) {
@@ -156,8 +160,8 @@ export const SuperAdmin = () => {
         try {
             const amount = parseFloat(fundAmount);
             const currentBalance = selectedUser.credits?.balance || 0;
-            const newBalance = fundAction === 'add' 
-                ? currentBalance + amount 
+            const newBalance = fundAction === 'add'
+                ? currentBalance + amount
                 : currentBalance - amount;
 
             if (newBalance < 0) {
@@ -170,8 +174,8 @@ export const SuperAdmin = () => {
                 credits: {
                     ...selectedUser.credits,
                     balance: newBalance,
-                    totalPurchased: fundAction === 'add' 
-                        ? (selectedUser.credits?.totalPurchased || 0) + amount 
+                    totalPurchased: fundAction === 'add'
+                        ? (selectedUser.credits?.totalPurchased || 0) + amount
                         : selectedUser.credits?.totalPurchased || 0
                 }
             });
@@ -182,8 +186,8 @@ export const SuperAdmin = () => {
                 credits: {
                     ...selectedUser.credits,
                     balance: newBalance,
-                    totalPurchased: fundAction === 'add' 
-                        ? (selectedUser.credits?.totalPurchased || 0) + amount 
+                    totalPurchased: fundAction === 'add'
+                        ? (selectedUser.credits?.totalPurchased || 0) + amount
                         : selectedUser.credits?.totalPurchased || 0
                 }
             };
@@ -209,10 +213,10 @@ export const SuperAdmin = () => {
     // Handle CSV Export
     const handleExportCSV = () => {
         const csvHeaders = 'Name,Email,Balance,Total Purchased,Status,Joined\n';
-        const csvData = filteredUsers.map(user => 
+        const csvData = filteredUsers.map(user =>
             `"${user.name || 'N/A'}","${user.email}","${user.credits?.balance || 0}","${user.credits?.totalPurchased || 0}","${user.status}","${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}"`
         ).join('\n');
-        
+
         const blob = new Blob([csvHeaders + csvData], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -229,7 +233,7 @@ export const SuperAdmin = () => {
     const totalRevenueStr = `${totalRevenueNum.toLocaleString()} Credits`;
 
     const activeOrdersCount = useMemo(() => {
-        return orders.filter(order => 
+        return orders.filter(order =>
             order.status === 'pending' || order.status === 'in_progress'
         ).length;
     }, [orders]);
@@ -272,6 +276,26 @@ export const SuperAdmin = () => {
                 <div>
                     <h1 className="text-3xl font-bold font-archivo text-slate-900">Admin Management</h1>
                     <p className="text-slate-500 mt-2">Oversee users, analytics, and orders.</p>
+                </div>
+                <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <button
+                        onClick={() => setCurrentView('overview')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentView === 'overview'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-900'
+                            }`}
+                    >
+                        Overview
+                    </button>
+                    <button
+                        onClick={() => setCurrentView('analytics')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentView === 'analytics'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-900'
+                            }`}
+                    >
+                        Analytics
+                    </button>
                 </div>
             </div>
 
@@ -345,6 +369,13 @@ export const SuperAdmin = () => {
                             </div>
                         </div>
 
+                        {/* User Analytics */}
+                        <UserAnalytics
+                            orders={orders}
+                            userId={selectedUser._id}
+                            userName={selectedUser.name || 'User'}
+                        />
+
                         {/* Action Buttons */}
                         <div className="flex flex-wrap gap-4">
                             <button
@@ -355,11 +386,10 @@ export const SuperAdmin = () => {
                             </button>
                             <button
                                 onClick={() => handleToggleStatus(selectedUser._id)}
-                                className={`px-6 py-3 rounded-xl transition-colors font-medium ${
-                                    selectedUser.status === 'active'
-                                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                        : 'bg-green-50 text-green-600 hover:bg-green-100'
-                                }`}
+                                className={`px-6 py-3 rounded-xl transition-colors font-medium ${selectedUser.status === 'active'
+                                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                    : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                    }`}
                             >
                                 {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
                             </button>
@@ -390,11 +420,10 @@ export const SuperAdmin = () => {
                                         <tr>
                                             <td className="py-3 text-slate-600 font-medium whitespace-nowrap">Status</td>
                                             <td className="py-3">
-                                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
-                                                    selectedUser.status === 'active' 
-                                                        ? 'bg-green-100 text-green-700' 
-                                                        : 'bg-slate-100 text-slate-600'
-                                                }`}>
+                                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${selectedUser.status === 'active'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-slate-100 text-slate-600'
+                                                    }`}>
                                                     {selectedUser.status}
                                                 </span>
                                             </td>
@@ -458,12 +487,11 @@ export const SuperAdmin = () => {
                                                         {order.creditsUsed?.toLocaleString() || 0}
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded ${
-                                                            order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
                                                             order.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-red-100 text-red-700'
-                                                        }`}>
+                                                                order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                                    'bg-red-100 text-red-700'
+                                                            }`}>
                                                             {order.status || 'unknown'}
                                                         </span>
                                                     </td>
@@ -478,7 +506,7 @@ export const SuperAdmin = () => {
                             </div>
                         </div>
                     </motion.div>
-                ) : (
+                ) : currentView === 'overview' ? (
                     <div className="space-y-6">
                         {/* Stats Overview */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -533,9 +561,8 @@ export const SuperAdmin = () => {
                                                             setFilterStatus(status);
                                                             setIsFilterOpen(false);
                                                         }}
-                                                        className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors text-sm ${
-                                                            filterStatus === status ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
-                                                        }`}
+                                                        className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors text-sm ${filterStatus === status ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
+                                                            }`}
                                                     >
                                                         {status.charAt(0).toUpperCase() + status.slice(1)}
                                                     </button>
@@ -553,7 +580,7 @@ export const SuperAdmin = () => {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead className="bg-slate-50">
@@ -581,8 +608,8 @@ export const SuperAdmin = () => {
                                             </tr>
                                         ) : (
                                             filteredUsers.map((user) => (
-                                                <tr 
-                                                    key={user._id} 
+                                                <tr
+                                                    key={user._id}
                                                     onClick={() => setSelectedUser(user)}
                                                     className="hover:bg-slate-50 cursor-pointer transition-colors"
                                                 >
@@ -611,11 +638,10 @@ export const SuperAdmin = () => {
                                                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                                     </td>
                                                     <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap">
-                                                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
-                                                            user.status === 'active' 
-                                                                ? 'bg-green-100 text-green-700' 
-                                                                : 'bg-slate-100 text-slate-600'
-                                                        }`}>
+                                                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${user.status === 'active'
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-slate-100 text-slate-600'
+                                                            }`}>
                                                             {user.status === 'active' ? 'Active' : 'Inactive'}
                                                         </span>
                                                     </td>
@@ -627,6 +653,20 @@ export const SuperAdmin = () => {
                             </div>
                         </div>
                     </div>
+                ) : null}
+            </AnimatePresence>
+
+            {/* Analytics View */}
+            <AnimatePresence mode="wait">
+                {currentView === 'analytics' && !selectedUser && (
+                    <motion.div
+                        key="analytics"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                    >
+                        <AdminAnalytics />
+                    </motion.div>
                 )}
             </AnimatePresence>
 
@@ -670,22 +710,20 @@ export const SuperAdmin = () => {
                                         <button
                                             onClick={() => setFundAction('add')}
                                             disabled={isProcessing}
-                                            className={`flex-1 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
-                                                fundAction === 'add'
-                                                    ? 'bg-green-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                            }`}
+                                            className={`flex-1 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${fundAction === 'add'
+                                                ? 'bg-green-600 text-white'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
                                         >
                                             Add Credits
                                         </button>
                                         <button
                                             onClick={() => setFundAction('deduct')}
                                             disabled={isProcessing}
-                                            className={`flex-1 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
-                                                fundAction === 'deduct'
-                                                    ? 'bg-red-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                            }`}
+                                            className={`flex-1 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${fundAction === 'deduct'
+                                                ? 'bg-red-600 text-white'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
                                         >
                                             Deduct Credits
                                         </button>
@@ -727,11 +765,10 @@ export const SuperAdmin = () => {
                                 <button
                                     onClick={handleManageFunds}
                                     disabled={isProcessing || !fundAmount || parseFloat(fundAmount) <= 0}
-                                    className={`w-full px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
-                                        fundAction === 'add'
-                                            ? 'bg-green-600 hover:bg-green-700 text-white'
-                                            : 'bg-red-600 hover:bg-red-700 text-white'
-                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    className={`w-full px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${fundAction === 'add'
+                                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                                        : 'bg-red-600 hover:bg-red-700 text-white'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                     {isProcessing ? 'Processing...' : `${fundAction === 'add' ? 'Add' : 'Deduct'} Credits`}
                                 </button>
