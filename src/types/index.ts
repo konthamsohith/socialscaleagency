@@ -16,6 +16,13 @@ export interface User {
     totalPurchased: number;
     totalSpent: number;
   };
+  // Profile Fields
+  phone?: string;
+  location?: string;
+  company?: string;
+  photoURL?: string;
+  notes?: string;
+
   createdAt: string;
   updatedAt: string;
 }

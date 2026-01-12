@@ -1,24 +1,56 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import {
-    FileText,
-    Download
-} from 'lucide-react';
-import clsx from 'clsx';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 
+import { motion } from 'framer-motion';
+import {
+    FileText,
+    Download,
+    Plus,
+    Save,
+    CreditCard,
+    Check
+} from 'lucide-react';
+import clsx from 'clsx';
+
 export const Profile = () => {
-    const { user, isLoading } = useAuth();
+    // Auth & Refs
+    const { user, refreshUser, isLoading } = useAuth();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // State
+    const [saving, setSaving] = useState(false);
+
+    // Form Data
+    const [displayName, setDisplayName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [company, setCompany] = useState('');
+    const [location, setLocation] = useState('');
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [notes, setNotes] = useState('');
+
 
     // UI State
     const [activeTab, setActiveTab] = useState('notifications');
     const [invoices, setInvoices] = useState<any[]>([]);
     const [loadingInvoices, setLoadingInvoices] = useState(false);
 
+    // Initialize User Data
+    useEffect(() => {
+        if (user) {
+            setDisplayName(user.name || '');
+            setAvatarUrl(user.photoURL || null);
+            setPhone(user.phone || '');
+            setCompany(user.company || '');
+            setLocation(user.location || '');
+            setNotes(user.notes || '');
+        }
+    }, [user]);
+
     useEffect(() => {
         loadInvoices();
     }, []);
+
 
     const loadInvoices = async () => {
         try {
@@ -57,7 +89,42 @@ export const Profile = () => {
             .slice(0, 2);
     };
 
+    const handleImageClick = () => {
+        // fileInputRef.current?.click();
+        alert("Avatar upload is coming soon!");
+    };
+
+    const handleImageChange = async (_: React.ChangeEvent<HTMLInputElement>) => {
+        // Disabled for now until API supports upload
+        console.log("Image upload disabled");
+    };
+
+    const handleSave = async () => {
+        if (!user) return;
+        setSaving(true);
+
+        try {
+            await apiService.updateProfile({
+                profile: {
+                    name: displayName,
+                    phone,
+                    company,
+                    location,
+                    notes,
+                }
+            });
+
+            await refreshUser();
+        } catch (err: any) {
+            console.error("Error saving profile:", err);
+            alert(`Failed to save changes: ${err.message || 'Unknown error'}`);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (isLoading) {
+
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="text-slate-500">Loading profile...</div>
@@ -94,7 +161,8 @@ export const Profile = () => {
                             </div>
                         </div>
 
-                        <h2 className="text-xl font-bold text-slate-900">{user.name}</h2>
+                        <h2 className="text-xl font-bold text-slate-900">{displayName || user.name || 'User'}</h2>
+
                         <p className="text-slate-400 text-sm mb-6">{user.email}</p>
 
                         <div className="grid grid-cols-2 w-full border-t border-slate-100 pt-6 gap-4">
@@ -107,6 +175,11 @@ export const Profile = () => {
                                 <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Role</div>
                             </div>
                         </div>
+
+                        <button className="w-full mt-6 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors text-sm" onClick={() => alert('Coming soon!')}>
+                            Edit Avatar
+                        </button>
+
                     </div>
                 </div>
 
@@ -145,10 +218,8 @@ export const Profile = () => {
                             {/* Status */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Account Status</label>
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                                    user.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-                                }`}>
-                                    {user.status === 'active' ? 'Active' : 'Inactive'}
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                    {user.status || 'Active Member'}
                                 </span>
                             </div>
 
@@ -164,7 +235,7 @@ export const Profile = () => {
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Date</label>
                                 <div className="font-semibold text-slate-900 pl-1">
-                                    {new Date(user.createdAt).toLocaleDateString()}
+                                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                 </div>
                             </div>
                         </div>
@@ -187,9 +258,7 @@ export const Profile = () => {
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-slate-600">Account Status</span>
-                                <span className={`text-xs font-medium ${
-                                    user.status === 'active' ? 'text-green-600' : 'text-red-600'
-                                }`}>
+                                <span className={`text-xs font-medium ${user.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
                                     {user.status === 'active' ? 'Active' : 'Inactive'}
                                 </span>
                             </div>
@@ -318,7 +387,7 @@ export const Profile = () => {
                                             </div>
                                         </div>
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button 
+                                            <button
                                                 onClick={() => handleDownloadInvoice(invoice._id, `Invoice-${invoice._id.slice(-8)}`)}
                                                 className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-500"
                                             >
@@ -336,3 +405,4 @@ export const Profile = () => {
         </div>
     );
 };
+

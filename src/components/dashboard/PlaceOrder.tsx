@@ -14,6 +14,9 @@ import {
     Info,
     Check
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { apiService } from '../../services/api';
+
 import { networks } from '../../data/services';
 import clsx from 'clsx';
 import { useNotifications } from '../../context/NotificationContext';
@@ -132,6 +135,7 @@ export const PlaceOrder = () => {
     const { addNotification } = useNotifications();
     const { user, refreshUser } = useAuth();
 
+
     const [pkg, setPkg] = useState<any>(null);
     const [network, setNetwork] = useState<any>(null);
     const [style, setStyle] = useState<any>(getNetworkStyle());
@@ -170,7 +174,7 @@ export const PlaceOrder = () => {
         setPriceLoading(true);
         try {
             const { platform, serviceType } = getPlatformAndServiceType(packageData.id);
-            
+
             if (platform === 'unknown' || serviceType === 'unknown') {
                 console.warn('Unknown platform/service type for package:', packageData.id);
                 setRealPrice(parseFloat(packageData.price) || 0);
@@ -198,6 +202,7 @@ export const PlaceOrder = () => {
     const pricePerThousand = realPrice || parseFloat(pkg.price) || 0;
     const totalCost = (quantity / 1000) * pricePerThousand;
 
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -205,6 +210,7 @@ export const PlaceOrder = () => {
         if (!link.trim()) return setError('Please enter a valid target link');
         if (quantity < minQty) return setError(`Minimum order quantity is ${minQty}`);
         if (quantity > maxQty) return setError(`Maximum order quantity is ${maxQty}`);
+        if (!user) return setError('You must be logged in to place an order');
 
         if (!user) return setError('User not authenticated');
 
@@ -212,34 +218,40 @@ export const PlaceOrder = () => {
 
         try {
             const orderData = {
-                service: pkg.id,
+                service: Number(pkg.id),
                 link: link,
                 quantity: quantity
             };
 
             const response = await apiService.createOrder(orderData);
-            const order = response.data.order;
-            setSuccessOrderIds(prev => [...prev, order._id]);
 
-            // Refresh user data to update credits
-            await refreshUser();
+            if (response.success) {
+                const order = response.data.order;
+                setSuccessOrderIds(prev => [...prev, order._id]);
 
-            // Add notification
-            addNotification({
-                title: 'Order Created',
-                message: `Your ${network.title} order (#${order._id.slice(-6).toUpperCase()}) has been created and is pending processing.`,
-                type: 'info',
-                icon: CheckCircle2
-            });
+                // Refresh user data to update credits
+                await refreshUser();
 
-            setTimeout(() => {
-                navigate('/dashboard/orders');
-            }, 2000);
+                // Add notification
+                addNotification({
+                    title: 'Order Created',
+                    message: `Your ${network.title} order (#${order._id.slice(-6).toUpperCase()}) has been created and is pending processing.`,
+                    type: 'info',
+                    icon: CheckCircle2
+                });
+
+                setTimeout(() => {
+                    navigate('/dashboard/orders');
+                }, 2000);
+            } else {
+                throw new Error(response.message || 'Failed to place order');
+            }
 
         } catch (err: any) {
             console.error('Order submission error:', err);
             const errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Failed to place order';
             setError(errorMessage);
+
         } finally {
             setLoading(false);
         }

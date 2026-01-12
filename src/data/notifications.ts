@@ -1,4 +1,4 @@
-import { Package, CheckCircle2, AlertCircle, Info, LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 
 export interface Notification {
