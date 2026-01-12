@@ -37,6 +37,94 @@ const getNetworkStyle = (networkName: string = '') => {
     if (n.includes('tiktok')) return { bg: 'bg-gradient-to-br from-black to-slate-800', text: 'text-slate-900', light: 'bg-slate-50', border: 'border-slate-200', shadow: 'shadow-slate-500/20' };
     return { bg: 'bg-gradient-to-br from-indigo-500 to-purple-600', text: 'text-indigo-600', light: 'bg-indigo-50', border: 'border-indigo-100', shadow: 'shadow-indigo-500/20' };
 };
+const getPlatformAndServiceType = (categoryId: string) => {
+    const platformMap: Record<string, string> = {
+        'INST-FOLLOWERS': 'instagram',
+        'INST-LIKES': 'instagram',
+        'INST-STORY': 'instagram',
+        'INST-REPOST': 'instagram',
+        'INST-RANDOM-COMM': 'instagram',
+        'INST-LIVE-VIEWS': 'instagram',
+        'INST-REELS-VIEWS': 'instagram',
+        'INST-CHANNEL-MEM': 'instagram',
+        'INST-STORY-VOTES': 'instagram',
+        'TIK-FOLLOWERS': 'tiktok',
+        'TIK-LIKES': 'tiktok',
+        'TIK-VIEWS': 'tiktok',
+        'LNK-FOLLOWERS': 'linkedin',
+        'LNK-LIKES': 'linkedin',
+        'LNK-SHARES': 'linkedin',
+        'YT-SUBS': 'youtube',
+        'YT-VIEWS': 'youtube',
+        'YT-WATCH': 'youtube',
+        'X-FOLLOWERS': 'twitter',
+        'X-LIKES': 'twitter',
+        'THR-FOL': 'threads',
+        'THR-LIKES': 'threads',
+        'THR-RESHARES': 'threads',
+        'THR-COMMENTS': 'threads',
+        'PIN-FOL': 'pinterest',
+        'PIN-LIKES': 'pinterest',
+        'PIN-REPINS': 'pinterest',
+        'FB-LIKES': 'facebook',
+        'FB-FOLLOWERS': 'facebook',
+        'FB-VIEWS': 'facebook',
+        'SPT-FOLLOWERS': 'spotify',
+        'TG-MEM': 'telegram',
+        'TG-VIEWS': 'telegram',
+        'QR-FOLLOWERS': 'quora',
+        'QR-VIEWS': 'quora',
+        'QR-LIKES': 'quora',
+        'QR-SHARES': 'quora',
+        'QR-UPVOTES': 'quora'
+    };
+
+    const serviceTypeMap: Record<string, string> = {
+        'INST-FOLLOWERS': 'follower',
+        'INST-LIKES': 'like',
+        'INST-STORY': 'view',
+        'INST-REPOST': 'repost',
+        'INST-RANDOM-COMM': 'comment',
+        'INST-LIVE-VIEWS': 'live_view',
+        'INST-REELS-VIEWS': 'view',
+        'INST-CHANNEL-MEM': 'channel_member',
+        'INST-STORY-VOTES': 'vote',
+        'TIK-FOLLOWERS': 'follower',
+        'TIK-LIKES': 'like',
+        'TIK-VIEWS': 'view',
+        'LNK-FOLLOWERS': 'follower',
+        'LNK-LIKES': 'like',
+        'LNK-SHARES': 'share',
+        'YT-SUBS': 'subscriber',
+        'YT-VIEWS': 'view',
+        'YT-WATCH': 'watch_time',
+        'X-FOLLOWERS': 'follower',
+        'X-LIKES': 'like',
+        'THR-FOL': 'follower',
+        'THR-LIKES': 'like',
+        'THR-RESHARES': 'reshare',
+        'THR-COMMENTS': 'comment',
+        'PIN-FOL': 'follower',
+        'PIN-LIKES': 'like',
+        'PIN-REPINS': 'repin',
+        'FB-LIKES': 'like',
+        'FB-FOLLOWERS': 'follower',
+        'FB-VIEWS': 'view',
+        'SPT-FOLLOWERS': 'follower',
+        'TG-MEM': 'member',
+        'TG-VIEWS': 'view',
+        'QR-FOLLOWERS': 'follower',
+        'QR-VIEWS': 'view',
+        'QR-LIKES': 'like',
+        'QR-SHARES': 'share',
+        'QR-UPVOTES': 'upvote'
+    };
+
+    return {
+        platform: platformMap[categoryId] || 'unknown',
+        serviceType: serviceTypeMap[categoryId] || 'unknown'
+    };
+};
 
 export const PlaceOrder = () => {
     const location = useLocation();
@@ -53,6 +141,8 @@ export const PlaceOrder = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successOrderIds, setSuccessOrderIds] = useState<string[]>([]);
+    const [realPrice, setRealPrice] = useState<number | null>(null);
+    const [priceLoading, setPriceLoading] = useState(false);
 
     useEffect(() => {
         if (location.state?.package) {
@@ -66,16 +156,47 @@ export const PlaceOrder = () => {
 
             // Set init quantity (min)
             if (p.minQuantity) setQuantity(p.minQuantity);
+
+            // Fetch real pricing from backend
+            fetchRealPricing(p);
         } else {
             navigate('/dashboard');
         }
     }, [location.state, navigate]);
 
+    const fetchRealPricing = async (packageData: any) => {
+        if (!packageData.id) return;
+
+        setPriceLoading(true);
+        try {
+            const { platform, serviceType } = getPlatformAndServiceType(packageData.id);
+            
+            if (platform === 'unknown' || serviceType === 'unknown') {
+                console.warn('Unknown platform/service type for package:', packageData.id);
+                setRealPrice(parseFloat(packageData.price) || 0);
+                return;
+            }
+
+            // Use the pricing API to get real-time pricing
+            const response = await apiService.calculateCredits(platform, serviceType, quantity);
+
+            const creditsRequired = response.data.credits;
+            setRealPrice(creditsRequired); // This is the price for the specified quantity
+        } catch (error) {
+            console.error('Failed to fetch real pricing:', error);
+            // Fallback to static price
+            setRealPrice(parseFloat(packageData.price) || 0);
+        } finally {
+            setPriceLoading(false);
+        }
+    };
+
     if (!pkg || !network) return null;
 
     const minQty = pkg.minQuantity || 100;
     const maxQty = pkg.maxQuantity || 100000;
-    const totalCost = (quantity / 1000) * pkg.price;
+    const pricePerThousand = realPrice || parseFloat(pkg.price) || 0;
+    const totalCost = (quantity / 1000) * pricePerThousand;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -269,7 +390,9 @@ export const PlaceOrder = () => {
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
                                     <span className="text-white/70 font-medium">Service Rate</span>
-                                    <span className="font-bold text-lg">{pkg.price} CR / 1K</span>
+                                    <span className="font-bold text-lg">
+                                        {priceLoading ? '...' : `${pricePerThousand.toLocaleString()} CR / 1K`}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-white/70 font-medium">Quantity</span>

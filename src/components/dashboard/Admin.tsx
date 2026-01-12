@@ -210,6 +210,7 @@ export const Admin = () => {
     const [editingPrice, setEditingPrice] = useState<string | null>(null);
     const [priceInput, setPriceInput] = useState<string>('');
     const [servicesDataState, setServicesDataState] = useState(servicesData);
+    const [loadingPrices, setLoadingPrices] = useState(false);
     const [adminData, setAdminData] = useState<{
         totalRevenue: number;
         totalUsers: number;
@@ -243,7 +244,7 @@ export const Admin = () => {
                 if (user?.role === 'SUPER_ADMIN') {
                     promises.push(
                         apiService.getAnalyticsSummary().catch(() => ({ data: { revenue: 0, realCost: 0 } })),
-                        apiService.getAllUsers(1, 100).catch(() => ({ data: { users: [], pagination: { total: 0 } } })),
+                        apiService.getAllUsers(1, 1000).catch(() => ({ data: { users: [], pagination: { total: 0 } } })),
                         apiService.getOrders({ status: 'active' }).catch(() => ({ data: [], pagination: { total: 0 } }))
                     );
                 }
@@ -265,8 +266,18 @@ export const Admin = () => {
                 if (user?.role === 'SUPER_ADMIN') {
                     analytics = (results[index++] as any).data || { revenue: 0, realCost: 0 };
                     const usersRes = results[index++] as any;
-                    users = usersRes.data?.users || [];
-                    usersPagination = usersRes.data?.pagination || { total: 0 };
+                    // Properly map users data like SuperAdmin does
+                    const fetchedUsers = (usersRes.data?.users || usersRes.data || []);
+                    users = fetchedUsers.map((u: any) => ({
+                        _id: u._id || u.userId,
+                        name: u.name,
+                        email: u.email,
+                        credits: u.credits,
+                        status: u.status,
+                        createdAt: u.createdAt,
+                        lastLogin: u.lastLogin
+                    }));
+                    usersPagination = usersRes.data?.pagination || { total: fetchedUsers.length };
                     const ordersRes = results[index++] as any;
                     orders = ordersRes.data || [];
                     ordersPagination = ordersRes.pagination || { total: 0 };
@@ -281,18 +292,18 @@ export const Admin = () => {
 
                 setAdminData({
                     totalRevenue: analytics.revenue || 0,
-                    totalUsers: usersPagination.total || 0,
+                    totalUsers: usersPagination.total || users.length,
                     activeOrders: ordersPagination.total || orders.length || 0,
                     netMargin: parseFloat(netMargin),
                     fampageBalance,
-                    users: users.map((user: any) => ({
-                        id: user.userId,
-                        name: user.name,
-                        email: user.email,
-                        spend: user.credits?.balance || 0,
-                        orders: 0, // TODO: Calculate from orders data
-                        joined: new Date(user.createdAt).toLocaleDateString(),
-                        status: user.status === 'active' ? 'Active' : 'Inactive'
+                    users: users.map((u: any) => ({
+                        id: u._id,
+                        name: u.name,
+                        email: u.email,
+                        spend: u.credits?.balance || 0,
+                        orders: 0,
+                        joined: new Date(u.createdAt).toLocaleDateString(),
+                        status: u.status === 'active' ? 'Active' : 'Inactive'
                     }))
                 });
             } catch (error) {
@@ -333,6 +344,73 @@ export const Admin = () => {
         if (category.packages && category.packages.length > 0) {
             setSelectedCategory(category);
             setView('packages');
+            // Fetch live pricing from backend when viewing packages
+            fetchLivePricing(category);
+        }
+    };
+
+    const fetchLivePricing = async (category: ServiceCategory) => {
+        if (!category.packages || category.packages.length === 0) return;
+
+        try {
+            setLoadingPrices(true);
+            const { platform, serviceType } = getPlatformAndServiceType(category.id);
+
+            // Fetch global pricing rules from backend
+            const pricingRules = await apiService.getPricingRules({
+                scope: 'global',
+                isActive: true
+            });
+
+            console.log('Fetched pricing rules:', pricingRules.data);
+
+            // Find the rule for this platform and service type
+            const applicableRule = pricingRules.data.find((rule: any) =>
+                rule.servicePricing.some((p: any) => 
+                    p.platform === platform && p.serviceType === serviceType
+                )
+            );
+
+            if (applicableRule) {
+                const pricing = applicableRule.servicePricing.find(
+                    (p: any) => p.platform === platform && p.serviceType === serviceType
+                );
+
+                if (pricing) {
+                    // Convert creditsPerUnit back to price per 1000
+                    const pricePerThousand = Math.round(pricing.creditsPerUnit * 1000);
+                    console.log(`Applying backend pricing: ${pricePerThousand} credits per 1000 for ${platform} ${serviceType}`);
+
+                    // Update the services data state with backend pricing
+                    setServicesDataState(prev => {
+                        const updated = { ...prev };
+                        if (selectedNetwork) {
+                            const networkData = [...(updated[selectedNetwork.id] || [])];
+                            const categoryIndex = networkData.findIndex(cat => cat.id === category.id);
+                            
+                            if (categoryIndex !== -1 && networkData[categoryIndex].packages) {
+                                // Update all packages in this category with the backend price
+                                networkData[categoryIndex] = {
+                                    ...networkData[categoryIndex],
+                                    packages: networkData[categoryIndex].packages!.map(pkg => ({
+                                        ...pkg,
+                                        price: pricePerThousand.toString()
+                                    }))
+                                };
+                                updated[selectedNetwork.id] = networkData;
+                            }
+                        }
+                        return updated;
+                    });
+                }
+            } else {
+                console.log('No backend pricing rule found, using static prices');
+            }
+        } catch (error) {
+            console.error('Error fetching live pricing:', error);
+            // On error, continue with static prices
+        } finally {
+            setLoadingPrices(false);
         }
     };
 
@@ -443,6 +521,11 @@ export const Admin = () => {
     };
 
     const handleSavePrice = async (pkgId: string) => {
+        if (user?.role !== 'SUPER_ADMIN') {
+            alert('Access denied: Admin privileges required');
+            return;
+        }
+
         if (!selectedCategory || !selectedNetwork) return;
 
         try {
@@ -454,18 +537,22 @@ export const Admin = () => {
                 return;
             }
 
-            // Create or update global pricing rule
+            console.log(`Updating price for ${platform} - ${serviceType} to ${newPrice} credits per 1000 units`);
+
+            // Create or update global pricing rule with HIGH priority to override defaults
             const ruleData = {
+                name: `${platform.charAt(0).toUpperCase() + platform.slice(1)} ${serviceType.charAt(0).toUpperCase() + serviceType.slice(1)} - Global Pricing`,
+                description: `Admin-set pricing for ${platform} ${serviceType}`,
                 scope: 'global',
                 servicePricing: [{
                     platform,
                     serviceType,
-                    creditsPerUnit: newPrice / 1000, // Convert to per unit
+                    creditsPerUnit: newPrice / 1000, // Convert to per unit (e.g., 5000 credits for 1000 = 5 credits per unit)
                     minQuantity: 10,
                     maxQuantity: 100000
                 }],
                 isActive: true,
-                priority: 1
+                priority: 100 // High priority to ensure it overrides defaults
             };
 
             // Check if rule exists
@@ -474,17 +561,23 @@ export const Admin = () => {
                 isActive: true
             });
 
+            console.log('Existing pricing rules:', existingRules.data);
+
             const existingRule = existingRules.data.find((rule: any) =>
                 rule.servicePricing.some((p: any) => p.platform === platform && p.serviceType === serviceType)
             );
 
             if (existingRule) {
+                console.log(`Updating existing pricing rule: ${existingRule._id}`);
                 await apiService.updatePricingRule(existingRule._id, ruleData);
             } else {
+                console.log('Creating new global pricing rule');
                 await apiService.createPricingRule(ruleData);
             }
 
-            // Update local services data
+            console.log('Price rule saved successfully to database');
+
+            // Update local services data to reflect the change immediately in UI
             setServicesDataState(prev => {
                 const updated = { ...prev };
                 const networkData = updated[selectedNetwork.id];
@@ -503,10 +596,10 @@ export const Admin = () => {
 
             setEditingPrice(null);
             setPriceInput('');
-            alert('Price updated successfully!');
-        } catch (error) {
+            alert(`✓ Price updated successfully!\n\nAll users will now see ${newPrice} credits for ${platform} ${serviceType} (per 1000 units).\n\nThis change is applied globally across the entire system.`);
+        } catch (error: any) {
             console.error('Error updating price:', error);
-            alert('Failed to update price');
+            alert(`Failed to update price: ${error.response?.data?.message || error.message || 'Unknown error'}`);
         }
     };
 
@@ -711,10 +804,10 @@ export const Admin = () => {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600 mr-3">
-                                                                {user.name.charAt(0).toUpperCase()}
+                                                                {((user.name && user.name.length > 0) ? user.name : 'U').charAt(0).toUpperCase()}
                                                             </div>
                                                             <div>
-                                                                <div className="text-sm font-medium text-slate-900">{user.name}</div>
+                                                                <div className="text-sm font-medium text-slate-900">{user.name || 'Unknown User'}</div>
                                                                 <div className="text-sm text-slate-500">{user.email}</div>
                                                             </div>
                                                         </div>
@@ -902,7 +995,11 @@ export const Admin = () => {
                         </div>
 
                         <div className="grid grid-cols-1 gap-3">
-                            {packages.map((pkg, index) => {
+                            {loadingPrices ? (
+                                <div className="text-center py-12">
+                                    <p className="text-slate-500">Loading latest prices...</p>
+                                </div>
+                            ) : packages.map((pkg, index) => {
                                 // Extract tags from [ bracketed ] names
                                 const tags = pkg.name.match(/\[(.*?)\]/g)?.map(t => t.replace(/[\[\]]/g, '')) || [];
                                 const cleanName = pkg.name.replace(/\[.*?\]/g, '').trim();
@@ -974,12 +1071,14 @@ export const Admin = () => {
                                                         <>
                                                             <span className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{pkg.price}</span>
                                                             <span className="text-[10px] font-bold text-slate-400">Credits</span>
-                                                            <button
-                                                                onClick={() => handleEditPrice(pkg.id, pkg.price)}
-                                                                className="ml-2 text-blue-600 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            >
-                                                                <Edit className="w-3 h-3" />
-                                                            </button>
+                                                            {user?.role === 'SUPER_ADMIN' && (
+                                                                <button
+                                                                    onClick={() => handleEditPrice(pkg.id, pkg.price)}
+                                                                    className="ml-2 text-blue-600 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    <Edit className="w-3 h-3" />
+                                                                </button>
+                                                            )}
                                                         </>
                                                     )}
                                                 </div>

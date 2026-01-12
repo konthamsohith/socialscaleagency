@@ -216,8 +216,8 @@ class ApiService {
   }
 
   // ==================== PRICING ====================
-  async calculateCredits(service: number, quantity: number): Promise<{ success: boolean; data: { credits: number; pricing: any } }> {
-    const response = await this.api.post('/pricing/calculate', { service, quantity });
+  async calculateCredits(platform: string, serviceType: string, quantity: number): Promise<{ success: boolean; data: { credits: number; pricing: any } }> {
+    const response = await this.api.post('/pricing/calculate', { platform, serviceType, quantity });
     return response.data;
   }
 

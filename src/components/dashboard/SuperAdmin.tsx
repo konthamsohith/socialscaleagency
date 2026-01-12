@@ -12,7 +12,10 @@ import {
     ArrowLeft,
     X,
     ShoppingCart,
-    Download
+    Download,
+    Trash2,
+    CheckCircle,
+    AlertTriangle
 } from 'lucide-react';
 import { apiService } from '../../services/api';
 
@@ -87,6 +90,12 @@ export const SuperAdmin = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    // Delete User Modal States
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteSuccessMessage, setDeleteSuccessMessage] = useState('');
+
     const filteredUsers = users.filter(user => {
         const matchesSearch = 
             user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,15 +104,29 @@ export const SuperAdmin = () => {
         return matchesSearch && matchesStatus;
     });
 
-    const handleDeleteUser = async (userId: string) => {
-        if (!window.confirm('Are you sure you want to delete this user?')) return;
-        
+    const handleDeleteUser = (user: AdminUser) => {
+        setUserToDelete(user);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteUser = async () => {
+        if (!userToDelete) return;
+
+        setIsDeleting(true);
         try {
-            await apiService.deleteUser(userId);
-            setUsers(users.filter(u => u._id !== userId));
+            await apiService.deleteUser(userToDelete._id);
+            setUsers(users.filter(u => u._id !== userToDelete._id));
+            setDeleteSuccessMessage(`User "${userToDelete.name || userToDelete.email}" has been deleted successfully.`);
+            setIsDeleteModalOpen(false);
+            setUserToDelete(null);
+
+            // Auto-hide success message after 5 seconds
+            setTimeout(() => setDeleteSuccessMessage(''), 5000);
         } catch (error) {
             console.error('Failed to delete user:', error);
             alert('Failed to delete user');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -223,6 +246,27 @@ export const SuperAdmin = () => {
 
     return (
         <div className="space-y-8 pb-20">
+            {/* Success Message */}
+            <AnimatePresence>
+                {deleteSuccessMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3"
+                    >
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        <p className="text-green-800 font-medium">{deleteSuccessMessage}</p>
+                        <button
+                            onClick={() => setDeleteSuccessMessage('')}
+                            className="ml-auto text-green-600 hover:text-green-700"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -254,7 +298,7 @@ export const SuperAdmin = () => {
                         </div>
 
                         {/* User Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <div className="p-3 bg-green-50 rounded-xl">
@@ -288,6 +332,17 @@ export const SuperAdmin = () => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-orange-50 rounded-xl">
+                                        <ShoppingCart className="w-6 h-6 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-slate-500">Total Orders</p>
+                                        <p className="text-2xl font-bold text-slate-900">{orders.filter(o => o.userId === selectedUser._id).length}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Action Buttons */}
@@ -309,7 +364,7 @@ export const SuperAdmin = () => {
                                 {selectedUser.status === 'active' ? 'Deactivate User' : 'Activate User'}
                             </button>
                             <button
-                                onClick={() => handleDeleteUser(selectedUser._id)}
+                                onClick={() => handleDeleteUser(selectedUser)}
                                 className="px-6 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors font-medium"
                             >
                                 Delete User
@@ -358,6 +413,68 @@ export const SuperAdmin = () => {
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+
+                        {/* User Orders Section */}
+                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+                                <h3 className="text-lg font-bold text-slate-900">User Orders ({orders.filter(o => o.userId === selectedUser._id).length})</h3>
+                            </div>
+                            <div className="overflow-x-auto">
+                                {orders.filter(o => o.userId === selectedUser._id).length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <ShoppingCart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                                        <p className="text-slate-500">No orders found for this user</p>
+                                    </div>
+                                ) : (
+                                    <table className="w-full">
+                                        <thead className="bg-slate-50">
+                                            <tr>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Order ID</th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Service</th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Quantity</th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Credits</th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200">
+                                            {orders.filter(o => o.userId === selectedUser._id).map((order: any) => (
+                                                <tr key={order._id} className="hover:bg-slate-50">
+                                                    <td className="px-6 py-4 text-sm font-mono text-slate-900">
+                                                        {order._id.substring(0, 8)}...
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-slate-900">
+                                                        <div>
+                                                            <div className="font-medium">{order.serviceId || 'N/A'}</div>
+                                                            <div className="text-xs text-slate-500">{order.platform || 'N/A'} - {order.serviceType || 'N/A'}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-slate-900">
+                                                        {order.quantity?.toLocaleString() || 0}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                                                        {order.creditsUsed?.toLocaleString() || 0}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded ${
+                                                            order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                            order.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                            'bg-red-100 text-red-700'
+                                                        }`}>
+                                                            {order.status || 'unknown'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-slate-500">
+                                                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
                     </motion.div>
@@ -618,6 +735,83 @@ export const SuperAdmin = () => {
                                 >
                                     {isProcessing ? 'Processing...' : `${fundAction === 'add' ? 'Add' : 'Deduct'} Credits`}
                                 </button>
+                            </div>
+                        </motion.div>
+                    </div>,
+                    document.body
+                )}
+            </AnimatePresence>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {isDeleteModalOpen && userToDelete && createPortal(
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                            onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+                        >
+                            <div className="p-4 md:p-6 border-b border-slate-200 flex items-center justify-between">
+                                <h3 className="text-lg md:text-xl font-bold text-slate-900">Delete User</h3>
+                                <button
+                                    onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
+                                    disabled={isDeleting}
+                                    className="p-2 hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                    <X className="w-5 h-5 text-slate-600" />
+                                </button>
+                            </div>
+
+                            <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+                                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                                    <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+                                    <div>
+                                        <p className="text-red-800 font-medium">Warning</p>
+                                        <p className="text-red-700 text-sm">This action cannot be undone. The user and all associated data will be permanently deleted.</p>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-slate-50 rounded-xl">
+                                    <p className="text-sm text-slate-600 mb-2">User to delete:</p>
+                                    <div className="font-medium text-slate-900">{userToDelete.name || 'Unnamed User'}</div>
+                                    <div className="text-sm text-slate-500">{userToDelete.email}</div>
+                                    <div className="text-xs text-slate-400 mt-1">ID: {userToDelete._id}</div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setIsDeleteModalOpen(false)}
+                                        disabled={isDeleting}
+                                        className="flex-1 px-4 md:px-6 py-2 md:py-3 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDeleteUser}
+                                        disabled={isDeleting}
+                                        className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                                    >
+                                        {isDeleting ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Deleting...
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Trash2 className="w-4 h-4" />
+                                                Delete User
+                                            </div>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </div>,

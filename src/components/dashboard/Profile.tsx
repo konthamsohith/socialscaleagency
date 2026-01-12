@@ -99,7 +99,7 @@ export const Profile = () => {
 
                         <div className="grid grid-cols-2 w-full border-t border-slate-100 pt-6 gap-4">
                             <div>
-                                <div className="text-xl font-bold text-slate-900">{user.credits?.balance || 0}</div>
+                                <div className="text-xl font-bold text-slate-900">{(user.credits?.balance || 0).toFixed(2)}</div>
                                 <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Credits</div>
                             </div>
                             <div>
