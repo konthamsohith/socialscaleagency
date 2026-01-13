@@ -1,13 +1,10 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Users,
-    TrendingUp,
     Search,
     Filter,
     Coins,
-    Percent,
     Wallet,
     ArrowLeft,
     X,
@@ -15,7 +12,8 @@ import {
     Download,
     Trash2,
     CheckCircle,
-    AlertTriangle
+    AlertTriangle,
+    BarChart2
 } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { AdminAnalytics } from './AdminAnalytics';
@@ -226,27 +224,7 @@ export const SuperAdmin = () => {
         window.URL.revokeObjectURL(url);
     };
 
-    // Derived Metrics - dynamic sum of user balances and stats
-    const totalRevenueNum = useMemo(() => {
-        return users.reduce((sum, user) => sum + (user.credits?.totalPurchased || 0), 0);
-    }, [users]);
-    const totalRevenueStr = `${totalRevenueNum.toLocaleString()} Credits`;
-
-    const activeOrdersCount = useMemo(() => {
-        return orders.filter(order =>
-            order.status === 'pending' || order.status === 'in_progress'
-        ).length;
-    }, [orders]);
-
-    const totalSpent = useMemo(() => {
-        return users.reduce((sum, user) => sum + (user.credits?.totalSpent || 0), 0);
-    }, [users]);
-
-    // Calculate net margin (revenue - spent) / revenue * 100
-    const netMargin = useMemo(() => {
-        if (totalRevenueNum === 0) return '0.0';
-        return (((totalRevenueNum - totalSpent) / totalRevenueNum) * 100).toFixed(1);
-    }, [totalRevenueNum, totalSpent]);
+    // Handle CSV Export
 
     return (
         <div className="space-y-8 pb-20">
@@ -508,27 +486,6 @@ export const SuperAdmin = () => {
                     </motion.div>
                 ) : currentView === 'overview' ? (
                     <div className="space-y-6">
-                        {/* Stats Overview */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {[
-                                { label: 'Total Revenue', value: totalRevenueStr, icon: Coins, color: 'text-green-600', bg: 'bg-green-50' },
-                                { label: 'Total Users', value: loading ? '...' : users.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-                                { label: 'Active Orders', value: loading ? '...' : activeOrdersCount.toString(), icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
-                                { label: 'Net Margin', value: `${netMargin}%`, icon: Percent, color: 'text-orange-600', bg: 'bg-orange-50' },
-                            ].map((stat, i) => (
-                                <div key={i} className="p-4 md:p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                                    <div className="flex items-center gap-3 md:gap-4">
-                                        <div className={`p-2 md:p-3 rounded-xl ${stat.bg} shrink-0`}>
-                                            <stat.icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-xs md:text-sm text-slate-500 truncate">{stat.label}</p>
-                                            <p className="text-xl md:text-2xl font-bold text-slate-900 truncate">{stat.value}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
 
                         {/* User Management */}
                         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
@@ -591,18 +548,19 @@ export const SuperAdmin = () => {
                                             <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Spent</th>
                                             <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Joined</th>
                                             <th className="px-4 md:px-6 py-3 md:py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Status</th>
+                                            <th className="px-4 md:px-6 py-3 md:py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
                                         {loading ? (
                                             <tr>
-                                                <td colSpan={6} className="px-4 md:px-6 py-8 md:py-12 text-center text-slate-500 text-sm">
+                                                <td colSpan={7} className="px-4 md:px-6 py-8 md:py-12 text-center text-slate-500 text-sm">
                                                     Loading users...
                                                 </td>
                                             </tr>
                                         ) : filteredUsers.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="px-4 md:px-6 py-8 md:py-12 text-center text-slate-500 text-sm">
+                                                <td colSpan={7} className="px-4 md:px-6 py-8 md:py-12 text-center text-slate-500 text-sm">
                                                     No users found.
                                                 </td>
                                             </tr>
@@ -644,6 +602,18 @@ export const SuperAdmin = () => {
                                                             }`}>
                                                             {user.status === 'active' ? 'Active' : 'Inactive'}
                                                         </span>
+                                                    </td>
+                                                    <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap text-right">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedUser(user);
+                                                            }}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
+                                                        >
+                                                            <BarChart2 className="w-3.5 h-3.5" />
+                                                            Analytics
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))

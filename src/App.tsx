@@ -30,6 +30,8 @@ import { MassOrder } from "./components/dashboard/MassOrder";
 import { SuperAdmin } from "./components/dashboard/SuperAdmin";
 import { Notifications } from "./components/dashboard/Notifications";
 import { PlaceOrder } from "./components/dashboard/PlaceOrder";
+import { CompanyManagement } from "./components/dashboard/CompanyManagement";
+import { CompanyDetails } from "./components/dashboard/CompanyDetails";
 import { Credits } from "./pages/Credits";
 
 function App() {
@@ -58,20 +60,20 @@ function App() {
             <Route path="/admin/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            
+
             {/* Protected onboarding */}
-            <Route 
-              path="/onboarding" 
+            <Route
+              path="/onboarding"
               element={
                 <ProtectedRoute>
                   <Onboarding />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Protected dashboard routes */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <DashboardLayout />
@@ -87,15 +89,31 @@ function App() {
               <Route path="settings" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="place-order" element={<PlaceOrder />} />
-              
+              <Route
+                path="companies"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <CompanyManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="companies/:companyId"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <CompanyDetails />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Admin only routes */}
-              <Route 
-                path="admin-panel" 
+              <Route
+                path="admin-panel"
                 element={
                   <ProtectedRoute requireAdmin>
                     <SuperAdmin />
                   </ProtectedRoute>
-                } 
+                }
               />
             </Route>
           </Routes>

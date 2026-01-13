@@ -26,6 +26,7 @@ const baseMenuItems = [
 ];
 
 const adminMenuItem = { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboard/admin-panel' };
+const companiesMenuItem = { icon: Layers, label: 'Company Profiles', path: '/dashboard/companies' };
 
 export const Sidebar = () => {
     const location = useLocation();
@@ -60,7 +61,7 @@ export const Sidebar = () => {
         }
     };
 
-    const menuItems = isAdmin ? [...baseMenuItems, adminMenuItem] : baseMenuItems;
+    const menuItems = isAdmin ? [...baseMenuItems, adminMenuItem, companiesMenuItem] : baseMenuItems;
 
     return (
         <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 shrink-0">
@@ -84,8 +85,8 @@ export const Sidebar = () => {
                     <span className="text-xs font-semibold text-blue-900">Available Credits</span>
                 </div>
                 <p className="text-2xl font-bold text-blue-600">{credits.toFixed(2)}</p>
-                <Link 
-                    to="/dashboard/credits" 
+                <Link
+                    to="/dashboard/credits"
                     className="text-xs text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
                 >
                     Buy more →

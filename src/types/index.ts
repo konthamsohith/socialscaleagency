@@ -27,6 +27,15 @@ export interface User {
   updatedAt: string;
 }
 
+export interface SocialProfile {
+  profileId: string;
+  platform: 'instagram' | 'facebook' | 'twitter' | 'linkedin' | 'tiktok' | 'youtube';
+  handle: string;
+  url: string;
+  followers: number;
+  status: 'active' | 'inactive';
+}
+
 export interface Company {
   companyId: string;
   name: string;
@@ -35,6 +44,7 @@ export interface Company {
   address?: string;
   website?: string;
   status: 'active' | 'inactive';
+  socialProfiles?: SocialProfile[];
   createdAt: string;
   updatedAt: string;
 }

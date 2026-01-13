@@ -5,6 +5,7 @@ import type {
   RegisterData,
   User,
   Company,
+  SocialProfile,
   Service,
   Order,
   CreateOrderData,
@@ -43,10 +44,10 @@ class ApiService {
       (response) => response,
       async (error: AxiosError<ApiError>) => {
         const originalRequest = error.config;
-        
+
         if (error.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
           (originalRequest as any)._retry = true;
-          
+
           try {
             const refreshToken = localStorage.getItem('refreshToken');
             if (!refreshToken) {
@@ -140,6 +141,27 @@ class ApiService {
 
   async deleteCompany(companyId: string): Promise<{ success: boolean }> {
     const response = await this.api.delete(`/companies/${companyId}`);
+    return response.data;
+  }
+
+  async getCompanies(): Promise<{ success: boolean; data: Company[] }> {
+    const response = await this.api.get('/companies');
+    return response.data;
+  }
+
+  async getCompany(companyId: string): Promise<{ success: boolean; data: Company }> {
+    const response = await this.api.get(`/companies/${companyId}`);
+    return response.data;
+  }
+
+  // ==================== SOCIAL PROFILES ====================
+  async addSocialProfile(companyId: string, profile: Partial<SocialProfile>): Promise<{ success: boolean; data: Company }> {
+    const response = await this.api.post(`/companies/${companyId}/social-profiles`, profile);
+    return response.data;
+  }
+
+  async removeSocialProfile(companyId: string, profileId: string): Promise<{ success: boolean; data: Company }> {
+    const response = await this.api.delete(`/companies/${companyId}/social-profiles/${profileId}`);
     return response.data;
   }
 
