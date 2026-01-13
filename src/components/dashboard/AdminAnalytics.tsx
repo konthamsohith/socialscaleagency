@@ -18,7 +18,8 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { TrendingUp, Users, ShoppingCart, DollarSign, Download } from 'lucide-react';
-// import { apiService } from '../../services/api';
+import { apiService } from '../../services/api';
+import { CompanyAnalytics } from '../../types';
 
 // Mock data generator for when API returns empty
 const generateMockData = () => {
@@ -53,38 +54,118 @@ const generateMockData = () => {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+// Currency conversion (assuming credits are in INR)
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount);
+};
+
 export const AdminAnalytics = () => {
     const [timeRange, setTimeRange] = useState('year');
-    const [data, setData] = useState<{
-        revenueData: any[];
-        orderData: any[];
-        userGrowthData: any[];
-        platformDistribution: any[];
-    } | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<CompanyAnalytics | null>(null);
+    const [userGrowthData, setUserGrowthData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchAnalytics = async () => {
             setLoading(true);
+            setError(null);
             try {
-                // Ideally, we would fetch real analytical data from the backend here
-                // const response = await apiService.getCompanyAnalytics({ range: timeRange });
+                const [analyticsResponse, userGrowthResponse] = await Promise.all([
+                    apiService.getCompanyAnalytics(),
+                    apiService.getUserGrowthAnalytics()
+                ]);
 
-                // For now, since the backend might not have historical data populated,
-                // we'll simulate a delay and use mock data for demonstration
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                setData(generateMockData());
+                if (analyticsResponse.success) {
+                    setAnalyticsData(analyticsResponse.data);
+                }
+
+                if (userGrowthResponse.success) {
+                    setUserGrowthData(userGrowthResponse.data);
+                }
             } catch (error) {
                 console.error('Failed to fetch analytics:', error);
-                // Fallback to mock data on error
-                setData(generateMockData());
+                setError('Failed to load analytics data');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        fetchAnalytics();
     }, [timeRange]);
+
+    // Process analytics data for charts
+    const processChartData = () => {
+        if (!analyticsData) return generateMockData();
+
+        // Group orders by month for revenue/profit chart
+        const monthlyData: { [key: string]: { revenue: number; profit: number; orders: number; completed: number } } = {};
+
+        analyticsData.orders.forEach(order => {
+            const date = new Date(order.submittedAt);
+            const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = { revenue: 0, profit: 0, orders: 0, completed: 0 };
+            }
+
+            monthlyData[monthKey].revenue += order.revenue || 0;
+            monthlyData[monthKey].profit += order.profit || 0;
+            monthlyData[monthKey].orders += 1;
+            if (order.status === 'completed') {
+                monthlyData[monthKey].completed += 1;
+            }
+        });
+
+        // Convert to arrays for charts
+        const revenueData = Object.entries(monthlyData).map(([name, data]) => ({
+            name,
+            revenue: data.revenue,
+            profit: data.profit
+        }));
+
+        const orderData = Object.entries(monthlyData).map(([name, data]) => ({
+            name,
+            orders: data.orders,
+            completed: data.completed
+        }));
+
+        // Platform distribution from orders
+        const platformCounts: { [key: string]: number } = {};
+        analyticsData.orders.forEach(order => {
+            const platform = order.platform || 'other';
+            platformCounts[platform] = (platformCounts[platform] || 0) + 1;
+        });
+
+        const platformDistribution = Object.entries(platformCounts).map(([platform, count]) => ({
+            name: platform.charAt(0).toUpperCase() + platform.slice(1),
+            value: count
+        }));
+
+        // User growth data from API
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const userGrowthDataFromAPI = userGrowthData?.chartData || {};
+        const processedUserGrowthData = Object.keys(userGrowthDataFromAPI).length > 0
+            ? Object.entries(userGrowthDataFromAPI).map(([monthKey, data]: [string, any]) => ({
+                name: monthKey,
+                users: data.newUsers || 0,
+                active: data.activeUsers || 0
+            }))
+            : months.map(month => ({
+                name: month,
+                users: Math.floor(Math.random() * 100) + 10,
+                active: Math.floor(Math.random() * 80) + 5
+            }));
+
+        return { revenueData, orderData, userGrowthData: processedUserGrowthData, platformDistribution };
+    };
+
+    const chartData = processChartData();
 
     if (loading) {
         return (
@@ -96,32 +177,34 @@ export const AdminAnalytics = () => {
         );
     }
 
-    if (!data) return null;
+    if (error && !analyticsData) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <p className="text-red-600 mb-2">{error}</p>
+                    <p className="text-slate-500">Showing mock data for demonstration</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleDownloadData = () => {
-        if (!data) return;
+        if (!analyticsData) return;
 
         // Prepare CSV content
-        const headers = ['Month', 'Revenue', 'Profit', 'Orders', 'Completed Orders', 'New Users', 'Active Users'];
+        const headers = ['Date', 'Service Type', 'Quantity', 'Cost', 'Revenue', 'Profit', 'Status', 'Platform'];
         const csvRows = [headers.join(',')];
 
-        // Combine data based on index (assuming all arrays are sorted by month and have same length)
-        data.revenueData.forEach((item, index) => {
-            const revenue = item.revenue;
-            const profit = item.profit;
-            const orders = data.orderData[index]?.orders || 0;
-            const completed = data.orderData[index]?.completed || 0;
-            const users = data.userGrowthData[index]?.users || 0;
-            const active = data.userGrowthData[index]?.active || 0;
-
+        analyticsData.orders.forEach(order => {
             csvRows.push([
-                item.name,
-                revenue,
-                profit,
-                orders,
-                completed,
-                users,
-                active
+                new Date(order.submittedAt).toLocaleDateString(),
+                order.serviceType,
+                order.quantity,
+                order.realCost || order.cost,
+                order.revenue || 0,
+                order.profit || 0,
+                order.status,
+                order.platform
             ].join(','));
         });
 
@@ -164,6 +247,78 @@ export const AdminAnalytics = () => {
                 </div>
             </div>
 
+            {/* Summary Cards */}
+            {analyticsData && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white p-4 rounded-xl border border-slate-200"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-50 rounded-lg">
+                                <ShoppingCart className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Total Orders</p>
+                                <p className="text-2xl font-bold text-slate-900">{analyticsData.summary.overall.totalOrders}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-white p-4 rounded-xl border border-slate-200"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-50 rounded-lg">
+                                <DollarSign className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Revenue</p>
+                                <p className="text-2xl font-bold text-slate-900">{formatCurrency(analyticsData.summary.overall.revenue)}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white p-4 rounded-xl border border-slate-200"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-50 rounded-lg">
+                                <TrendingUp className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Profit</p>
+                                <p className="text-2xl font-bold text-slate-900">{formatCurrency(analyticsData.summary.overall.profit)}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-white p-4 rounded-xl border border-slate-200"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-orange-50 rounded-lg">
+                                <Users className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Profit Margin</p>
+                                <p className="text-2xl font-bold text-slate-900">{analyticsData.summary.overall.profitMargin.toFixed(1)}%</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
                 <motion.div
@@ -185,7 +340,7 @@ export const AdminAnalytics = () => {
                     </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data.revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <AreaChart data={chartData.revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10B981" stopOpacity={0.1} />
@@ -202,6 +357,10 @@ export const AdminAnalytics = () => {
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+                                    formatter={(value: any, name?: string) => [
+                                        name && (name.includes('Revenue') || name.includes('Profit')) ? formatCurrency(Number(value)) : value,
+                                        name || ''
+                                    ]}
                                 />
                                 <Legend />
                                 <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue" />
@@ -231,7 +390,7 @@ export const AdminAnalytics = () => {
                     </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data.orderData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <BarChart data={chartData.orderData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
@@ -267,7 +426,7 @@ export const AdminAnalytics = () => {
                     </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={data.userGrowthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <LineChart data={chartData.userGrowthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
@@ -304,7 +463,7 @@ export const AdminAnalytics = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={data.platformDistribution}
+                                    data={chartData.platformDistribution}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -312,7 +471,7 @@ export const AdminAnalytics = () => {
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {data.platformDistribution.map((_entry, index) => (
+                                    {chartData.platformDistribution.map((_entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>

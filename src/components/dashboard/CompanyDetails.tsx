@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -33,7 +33,7 @@ import {
     FaThreads
 } from 'react-icons/fa6';
 import { apiService } from '../../services/api';
-import { Company, SocialProfile } from '../../types';
+import { Company, SocialProfile, SocialAccount } from '../../types';
 import { CompanyAnalytics } from './CompanyAnalytics';
 
 export const CompanyDetails = () => {
@@ -57,13 +57,23 @@ export const CompanyDetails = () => {
         handle: ''
     });
 
+    // Social Accounts State (separate from company)
+    const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
+
+    // Track if we've fetched social accounts for the current company
+    const socialAccountsFetchedRef = useRef<string | null>(null);
+
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<Partial<Company>>({});
 
     useEffect(() => {
         if (company) {
-            setEditForm(company);
+            setEditForm({
+                name: company.name,
+                billingDetails: company.billingDetails || {},
+                status: company.status
+            });
         }
     }, [company]);
 
@@ -71,12 +81,22 @@ export const CompanyDetails = () => {
         if (!company || !editForm.name) return;
 
         try {
-            // In a real app, await apiService.updateCompany(company.companyId, editForm);
-            // Updating local state to reflect changes immediately
-            setCompany({ ...company, ...editForm } as Company);
+            // Make actual API call to save changes to MongoDB
+            const response = await apiService.updateCompany(company.companyId, {
+                name: editForm.name,
+                billingDetails: {
+                    contactEmail: editForm.billingDetails?.contactEmail || '',
+                    contactPhone: editForm.billingDetails?.contactPhone || ''
+                }
+            });
+            
+            // Update local state with server response
+            setCompany({ ...company, ...response.data } as Company);
             setIsEditing(false);
-        } catch (error) {
+            alert('Company updated successfully!');
+        } catch (error: any) {
             console.error('Failed to update company', error);
+            alert(`Failed to update company: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -94,36 +114,40 @@ export const CompanyDetails = () => {
         }
     }, [companyId]);
 
+    // Separate effect to fetch social accounts when we have company data
+    useEffect(() => {
+        if (company && company.companyId === companyId && socialAccountsFetchedRef.current !== companyId) {
+            socialAccountsFetchedRef.current = companyId;
+            fetchSocialAccounts(company.companyId);
+        }
+    }, [company, companyId]);
+
     const loadCompany = async (id: string) => {
         setLoading(true);
         try {
             const response = await apiService.getCompany(id);
-            setCompany(response.data);
+            const companyData = response.data;
+            setCompany(companyData);
+
+            // Load social accounts separately
+            await fetchSocialAccounts(id);
         } catch (err) {
             console.error('Failed to load company:', err);
-            // Mock data fallback for demonstration if API fails
-            setCompany({
-                companyId: id,
-                name: 'Acme Corp',
-                email: 'contact@acme.com',
-                phone: '+1 555 0123',
-                website: 'https://acme.com',
-                status: 'active',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                socialProfiles: [
-                    {
-                        profileId: 'sp1',
-                        platform: 'instagram',
-                        handle: '@acmecorp',
-                        url: 'https://instagram.com/acmecorp',
-                        followers: 5000,
-                        status: 'active'
-                    }
-                ]
-            });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchSocialAccounts = async (companyId: string) => {
+        try {
+            console.log('Fetching social accounts for company:', companyId);
+            const accounts = await apiService.getCompanySocialAccounts(companyId);
+            console.log('Social accounts fetched:', accounts);
+            console.log('Social accounts count:', accounts.length);
+            setSocialAccounts(accounts);
+        } catch (error) {
+            console.error('Failed to fetch social accounts:', error);
+            setSocialAccounts([]);
         }
     };
 
@@ -135,19 +159,19 @@ export const CompanyDetails = () => {
         const handle = newProfile.handle.replace('@', '');
 
         switch (newProfile.platform) {
-            case 'instagram': url = `https://instagram.com/${handle}`; break;
-            case 'facebook': url = `https://facebook.com/${handle}`; break;
-            case 'x': url = `https://x.com/${handle}`; break;
-            case 'linkedin': url = `https://linkedin.com/in/${handle}`; break;
-            case 'tiktok': url = `https://tiktok.com/@${handle}`; break;
-            case 'youtube': url = `https://youtube.com/@${handle}`; break;
-            case 'threads': url = `https://threads.net/@${handle}`; break;
-            case 'pinterest': url = `https://pinterest.com/${handle}`; break;
-            case 'snapchat': url = `https://snapchat.com/add/${handle}`; break;
-            case 'spotify': url = `https://open.spotify.com/user/${handle}`; break;
-            case 'discord': url = `https://discord.gg/${handle}`; break;
-            case 'telegram': url = `https://t.me/${handle}`; break;
-            default: url = `https://${handle}`;
+            case 'instagram': url = `https://instagram.com/${encodeURIComponent(handle)}`; break;
+            case 'facebook': url = `https://facebook.com/${encodeURIComponent(handle)}`; break;
+            case 'x': url = `https://x.com/${encodeURIComponent(handle)}`; break;
+            case 'linkedin': url = `https://linkedin.com/in/${encodeURIComponent(handle)}`; break;
+            case 'tiktok': url = `https://tiktok.com/@${encodeURIComponent(handle)}`; break;
+            case 'youtube': url = `https://youtube.com/@${encodeURIComponent(handle)}`; break;
+            case 'threads': url = `https://threads.net/@${encodeURIComponent(handle)}`; break;
+            case 'pinterest': url = `https://pinterest.com/${encodeURIComponent(handle)}`; break;
+            case 'snapchat': url = `https://snapchat.com/add/${encodeURIComponent(handle)}`; break;
+            case 'spotify': url = `https://open.spotify.com/user/${encodeURIComponent(handle)}`; break;
+            case 'discord': url = `https://discord.gg/${encodeURIComponent(handle)}`; break;
+            case 'telegram': url = `https://t.me/${encodeURIComponent(handle)}`; break;
+            default: url = `https://${encodeURIComponent(handle)}`;
         }
 
         const profileData: Partial<SocialProfile> = {
@@ -158,21 +182,18 @@ export const CompanyDetails = () => {
         };
 
         try {
-            // Optimistic update
-            const newProfileObj = { ...profileData, profileId: Math.random().toString(36).substr(2, 9) } as SocialProfile;
-            const updatedCompany = {
-                ...company,
-                socialProfiles: [...(company.socialProfiles || []), newProfileObj]
-            };
-            setCompany(updatedCompany);
-            setNewProfile({ platform: 'instagram', handle: '' });
-
             // API Call
             await apiService.addSocialProfile(company.companyId, profileData);
-            // Reload to get server state (optional)
-        } catch (err) {
+
+            // Reload social accounts from database
+            await fetchSocialAccounts(company.companyId);
+            setNewProfile({ platform: 'instagram', handle: '' });
+
+        } catch (err: any) {
             console.error('Failed to add profile:', err);
-            // Revert on failure (could implement more robust rollback)
+            alert(`Failed to add profile: ${err.response?.data?.message || err.message}`);
+            // Reset form on error
+            setNewProfile({ platform: 'instagram', handle: '' });
         }
     };
 
@@ -181,14 +202,9 @@ export const CompanyDetails = () => {
         if (!window.confirm('Are you sure you want to remove this profile?')) return;
 
         try {
-            // Optimistic update
-            const updatedCompany = {
-                ...company,
-                socialProfiles: company.socialProfiles?.filter(p => p.profileId !== profileId) || []
-            };
-            setCompany(updatedCompany);
-
-            await apiService.removeSocialProfile(company.companyId, profileId);
+            await apiService.removeSocialProfile(profileId);
+            // Reload social accounts from database
+            await fetchSocialAccounts(company.companyId);
         } catch (err) {
             console.error('Failed to remove profile:', err);
         }
@@ -337,8 +353,14 @@ export const CompanyDetails = () => {
                                             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Email</label>
                                             <input
                                                 type="email"
-                                                value={editForm.email || ''}
-                                                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                                value={editForm.billingDetails?.contactEmail || ''}
+                                                onChange={(e) => setEditForm({ 
+                                                    ...editForm, 
+                                                    billingDetails: { 
+                                                        ...editForm.billingDetails, 
+                                                        contactEmail: e.target.value 
+                                                    } 
+                                                })}
                                                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                                 placeholder="company@email.com"
                                             />
@@ -347,20 +369,16 @@ export const CompanyDetails = () => {
                                             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Phone</label>
                                             <input
                                                 type="text"
-                                                value={editForm.phone || ''}
-                                                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                                value={editForm.billingDetails?.contactPhone || ''}
+                                                onChange={(e) => setEditForm({ 
+                                                    ...editForm, 
+                                                    billingDetails: { 
+                                                        ...editForm.billingDetails, 
+                                                        contactPhone: e.target.value 
+                                                    } 
+                                                })}
                                                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                                 placeholder="+1 234 567 890"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Website</label>
-                                            <input
-                                                type="text"
-                                                value={editForm.website || ''}
-                                                onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                                                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                                                placeholder="https://website.com"
                                             />
                                         </div>
                                     </>
@@ -368,15 +386,11 @@ export const CompanyDetails = () => {
                                     <>
                                         <div className="flex items-center gap-3 text-slate-600">
                                             <Mail className="w-5 h-5 text-slate-400 shrink-0" />
-                                            <span className="truncate">{company.email || 'No email provided'}</span>
+                                            <span className="truncate">{company.billingDetails?.contactEmail || 'No email provided'}</span>
                                         </div>
                                         <div className="flex items-center gap-3 text-slate-600">
                                             <Phone className="w-5 h-5 text-slate-400 shrink-0" />
-                                            <span className="truncate">{company.phone || 'No phone provided'}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-slate-600">
-                                            <Globe className="w-5 h-5 text-slate-400 shrink-0" />
-                                            <span className="truncate text-blue-600 hover:underline cursor-pointer">{company.website || 'No website provided'}</span>
+                                            <span className="truncate">{company.billingDetails?.contactPhone || 'No phone provided'}</span>
                                         </div>
                                     </>
                                 )}
@@ -470,22 +484,47 @@ export const CompanyDetails = () => {
 
                     {/* Profiles Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {company.socialProfiles?.map((profile) => {
-                            const style = getPlatformStyle(profile.platform);
+                        {socialAccounts.map((account) => {
+                            // Convert SocialAccount to display format
+                            const platformMapping: Record<string, string> = {
+                                'Instagram': 'instagram',
+                                'Facebook': 'facebook',
+                                'X (Twitter)': 'x',
+                                'LinkedIn': 'linkedin',
+                                'TikTok': 'tiktok',
+                                'YouTube': 'youtube',
+                                'Threads': 'threads',
+                                'Pinterest': 'pinterest',
+                                'Snapchat': 'snapchat',
+                                'Spotify': 'spotify',
+                                'Discord': 'discord',
+                                'Telegram': 'telegram'
+                            };
+
+                            const displayProfile = {
+                                profileId: account._id,
+                                platform: platformMapping[account.platform] || account.platform.toLowerCase(),
+                                handle: account.username ? `@${account.username}` : account.accountName,
+                                url: account.accountUrl,
+                                followers: account.metadata?.followers || 0,
+                                status: account.isActive ? 'active' : 'inactive'
+                            };
+
+                            const style = getPlatformStyle(displayProfile.platform);
                             return (
                                 <motion.div
-                                    key={profile.profileId}
+                                    key={displayProfile.profileId}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     className={`group relative p-6 rounded-2xl bg-white border border-slate-200 text-left transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 ${style.border}`}
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className={`w-14 h-14 rounded-xl ${style.bg} flex items-center justify-center`}>
-                                            {getPlatformIcon(profile.platform)}
+                                            {getPlatformIcon(displayProfile.platform)}
                                         </div>
                                         <div className="flex gap-1">
                                             <a
-                                                href={profile.url}
+                                                href={displayProfile.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -494,7 +533,7 @@ export const CompanyDetails = () => {
                                                 <ExternalLink className="w-4 h-4" />
                                             </a>
                                             <button
-                                                onClick={() => handleRemoveProfile(profile.profileId)}
+                                                onClick={() => handleRemoveProfile(displayProfile.profileId)}
                                                 className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                                 title="Remove Profile"
                                             >
@@ -505,17 +544,17 @@ export const CompanyDetails = () => {
 
                                     <div>
                                         <h3 className="text-xl font-bold font-archivo text-slate-900 mb-1 truncate pr-2">
-                                            {profile.handle}
+                                            {displayProfile.handle}
                                         </h3>
                                         <p className={`text-sm font-medium ${style.text} uppercase tracking-wider`}>
-                                            {profile.platform}
+                                            {displayProfile.platform}
                                         </p>
                                     </div>
                                 </motion.div>
                             );
                         })}
 
-                        {(!company.socialProfiles || company.socialProfiles.length === 0) && (
+                        {socialAccounts.length === 0 && (
                             <div className="col-span-full py-12 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                 <div className="flex justify-center mb-2">
                                     <Globe className="w-8 h-8 opacity-20" />
@@ -528,7 +567,7 @@ export const CompanyDetails = () => {
             </div>
 
             {/* Analytics Section */}
-            {company.socialProfiles && company.socialProfiles.length > 0 && (
+            {socialAccounts.length > 0 && (
                 <div className="mt-8 pt-8 border-t border-slate-200">
                     <CompanyAnalytics company={company} />
                 </div>

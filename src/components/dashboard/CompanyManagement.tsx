@@ -27,63 +27,14 @@ export const CompanyManagement = () => {
     const loadCompanies = async () => {
         setLoading(true);
         try {
-            // Race the API call with a short timeout to prevent long loading screens
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Request timed out')), 800)
-            );
-
-            const response = await Promise.race([
-                apiService.getCompanies(),
-                timeoutPromise
-            ]) as { success: boolean; data: Company[] };
-
-            // Mock data if empty for demonstration
-            if (!response.data || response.data.length === 0) {
-                setCompanies(getMockCompanies());
-            } else {
-                setCompanies(response.data);
-            }
+            const response = await apiService.getCompanies();
+            setCompanies(response.data || []);
         } catch (error) {
             console.error('Failed to load companies:', error);
-            // Fallback to mock data on error
-            setCompanies(getMockCompanies());
+            setCompanies([]);
         } finally {
             setLoading(false);
         }
-    };
-
-    const getMockCompanies = () => {
-        // Load persist mock companies from localStorage
-        const localData = localStorage.getItem('localCompanies');
-        const localCompanies = localData ? JSON.parse(localData) : [];
-
-        const defaultMock = [
-            {
-                companyId: '1',
-                name: 'Acme Corp',
-                email: 'contact@acme.com',
-                phone: '+1 555 0123',
-                website: 'https://acme.com',
-                status: 'active',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                socialProfiles: [
-                    {
-                        profileId: 'sp1',
-                        platform: 'instagram',
-                        handle: '@acmecorp',
-                        url: 'https://instagram.com/acmecorp',
-                        followers: 5000,
-                        status: 'active'
-                    }
-                ]
-            }
-        ] as Company[];
-
-        // Merge default mock with local companies, avoiding duplicates by ID
-        const combined = [...localCompanies, ...defaultMock];
-        // Deduplicate
-        return Array.from(new Map(combined.map(c => [c.companyId, c])).values());
     };
 
 
@@ -93,61 +44,38 @@ export const CompanyManagement = () => {
 
         const newCompanyData: Partial<Company> = {
             name: newCompanyName.trim(),
-            status: 'active',
-            email: '', // Can be filled later
-            socialProfiles: []
+            status: 'active'
         };
 
         try {
-            let createdCompany: Company;
+            const response = await apiService.createCompany(newCompanyData);
+            const createdCompany = response.data;
 
-            try {
-                const response = await apiService.createCompany(newCompanyData);
-                createdCompany = response.data;
-            } catch (err) {
-                // Fallback for demo/mock if API fails
-                console.warn('API create failed, using mock', err);
-                createdCompany = {
-                    ...newCompanyData,
-                    companyId: Math.random().toString(36).substr(2, 9),
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                } as Company;
-            }
-
-            // Save to localStorage so it appears in the list when we return
-            const currentLocal = JSON.parse(localStorage.getItem('localCompanies') || '[]');
-            localStorage.setItem('localCompanies', JSON.stringify([createdCompany, ...currentLocal]));
-
-            // Immediately navigate to details page
+            // Navigate to details page
             navigate(`/dashboard/companies/${createdCompany.companyId}`, { state: { company: createdCompany } });
-
         } catch (error) {
             console.error('Failed to create company:', error);
+            alert('Failed to create company. Please try again.');
             setIsCreating(false);
         }
     };
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent card click
+        e.stopPropagation();
         if (window.confirm('Are you sure you want to delete this company?')) {
             try {
                 await apiService.deleteCompany(id);
-                // Also remove from local storage if present
-                const currentLocal = JSON.parse(localStorage.getItem('localCompanies') || '[]');
-                const updatedLocal = currentLocal.filter((c: Company) => c.companyId !== id);
-                localStorage.setItem('localCompanies', JSON.stringify(updatedLocal));
-
                 loadCompanies();
             } catch (error) {
                 console.error('Failed to delete company:', error);
+                alert('Failed to delete company. Please try again.');
             }
         }
     };
 
     const filteredCompanies = companies.filter(c =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        (c.billingDetails?.contactEmail && c.billingDetails.contactEmail.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
@@ -241,7 +169,7 @@ export const CompanyManagement = () => {
                                 <div className="space-y-2">
                                     <div className="text-sm text-slate-500 flex justify-between">
                                         <span>Profiles Connected:</span>
-                                        <span className="font-medium text-slate-900">{company.socialProfiles?.length || 0}</span>
+                                        <span className="font-medium text-slate-900">{company.socialProfilesCount || 0}</span>
                                     </div>
                                 </div>
                             </motion.div>

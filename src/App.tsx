@@ -32,6 +32,7 @@ import { Notifications } from "./components/dashboard/Notifications";
 import { PlaceOrder } from "./components/dashboard/PlaceOrder";
 import { CompanyManagement } from "./components/dashboard/CompanyManagement";
 import { CompanyDetails } from "./components/dashboard/CompanyDetails";
+import { AdminAnalytics } from "./components/dashboard/AdminAnalytics";
 import { Credits } from "./pages/Credits";
 
 function App() {
@@ -89,6 +90,24 @@ function App() {
               <Route path="settings" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="place-order" element={<PlaceOrder />} />
+              
+              {/* Admin only routes */}
+              <Route
+                path="admin-panel"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <SuperAdmin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="admin-analytics"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminAnalytics />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="companies"
                 element={
@@ -98,20 +117,10 @@ function App() {
                 }
               />
               <Route
-                path="companies/:companyId"
+                path="companies/:id"
                 element={
                   <ProtectedRoute requireAdmin>
                     <CompanyDetails />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Admin only routes */}
-              <Route
-                path="admin-panel"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <SuperAdmin />
                   </ProtectedRoute>
                 }
               />
