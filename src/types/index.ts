@@ -39,14 +39,67 @@ export interface SocialProfile {
 export interface Company {
   companyId: string;
   name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  website?: string;
-  status: 'active' | 'inactive';
-  socialProfiles?: SocialProfile[];
+  notes?: string;
+  logo?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  billingDetails?: {
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    taxId?: string;
+    billingAddress?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      zipCode?: string;
+      country?: string;
+    };
+  };
+  status: 'active' | 'inactive' | 'suspended';
+  settings?: {
+    timezone?: string;
+    currency?: string;
+    invoiceMultiplier?: number;
+  };
+  socialProfiles?: SocialProfile[]; // This is computed on frontend, not stored in backend
+  socialProfilesCount?: number; // Count of social profiles from backend
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SocialAccount {
+  _id: string;
+  accountId?: string;
+  companyId: string;
+  platform: 'Instagram' | 'TikTok' | 'LinkedIn' | 'YouTube' | 'X (Twitter)' | 'Threads' | 'Pinterest' | 'Discord' | 'Facebook' | 'Spotify' | 'Telegram' | 'Quora';
+  accountName: string;
+  accountUrl: string;
+  username?: string;
+  accountType?: 'profile' | 'page' | 'channel' | 'group' | 'other';
+  notes?: string;
+  isActive: boolean;
+  metadata?: {
+    followers?: number;
+    followersLastUpdated?: string;
+    verificationStatus?: 'verified' | 'unverified' | 'unknown';
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSocialAccountData {
+  companyId: string;
+  platform: string;
+  accountName: string;
+  accountUrl: string;
+  username?: string;
+  notes?: string;
 }
 
 export interface LoginResponse {
@@ -81,20 +134,22 @@ export interface Service {
 export interface Order {
   _id: string;
   companyId: string;
-  userId: string;
-  fampayOrderId?: number;
-  service: number;
+  userId?: string;
+  providerId?: string;
+  apiOrderId?: string;
+  serviceId: number;
   serviceName: string;
-  link: string;
+  platform: string;
+  serviceType: string;
+  targetUrl: string;
   quantity: number;
+  cost: number;
   creditsUsed: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'partial';
-  startCount?: number;
-  remains?: number;
-  charge?: number;
-  currency?: string;
-  createdAt: string;
-  updatedAt: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'partial' | 'awaiting' | 'canceled' | 'fail';
+  submittedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  invoiceId?: string;
 }
 
 export interface CreateOrderData {
@@ -146,6 +201,47 @@ export interface Analytics {
     partial: number;
   };
   recentOrders: Order[];
+}
+
+export interface CompanyAnalytics {
+  summary: {
+    overall: {
+      totalOrders: number;
+      realCost: number;
+      revenue: number;
+      profit: number;
+      profitMargin: number;
+    };
+    byServiceType: Array<{
+      serviceType: string;
+      totalUsageCount: number;
+      totalQuantity: number;
+      realCost: number;
+      revenue: number;
+      profit: number;
+      dates: string[];
+      uniqueTargets: number;
+      profitMargin: string;
+    }>;
+  };
+  detailed: Array<{
+    serviceType: string;
+    date: string;
+    usageCount: number;
+    totalQuantity: number;
+    realCost: number;
+    revenue: number;
+    profit: number;
+    uniqueTargets: number;
+    profitMargin: number;
+  }>;
+  orders: Array<Order & {
+    realCost: number;
+    revenue: number;
+    profit: number;
+    profitMargin: number;
+  }>;
+  totalOrders: number;
 }
 
 export interface ApiError {

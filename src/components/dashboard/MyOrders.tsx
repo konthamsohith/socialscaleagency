@@ -19,30 +19,36 @@ const StatusBadge = ({ status }: { status: Order['status'] }) => {
         completed: "bg-green-100 text-green-700 border-green-200",
         in_progress: "bg-blue-100 text-blue-700 border-blue-200",
         pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-        cancelled: "bg-red-100 text-red-700 border-red-200",
-        partial: "bg-orange-100 text-orange-700 border-orange-200"
+        canceled: "bg-red-100 text-red-700 border-red-200",
+        partial: "bg-orange-100 text-orange-700 border-orange-200",
+        awaiting: "bg-purple-100 text-purple-700 border-purple-200",
+        fail: "bg-red-100 text-red-700 border-red-200"
     };
 
     const labels = {
         completed: "Completed",
         in_progress: "Processing",
         pending: "Pending",
-        cancelled: "Canceled",
-        partial: "Partial"
+        canceled: "Canceled",
+        partial: "Partial",
+        awaiting: "Awaiting",
+        fail: "Failed"
     };
 
     const icons = {
         completed: <CheckCircle2 size={12} />,
         in_progress: <Clock size={12} className="animate-pulse" />,
         pending: <AlertCircle size={12} />,
-        cancelled: <XCircle size={12} />,
-        partial: <AlertCircle size={12} />
+        canceled: <XCircle size={12} />,
+        partial: <AlertCircle size={12} />,
+        awaiting: <Clock size={12} />,
+        fail: <XCircle size={12} />
     };
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${styles[status]}`}>
-            {icons[status]}
-            {labels[status]}
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${styles[status] || "bg-gray-100 text-gray-700 border-gray-200"}`}>
+            {icons[status] || <AlertCircle size={12} />}
+            {labels[status] || status}
         </span>
     );
 };
@@ -50,7 +56,7 @@ const StatusBadge = ({ status }: { status: Order['status'] }) => {
 export const MyOrders = () => {
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
-    const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
+    const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'completed' | 'canceled'>('all');
     const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
     const [currentPage, setCurrentPage] = useState(1);
     const [orders, setOrders] = useState<Order[]>([]);
@@ -103,7 +109,7 @@ export const MyOrders = () => {
         const matchesSearch =
             order._id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.serviceName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.link?.toLowerCase().includes(searchQuery.toLowerCase());
+            order.targetUrl?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesTab && matchesSearch;
     });
 
@@ -125,7 +131,7 @@ export const MyOrders = () => {
             {/* Filters & Search */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                 <div className="flex gap-2 p-1 bg-slate-100/80 rounded-xl overflow-x-auto max-w-full">
-                    {(['all', 'pending', 'completed', 'cancelled'] as const).map((tab) => (
+                    {(['all', 'pending', 'completed', 'canceled'] as const).map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -191,7 +197,7 @@ export const MyOrders = () => {
                                                 <Copy size={12} className="text-slate-300 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100" />
                                             </div>
                                             <div className="text-xs text-slate-400 mt-1">
-                                                {new Date(order.createdAt).toLocaleDateString()}
+                                                {new Date(order.submittedAt).toLocaleDateString()}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -201,12 +207,12 @@ export const MyOrders = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <a 
-                                                href={order.link} 
+                                                href={order.targetUrl} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
                                                 className="text-xs text-blue-600 hover:text-blue-700 hover:underline max-w-[150px] block truncate"
                                             >
-                                                {order.link}
+                                                {order.targetUrl}
                                             </a>
                                         </td>
                                         <td className="px-6 py-4">

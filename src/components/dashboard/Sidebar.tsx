@@ -11,7 +11,9 @@ import {
     ShieldCheck,
     Bell,
     CreditCard,
-    Wallet
+    Wallet,
+    BarChart3,
+    Building2
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiService } from '../../services/api';
@@ -25,8 +27,11 @@ const baseMenuItems = [
     { icon: User, label: 'Profile', path: '/dashboard/profile' },
 ];
 
-const adminMenuItem = { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboard/admin-panel' };
-const companiesMenuItem = { icon: Layers, label: 'Company Profiles', path: '/dashboard/companies' };
+const adminMenuItems = [
+    { icon: ShieldCheck, label: 'Admin Panel', path: '/dashboard/admin-panel' },
+    { icon: BarChart3, label: 'Admin Analytics', path: '/dashboard/admin-analytics' },
+    { icon: Building2, label: 'Company Management', path: '/dashboard/companies' },
+];
 
 export const Sidebar = () => {
     const location = useLocation();
@@ -61,10 +66,11 @@ export const Sidebar = () => {
         }
     };
 
-    const menuItems = isAdmin ? [...baseMenuItems, adminMenuItem, companiesMenuItem] : baseMenuItems;
+    const menuItems = isAdmin ? [...baseMenuItems, ...adminMenuItems] : baseMenuItems;
 
     return (
-        <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 shrink-0">
+        <div className="fixed left-0 top-0 w-64 bg-white border-r border-slate-200 h-screen z-30 flex flex-col overflow-hidden">
+            {/* Header */}
             <div className="p-6">
                 <Link to="/" className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 overflow-hidden shrink-0">
@@ -93,7 +99,8 @@ export const Sidebar = () => {
                 </Link>
             </div>
 
-            <nav className="flex-1 px-3 py-4 space-y-1">
+            {/* Menu */}
+            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 <div className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Menu
                 </div>
@@ -124,7 +131,8 @@ export const Sidebar = () => {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-slate-200 space-y-1">
+            {/* Footer */}
+            <div className="shrink-0 p-4 border-t border-slate-200 space-y-1">
                 <div className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     System
                 </div>

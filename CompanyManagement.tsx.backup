@@ -1,0 +1,1207 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Building2,
+    Plus,
+    Trash2,
+    ArrowLeft,
+    Instagram,
+    Twitter,
+    Facebook,
+    Youtube,
+    Linkedin,
+    MessageCircle,
+    Share2,
+    Play,
+    ExternalLink,
+    CheckCircle,
+    X,
+    BarChart,
+    TrendingUp,
+    ShoppingCart,
+    DollarSign,
+    TrendingDown
+} from 'lucide-react';
+import {
+    BarChart as RechartsBarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    PieChart,
+    Pie,
+    Cell
+} from 'recharts';
+import { apiService } from '../../services/api';
+import type { Company, SocialAccount, CreateSocialAccountData } from '../../types';
+
+const PLATFORM_ICONS: Record<string, any> = {
+    'Instagram': Instagram,
+    'TikTok': MessageCircle,
+    'LinkedIn': Linkedin,
+    'YouTube': Youtube,
+    'X (Twitter)': Twitter,
+    'Threads': MessageCircle,
+    'Pinterest': Share2,
+    'Discord': MessageCircle,
+    'Facebook': Facebook,
+    'Spotify': Play,
+    'Telegram': MessageCircle,
+    'Quora': MessageCircle,
+};
+
+const PLATFORMS = [
+    'Instagram',
+    'TikTok',
+    'LinkedIn',
+    'YouTube',
+    'X (Twitter)',
+    'Threads',
+    'Pinterest',
+    'Discord',
+    'Facebook',
+    'Spotify',
+    'Telegram',
+    'Quora'
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#FF6B9D', '#4ECDC4'];
+
+interface CompanyAnalyticsData {
+    revenueData: { name: string; revenue: number; cost: number; profit: number }[];
+    orderData: { name: string; total: number; completed: number }[];
+    platformDistribution: { name: string; value: number }[];
+    totalRevenue: number;
+    totalCost: number;
+    totalProfit: number;
+    totalOrders: number;
+    completedOrders: number;
+}
+
+interface CompanyManagementProps {
+    onBack: () => void;
+}
+
+export const CompanyManagement = ({ onBack }: CompanyManagementProps) => {
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+    const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
+    const [isCreateCompanyOpen, setIsCreateCompanyOpen] = useState(false);
+    const [newAccount, setNewAccount] = useState<CreateSocialAccountData>({
+        companyId: '',
+        platform: 'Instagram',
+        accountName: '',
+        accountUrl: '',
+        username: '',
+        accountType: 'profile',
+        notes: '',
+    });
+    const [newCompany, setNewCompany] = useState({
+        name: '',
+        notes: '',
+        billingDetails: {
+            contactEmail: '',
+            contactPhone: '',
+            contactName: '',
+        },
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: '',
+        },
+        status: 'active' as 'active' | 'inactive' | 'suspended',
+    });
+    const [savingAccount, setSavingAccount] = useState(false);
+    const [savingCompany, setSavingCompany] = useState(false);
+    const [activeTab, setActiveTab] = useState<'accounts' | 'analytics'>('accounts');
+    const [analyticsData, setAnalyticsData] = useState<CompanyAnalyticsData | null>(null);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+    const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
+
+    useEffect(() => {
+        fetchCompanies();
+    }, []);
+
+    useEffect(() => {
+        if (selectedCompany) {
+            fetchSocialAccounts(selectedCompany._id);
+            if (activeTab === 'analytics') {
+                fetchCompanyAnalytics();
+            }
+        }
+    }, [selectedCompany, activeTab, timeRange]);
+
+    const fetchCompanies = async () => {
+        try {
+            setLoading(true);
+            const response = await apiService.getAllCompanies(1, 100);
+            const companiesData = Array.isArray(response.data) ? response.data : (response.data?.companies || []);
+            setCompanies(companiesData);
+        } catch (error) {
+            console.error('Failed to fetch companies:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchSocialAccounts = async (companyId: string) => {
+        try {
+            const response = await apiService.getCompanySocialAccounts(companyId);
+            setSocialAccounts(response.data || []);
+        } catch (error) {
+            console.error('Failed to fetch social accounts:', error);
+            setSocialAccounts([]);
+        }
+    };
+
+    const fetchCompanyAnalytics = async () => {
+        if (!selectedCompany) return;
+
+        setAnalyticsLoading(true);
+        try {
+            // Fetch orders for this company
+            const ordersRes = await apiService.getOrders({
+                page: 1,
+                limit: 10000,
+                companyId: selectedCompany._id
+            });
+
+            const orders = ordersRes.data || [];
+
+            // Calculate date range
+            const now = new Date();
+            const startDate = new Date();
+            if (timeRange === 'week') {
+                startDate.setDate(now.getDate() - 7);
+            } else if (timeRange === 'month') {
+                startDate.setMonth(now.getMonth() - 1);
+            } else {
+                startDate.setFullYear(now.getFullYear() - 1);
+            }
+
+            // Filter orders by time range
+            const filteredOrders = orders.filter((order: any) =>
+                new Date(order.createdAt) >= startDate
+            );
+
+            // Process analytics data
+            const analytics = processCompanyAnalytics(filteredOrders, timeRange);
+            setAnalyticsData(analytics);
+        } catch (error) {
+            console.error('Failed to fetch company analytics:', error);
+        } finally {
+            setAnalyticsLoading(false);
+        }
+    };
+
+    const processCompanyAnalytics = (orders: any[], range: 'week' | 'month' | 'year'): CompanyAnalyticsData => {
+        // Initialize time periods
+        const periods: string[] = [];
+        const now = new Date();
+
+        if (range === 'week') {
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(now.getDate() - i);
+                periods.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+            }
+        } else if (range === 'month') {
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const weeksInMonth = Math.ceil(daysInMonth / 7);
+            for (let i = 1; i <= weeksInMonth; i++) {
+                periods.push(`Week ${i}`);
+            }
+        } else {
+            periods.push('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+        }
+
+        // Revenue Data
+        const revenueMap = new Map<string, { revenue: number; cost: number }>();
+        periods.forEach(period => revenueMap.set(period, { revenue: 0, cost: 0 }));
+
+        orders.forEach((order: any) => {
+            const period = getPeriod(new Date(order.createdAt), range, periods);
+            if (period && revenueMap.has(period)) {
+                const current = revenueMap.get(period)!;
+                const revenue = order.status === 'completed' ? (order.creditsUsed || order.cost || 0) : 0;
+                const cost = order.creditsUsed || order.cost || 0;
+                revenueMap.set(period, {
+                    revenue: current.revenue + revenue,
+                    cost: current.cost + cost
+                });
+            }
+        });
+
+        const revenueData = periods.map(period => {
+            const data = revenueMap.get(period) || { revenue: 0, cost: 0 };
+            return {
+                name: period,
+                revenue: data.revenue,
+                cost: data.cost,
+                profit: data.revenue - data.cost
+            };
+        });
+
+        // Order Data
+        const orderMap = new Map<string, { total: number; completed: number }>();
+        periods.forEach(period => orderMap.set(period, { total: 0, completed: 0 }));
+
+        orders.forEach((order: any) => {
+            const period = getPeriod(new Date(order.createdAt), range, periods);
+            if (period && orderMap.has(period)) {
+                const current = orderMap.get(period)!;
+                orderMap.set(period, {
+                    total: current.total + 1,
+                    completed: current.completed + (order.status === 'completed' ? 1 : 0)
+                });
+            }
+        });
+
+        const orderData = periods.map(period => {
+            const data = orderMap.get(period) || { total: 0, completed: 0 };
+            return {
+                name: period,
+                total: data.total,
+                completed: data.completed
+            };
+        });
+
+        // Platform Distribution
+        const platformMap = new Map<string, number>();
+        orders.forEach((order: any) => {
+            const platform = order.platform || 'Others';
+            platformMap.set(platform, (platformMap.get(platform) || 0) + 1);
+        });
+
+        const platformDistribution = Array.from(platformMap.entries())
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+
+        // Calculate totals
+        const totalRevenue = orders
+            .filter((o: any) => o.status === 'completed')
+            .reduce((sum: number, order: any) => sum + (order.creditsUsed || order.cost || 0), 0);
+        const totalCost = orders.reduce((sum: number, order: any) => sum + (order.creditsUsed || order.cost || 0), 0);
+        const totalProfit = totalRevenue - totalCost;
+        const totalOrders = orders.length;
+        const completedOrders = orders.filter((o: any) => o.status === 'completed').length;
+
+        return {
+            revenueData,
+            orderData,
+            platformDistribution,
+            totalRevenue,
+            totalCost,
+            totalProfit,
+            totalOrders,
+            completedOrders
+        };
+    };
+
+    const getPeriod = (date: Date, range: 'week' | 'month' | 'year', periods: string[]): string | null => {
+        if (range === 'week') {
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            return periods.includes(dayName) ? dayName : null;
+        } else if (range === 'month') {
+            const dayOfMonth = date.getDate();
+            const weekNum = Math.ceil(dayOfMonth / 7);
+            return `Week ${weekNum}`;
+        } else {
+            const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+            return periods.includes(monthName) ? monthName : null;
+        }
+    };
+
+    const handleSelectCompany = (company: Company) => {
+        setSelectedCompany(company);
+        setNewAccount(prev => ({ ...prev, companyId: company._id }));
+        setActiveTab('accounts'); // Reset to accounts tab when selecting company
+    };
+
+    const handleAddAccount = () => {
+        if (!selectedCompany) return;
+        setNewAccount({
+            companyId: selectedCompany._id,
+            platform: 'Instagram',
+            accountName: '',
+            accountUrl: '',
+            username: '',
+            accountType: 'profile',
+            notes: '',
+        });
+        setIsAddAccountOpen(true);
+    };
+
+    const handleSaveAccount = async () => {
+        try {
+            setSavingAccount(true);
+            await apiService.createSocialAccount(newAccount);
+            await fetchSocialAccounts(selectedCompany!._id);
+            setIsAddAccountOpen(false);
+            setNewAccount({
+                companyId: selectedCompany!._id,
+                platform: 'Instagram',
+                accountName: '',
+                accountUrl: '',
+                username: '',
+                accountType: 'profile',
+                notes: '',
+            });
+        } catch (error: any) {
+            console.error('Failed to save social account:', error);
+            alert(error?.response?.data?.message || 'Failed to save social account');
+        } finally {
+            setSavingAccount(false);
+        }
+    };
+
+    const handleDeleteAccount = async (accountId: string) => {
+        if (!selectedCompany || !confirm('Are you sure you want to delete this social account?')) return;
+
+        try {
+            await apiService.deleteSocialAccount(accountId);
+            await fetchSocialAccounts(selectedCompany._id);
+        } catch (error) {
+            console.error('Failed to delete social account:', error);
+            alert('Failed to delete social account');
+        }
+    };
+
+    const handleCreateCompany = () => {
+        setNewCompany({
+            name: '',
+            notes: '',
+            billingDetails: {
+                contactEmail: '',
+                contactPhone: '',
+                contactName: '',
+            },
+            address: {
+                street: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                country: '',
+            },
+            status: 'active',
+        });
+        setIsCreateCompanyOpen(true);
+    };
+
+    const handleSaveCompany = async () => {
+        if (!newCompany.name || !newCompany.billingDetails?.contactEmail) {
+            alert('Please fill in company name and contact email');
+            return;
+        }
+
+        try {
+            setSavingCompany(true);
+            await apiService.createCompany(newCompany);
+            setIsCreateCompanyOpen(false);
+            await fetchCompanies();
+        } catch (error: any) {
+            console.error('Failed to create company:', error);
+            alert(error.response?.data?.message || 'Failed to create company');
+        } finally {
+            setSavingCompany(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-slate-500">Loading companies...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {!selectedCompany ? (
+                <>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={onBack}
+                                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                            >
+                                <ArrowLeft className="w-6 h-6 text-slate-600" />
+                            </button>
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">Company Management</h2>
+                                <p className="text-slate-500">Manage companies and their social accounts</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleCreateCompany}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Create Company
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {companies.map((company) => (
+                            <motion.div
+                                key={company._id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                                onClick={() => handleSelectCompany(company)}
+                            >
+                                <div className="flex items-start gap-4">
+                                    <div className="p-3 bg-blue-50 rounded-xl">
+                                        <Building2 className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-slate-900 mb-1">{company.name}</h3>
+                                        <p className="text-sm text-slate-500 mb-2">{company.billingDetails?.contactEmail || 'No email'}</p>
+                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                            company.status === 'active'
+                                                ? 'bg-green-50 text-green-700'
+                                                : 'bg-red-50 text-red-700'
+                                        }`}>
+                                            {company.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setSelectedCompany(null)}
+                                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                            >
+                                <ArrowLeft className="w-6 h-6 text-slate-600" />
+                            </button>
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">{selectedCompany.name}</h2>
+                                <p className="text-slate-500">Manage company data and analytics</p>
+                            </div>
+                        </div>
+                        {activeTab === 'accounts' && (
+                            <button
+                                onClick={handleAddAccount}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                            >
+                                <Plus className="w-5 h-5" />
+                                Add Social Account
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="bg-white border border-slate-200 rounded-2xl p-1">
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setActiveTab('accounts')}
+                                className={`flex-1 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                                    activeTab === 'accounts'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                }`}
+                            >
+                                Social Accounts
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('analytics')}
+                                className={`flex-1 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                                    activeTab === 'analytics'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                }`}
+                            >
+                                Analytics
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Tab Content */}
+                    {activeTab === 'accounts' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {socialAccounts.length === 0 ? (
+                            <div className="col-span-full bg-white border border-slate-200 rounded-2xl p-12 text-center">
+                                <MessageCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">No Social Accounts</h3>
+                                <p className="text-slate-500 mb-4">Add social media accounts for this company</p>
+                                <button
+                                    onClick={handleAddAccount}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    Add Social Account
+                                </button>
+                            </div>
+                        ) : (
+                            socialAccounts.map((account) => {
+                                const Icon = PLATFORM_ICONS[account.platform] || MessageCircle;
+                                return (
+                                    <motion.div
+                                        key={account._id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+                                    >
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-blue-50 rounded-lg">
+                                                    <Icon className="w-5 h-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-slate-900">{account.accountName}</h3>
+                                                    <p className="text-xs text-slate-500">{account.platform}</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteAccount(account._id)}
+                                                className="p-1 hover:bg-red-50 rounded-lg transition-colors text-slate-400 hover:text-red-600"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        {account.username && (
+                                            <p className="text-sm text-slate-600 mb-2">@{account.username}</p>
+                                        )}
+
+                                        <a
+                                            href={account.accountUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mb-3"
+                                        >
+                                            <ExternalLink className="w-4 h-4" />
+                                            View Account
+                                        </a>
+
+                                        {account.metadata?.followers && (
+                                            <div className="text-sm text-slate-600">
+                                                <strong>{account.metadata.followers.toLocaleString()}</strong> followers
+                                            </div>
+                                        )}
+
+                                        {account.metadata?.verificationStatus === 'verified' && (
+                                            <div className="mt-2 flex items-center gap-1 text-xs text-blue-600">
+                                                <CheckCircle className="w-4 h-4" />
+                                                Verified
+                                            </div>
+                                        )}
+
+                                        {account.notes && (
+                                            <p className="mt-3 text-xs text-slate-500 border-t border-slate-100 pt-3">
+                                                {account.notes}
+                                            </p>
+                                        )}
+                                    </motion.div>
+                                );
+                            })
+                        )}
+                        </div>
+                    ) : (
+                        /* Analytics Tab Content */
+                        <CompanyAnalyticsView
+                            data={analyticsData}
+                            loading={analyticsLoading}
+                            timeRange={timeRange}
+                            onTimeRangeChange={setTimeRange}
+                        />
+                    )}
+
+                </>
+            )}
+
+            {/* Create Company Modal */}
+            <AnimatePresence>
+                {isCreateCompanyOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsCreateCompanyOpen(false)}
+                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                        >
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                                <h3 className="text-xl font-bold text-slate-900">Create New Company</h3>
+                                <button
+                                    onClick={() => setIsCreateCompanyOpen(false)}
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Company Name *</label>
+                                    <input
+                                        type="text"
+                                        value={newCompany.name}
+                                        onChange={(e) => setNewCompany({ ...newCompany, name: e.target.value })}
+                                        placeholder="e.g., Acme Corporation"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                                    <textarea
+                                        value={newCompany.notes || ''}
+                                        onChange={(e) => setNewCompany({ ...newCompany, notes: e.target.value })}
+                                        placeholder="Additional notes about the company"
+                                        rows={2}
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Contact Email *</label>
+                                    <input
+                                        type="email"
+                                        value={newCompany.billingDetails?.contactEmail || ''}
+                                        onChange={(e) => setNewCompany({
+                                            ...newCompany,
+                                            billingDetails: {
+                                                ...newCompany.billingDetails,
+                                                contactEmail: e.target.value
+                                            }
+                                        })}
+                                        placeholder="contact@acme.com"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Contact Phone</label>
+                                    <input
+                                        type="tel"
+                                        value={newCompany.billingDetails?.contactPhone || ''}
+                                        onChange={(e) => setNewCompany({
+                                            ...newCompany,
+                                            billingDetails: {
+                                                ...newCompany.billingDetails,
+                                                contactPhone: e.target.value
+                                            }
+                                        })}
+                                        placeholder="+1 234 567 8900"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Street Address</label>
+                                        <input
+                                            type="text"
+                                            value={newCompany.address?.street || ''}
+                                            onChange={(e) => setNewCompany({
+                                                ...newCompany,
+                                                address: {
+                                                    ...newCompany.address,
+                                                    street: e.target.value
+                                                }
+                                            })}
+                                            placeholder="123 Business St"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">City</label>
+                                        <input
+                                            type="text"
+                                            value={newCompany.address?.city || ''}
+                                            onChange={(e) => setNewCompany({
+                                                ...newCompany,
+                                                address: {
+                                                    ...newCompany.address,
+                                                    city: e.target.value
+                                                }
+                                            })}
+                                            placeholder="New York"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">State</label>
+                                        <input
+                                            type="text"
+                                            value={newCompany.address?.state || ''}
+                                            onChange={(e) => setNewCompany({
+                                                ...newCompany,
+                                                address: {
+                                                    ...newCompany.address,
+                                                    state: e.target.value
+                                                }
+                                            })}
+                                            placeholder="NY"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">ZIP Code</label>
+                                        <input
+                                            type="text"
+                                            value={newCompany.address?.zipCode || ''}
+                                            onChange={(e) => setNewCompany({
+                                                ...newCompany,
+                                                address: {
+                                                    ...newCompany.address,
+                                                    zipCode: e.target.value
+                                                }
+                                            })}
+                                            placeholder="10001"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Country</label>
+                                        <input
+                                            type="text"
+                                            value={newCompany.address?.country || ''}
+                                            onChange={(e) => setNewCompany({
+                                                ...newCompany,
+                                                address: {
+                                                    ...newCompany.address,
+                                                    country: e.target.value
+                                                }
+                                            })}
+                                            placeholder="USA"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                                    <select
+                                        value={newCompany.status}
+                                        onChange={(e) => setNewCompany({ ...newCompany, status: e.target.value as 'active' | 'inactive' | 'suspended' })}
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="suspended">Suspended</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="p-6 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
+                                <button
+                                    onClick={() => setIsCreateCompanyOpen(false)}
+                                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveCompany}
+                                    disabled={savingCompany}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
+                                >
+                                    {savingCompany ? 'Creating...' : 'Create Company'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Add Social Account Modal */}
+            <AnimatePresence>
+                {isAddAccountOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAddAccountOpen(false)}
+                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                                <h3 className="text-xl font-bold text-slate-900">Add Social Account</h3>
+                                <button
+                                    onClick={() => setIsAddAccountOpen(false)}
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Platform</label>
+                                    <select
+                                        value={newAccount.platform}
+                                        onChange={(e) => setNewAccount({ ...newAccount, platform: e.target.value })}
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        {PLATFORMS.map((platform) => (
+                                            <option key={platform} value={platform}>{platform}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Account Name</label>
+                                    <input
+                                        type="text"
+                                        value={newAccount.accountName}
+                                        onChange={(e) => setNewAccount({ ...newAccount, accountName: e.target.value })}
+                                        placeholder="e.g., Nike Official"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Account URL</label>
+                                    <input
+                                        type="url"
+                                        value={newAccount.accountUrl}
+                                        onChange={(e) => setNewAccount({ ...newAccount, accountUrl: e.target.value })}
+                                        placeholder="https://instagram.com/nike"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Username (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={newAccount.username}
+                                        onChange={(e) => setNewAccount({ ...newAccount, username: e.target.value })}
+                                        placeholder="@nike"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Notes (Optional)</label>
+                                    <textarea
+                                        value={newAccount.notes}
+                                        onChange={(e) => setNewAccount({ ...newAccount, notes: e.target.value })}
+                                        placeholder="Any additional notes..."
+                                        rows={3}
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="p-6 border-t border-slate-100 flex items-center justify-end gap-3">
+                                <button
+                                    onClick={() => setIsAddAccountOpen(false)}
+                                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveAccount}
+                                    disabled={!newAccount.accountName || !newAccount.accountUrl || savingAccount}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {savingAccount ? 'Saving...' : 'Save Account'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+export default CompanyManagement;
+
+interface CompanyAnalyticsViewProps {
+    data: CompanyAnalyticsData | null;
+    loading: boolean;
+    timeRange: 'week' | 'month' | 'year';
+    onTimeRangeChange: (range: 'week' | 'month' | 'year') => void;
+}
+
+const CompanyAnalyticsView = ({ data, loading, timeRange, onTimeRangeChange }: CompanyAnalyticsViewProps) => {
+    if (loading) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="bg-white rounded-2xl h-80 border border-slate-200" />
+                ))}
+            </div>
+        );
+    }
+
+    if (!data) {
+        return (
+            <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+                <ShoppingCart className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-slate-900 mb-2">No Analytics Data</h3>
+                <p className="text-slate-500">No orders found for this company in the selected time period.</p>
+            </div>
+        );
+    }
+
+    const hasData = data.totalOrders > 0 || data.totalRevenue > 0;
+
+    return (
+        <div className="space-y-6">
+            {/* Header with Time Range Selector */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-xl font-bold text-slate-900">Company Analytics</h3>
+                    <p className="text-sm text-slate-500 mt-1">Performance metrics for this company</p>
+                </div>
+                <div className="bg-slate-100 p-1 rounded-lg flex items-center gap-1">
+                    {(['week', 'month', 'year'] as const).map((range) => (
+                        <button
+                            key={range}
+                            onClick={() => onTimeRangeChange(range)}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                                timeRange === range
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-900'
+                            }`}
+                        >
+                            {range.charAt(0).toUpperCase() + range.slice(1)}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+                >
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 bg-green-50 rounded-lg">
+                            <DollarSign className="w-5 h-5 text-green-600" />
+                        </div>
+                        {data.totalProfit >= 0 ? (
+                            <TrendingUp className="w-5 h-5 text-green-600" />
+                        ) : (
+                            <TrendingDown className="w-5 h-5 text-red-600" />
+                        )}
+                    </div>
+                    <p className="text-sm text-slate-500">Total Profit</p>
+                    <p className={`text-2xl font-bold ${data.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        ₹{data.totalProfit.toFixed(2)}
+                    </p>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+                >
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                            <DollarSign className="w-5 h-5 text-blue-600" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-500">Revenue</p>
+                    <p className="text-2xl font-bold text-blue-600">₹{data.totalRevenue.toFixed(2)}</p>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+                >
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 bg-orange-50 rounded-lg">
+                            <DollarSign className="w-5 h-5 text-orange-600" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-500">Cost</p>
+                    <p className="text-2xl font-bold text-orange-600">₹{data.totalCost.toFixed(2)}</p>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+                >
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 bg-purple-50 rounded-lg">
+                            <ShoppingCart className="w-5 h-5 text-purple-600" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-500">Total Orders</p>
+                    <p className="text-2xl font-bold text-purple-600">{data.totalOrders}</p>
+                    <p className="text-xs text-slate-400 mt-1">{data.completedOrders} completed</p>
+                </motion.div>
+            </div>
+
+            {!hasData ? (
+                <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+                    <ShoppingCart className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">No Data Available</h3>
+                    <p className="text-slate-500">
+                        No orders or transactions found for this company in the selected time period.
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Revenue Chart */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-green-50 rounded-lg">
+                                    <DollarSign className="w-5 h-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-900">Revenue & Profit</h4>
+                                    <p className="text-xs text-slate-500">Financial performance over time</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={data.revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+                                    />
+                                    <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue" />
+                                    <Area type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" name="Net Profit" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Orders Chart */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-purple-50 rounded-lg">
+                                    <ShoppingCart className="w-5 h-5 text-purple-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-900">Order Volume</h4>
+                                    <p className="text-xs text-slate-500">Total orders vs completed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RechartsBarChart data={data.orderData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                                    <Tooltip
+                                        cursor={{ fill: '#F1F5F9' }}
+                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    />
+                                    <Bar dataKey="total" fill="#8B5CF6" radius={[4, 4, 0, 0]} name="Total Orders" />
+                                    <Bar dataKey="completed" fill="#A78BFA" radius={[4, 4, 0, 0]} name="Completed" />
+                                </RechartsBarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Platform Distribution */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-pink-50 rounded-lg">
+                                    <TrendingUp className="w-5 h-5 text-pink-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-900">Platform Distribution</h4>
+                                    <p className="text-xs text-slate-500">Orders by platform for this company</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[300px] w-full flex items-center justify-center">
+                            {data.platformDistribution.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={data.platformDistribution}
+                                            cx="50%"
+                                            cy="50%"
+                                            labelLine={false}
+                                            label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                                            outerRadius={100}
+                                            fill="#8884d8"
+                                            dataKey="value"
+                                        >
+                                            {data.platformDistribution.map((_, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <p className="text-slate-500 text-sm">No platform data available</p>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </div>
+    );
+};

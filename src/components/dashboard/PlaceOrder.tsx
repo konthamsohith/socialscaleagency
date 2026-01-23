@@ -216,7 +216,7 @@ export const PlaceOrder = () => {
 
         try {
             const orderData = {
-                service: Number(pkg.id),
+                service: pkg.id,  // Keep as string, not Number()
                 link: link,
                 quantity: quantity
             };

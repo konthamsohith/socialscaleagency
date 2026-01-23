@@ -6,6 +6,7 @@ import type {
   User,
   Company,
   SocialProfile,
+  SocialAccount,
   Service,
   Order,
   CreateOrderData,
@@ -13,6 +14,7 @@ import type {
   SubscriptionPlan,
   CreateSubscriptionData,
   Analytics,
+  CompanyAnalytics,
   ApiError
 } from '../types';
 
@@ -31,8 +33,13 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('accessToken');
+        console.log('API Request:', config.url);
+        console.log('Token present:', !!token);
         if (token) {
+          console.log('Token:', token.substring(0, 20) + '...');
           config.headers.Authorization = `Bearer ${token}`;
+        } else {
+          console.warn('⚠️ No access token found in localStorage!');
         }
         return config;
       },
@@ -155,14 +162,47 @@ class ApiService {
   }
 
   // ==================== SOCIAL PROFILES ====================
-  async addSocialProfile(companyId: string, profile: Partial<SocialProfile>): Promise<{ success: boolean; data: Company }> {
-    const response = await this.api.post(`/companies/${companyId}/social-profiles`, profile);
+  async addSocialProfile(companyId: string, profile: Partial<SocialProfile>): Promise<{ success: boolean; data: SocialAccount }> {
+    // Map platform from frontend format to backend format
+    const platformMapping: Record<string, string> = {
+      'instagram': 'Instagram',
+      'facebook': 'Facebook',
+      'x': 'X (Twitter)',
+      'linkedin': 'LinkedIn',
+      'tiktok': 'TikTok',
+      'youtube': 'YouTube',
+      'threads': 'Threads',
+      'pinterest': 'Pinterest',
+      'snapchat': 'Snapchat',
+      'spotify': 'Spotify',
+      'discord': 'Discord',
+      'telegram': 'Telegram'
+    };
+
+    const backendPlatform = platformMapping[profile.platform || ''] || profile.platform || '';
+
+    const profileData = {
+      companyId,
+      platform: backendPlatform,
+      accountName: profile.handle?.replace('@', '') || '',
+      accountUrl: profile.url || '',
+      username: profile.handle?.replace('@', '') || '',
+      accountType: 'profile' as const,
+      notes: ''
+    };
+
+    const response = await this.api.post(`/social-accounts`, profileData);
     return response.data;
   }
 
-  async removeSocialProfile(companyId: string, profileId: string): Promise<{ success: boolean; data: Company }> {
-    const response = await this.api.delete(`/companies/${companyId}/social-profiles/${profileId}`);
+  async removeSocialProfile(profileId: string): Promise<{ success: boolean }> {
+    const response = await this.api.delete(`/social-accounts/${profileId}`);
     return response.data;
+  }
+
+  async getCompanySocialAccounts(companyId: string): Promise<SocialAccount[]> {
+    const response = await this.api.get(`/social-accounts/company/${companyId}`);
+    return response.data.data;
   }
 
   // ==================== SERVICES ====================
@@ -281,13 +321,18 @@ class ApiService {
     return response.data;
   }
 
-  async getCompanyAnalytics(params?: { startDate?: string; endDate?: string }): Promise<{ success: boolean; data: any }> {
+  async getCompanyAnalytics(params?: { startDate?: string; endDate?: string }): Promise<{ success: boolean; data: CompanyAnalytics }> {
     const response = await this.api.get('/analytics', { params });
     return response.data;
   }
 
   async getOrderDetailsByTarget(targetUrl: string): Promise<{ success: boolean; data: any }> {
     const response = await this.api.get(`/analytics/target/${encodeURIComponent(targetUrl)}`);
+    return response.data;
+  }
+
+  async getUserGrowthAnalytics(params?: { startDate?: string; endDate?: string }): Promise<{ success: boolean; data: any }> {
+    const response = await this.api.get('/analytics/user-growth', { params });
     return response.data;
   }
 
