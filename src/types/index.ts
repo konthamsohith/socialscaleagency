@@ -154,7 +154,7 @@ export interface Order {
 
 export interface CreateOrderData {
   companyId?: string;
-  service: number;
+  service: string | number;
   link: string;
   quantity: number;
 }
