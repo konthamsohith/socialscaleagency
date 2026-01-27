@@ -100,10 +100,10 @@ export const Footer = () => {
                         &copy; {new Date().getFullYear()} SocialScale. All rights reserved.
                     </p>
                     <div className="flex gap-6">
-                        <a href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-electric-purple transition-colors"><XIcon size={20} /></a>
-                        <a href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-electric-purple transition-colors"><Instagram size={20} /></a>
-                        <a href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-electric-purple transition-colors"><Linkedin size={20} /></a>
-                        <a href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-electric-purple transition-colors"><Facebook size={20} /></a>
+                        <a href="https://x.com/SocialScal60278" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-electric-purple transition-colors"><XIcon size={20} /></a>
+                        <a href="https://www.instagram.com/socailscale/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-electric-purple transition-colors"><Instagram size={20} /></a>
+                        <a href="https://www.linkedin.com/in/social-scale-agency-6911053a8/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-electric-purple transition-colors"><Linkedin size={20} /></a>
+                        <a href="https://www.facebook.com/profile.php?id=61586989562718" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-electric-purple transition-colors"><Facebook size={20} /></a>
                     </div>
                 </div>
             </div>
