@@ -354,57 +354,42 @@ export const Admin = () => {
 
         try {
             setLoadingPrices(true);
-            const { platform, serviceType } = getPlatformAndServiceType(category.id);
+            
+            // Fetch services directly from Fampage API
+            const servicesResponse = await apiService.getFampageServices();
+            const services = servicesResponse.data;
+            
+            console.log('Fetched Fampage services for pricing update');
 
-            // Fetch global pricing rules from backend
-            const pricingRules = await apiService.getPricingRules({
-                scope: 'global',
-                isActive: true
-            });
-
-            console.log('Fetched pricing rules:', pricingRules.data);
-
-            // Find the rule for this platform and service type
-            const applicableRule = pricingRules.data.find((rule: any) =>
-                rule.servicePricing.some((p: any) => 
-                    p.platform === platform && p.serviceType === serviceType
-                )
-            );
-
-            if (applicableRule) {
-                const pricing = applicableRule.servicePricing.find(
-                    (p: any) => p.platform === platform && p.serviceType === serviceType
-                );
-
-                if (pricing) {
-                    // Convert creditsPerUnit back to price per 1000
-                    const pricePerThousand = Math.round(pricing.creditsPerUnit * 1000);
-                    console.log(`Applying backend pricing: ${pricePerThousand} credits per 1000 for ${platform} ${serviceType}`);
-
-                    // Update the services data state with backend pricing
-                    setServicesDataState(prev => {
-                        const updated = { ...prev };
-                        if (selectedNetwork) {
-                            const networkData = [...(updated[selectedNetwork.id] || [])];
-                            const categoryIndex = networkData.findIndex(cat => cat.id === category.id);
-                            
-                            if (categoryIndex !== -1 && networkData[categoryIndex].packages) {
-                                // Update all packages in this category with the backend price
-                                networkData[categoryIndex] = {
-                                    ...networkData[categoryIndex],
-                                    packages: networkData[categoryIndex].packages!.map(pkg => ({
-                                        ...pkg,
-                                        price: pricePerThousand.toString()
-                                    }))
-                                };
-                                updated[selectedNetwork.id] = networkData;
-                            }
+            // Update prices for each package based on Fampage service rate
+            if (services && services.length > 0) {
+                setServicesDataState(prev => {
+                    const updated = { ...prev };
+                    if (selectedNetwork) {
+                        const networkData = [...(updated[selectedNetwork.id] || [])];
+                        const categoryIndex = networkData.findIndex(cat => cat.id === category.id);
+                        
+                        if (categoryIndex !== -1 && networkData[categoryIndex].packages) {
+                            // Update each package price from Fampage service
+                            networkData[categoryIndex] = {
+                                ...networkData[categoryIndex],
+                                packages: networkData[categoryIndex].packages!.map(pkg => {
+                                    const fampageService = services.find((s: any) => s.service === parseInt(pkg.id));
+                                    if (fampageService) {
+                                        console.log(`Updated service ${pkg.id}: ₹${fampageService.rate}/1K`);
+                                        return {
+                                            ...pkg,
+                                            price: String(fampageService.rate) // Price per 1000 units from Fampage as string
+                                        };
+                                    }
+                                    return pkg;
+                                })
+                            };
+                            updated[selectedNetwork.id] = networkData;
                         }
-                        return updated;
-                    });
-                }
-            } else {
-                console.log('No backend pricing rule found, using static prices');
+                    }
+                    return updated;
+                });
             }
         } catch (error) {
             console.error('Error fetching live pricing:', error);
@@ -1069,8 +1054,10 @@ export const Admin = () => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <span className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{pkg.price}</span>
-                                                            <span className="text-[10px] font-bold text-slate-400">Credits</span>
+                                                            <span className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                                                                {loadingPrices ? '...' : `₹${parseFloat(String(pkg.price)).toLocaleString()}`}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-slate-400">/ 1K</span>
                                                             {user?.role === 'SUPER_ADMIN' && (
                                                                 <button
                                                                     onClick={() => handleEditPrice(pkg.id, pkg.price)}

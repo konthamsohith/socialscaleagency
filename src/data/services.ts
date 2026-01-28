@@ -57,11 +57,11 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "2279", name: "Instagram Followers [Good Quality] [30D Refill]", price: "5000", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3703", name: "Instagram Followers [High Quality] [365D Refill]", price: "6000", minQuantity: 100, maxQuantity: 100000 },
-                { id: "3774", name: "Instagram Followers [High Quality] [Lifetime Refill]", price: "7000", minQuantity: 100, maxQuantity: 200000 },
-                { id: "4301", name: "Instagram Followers [ High Quality ] [ 365D Refill ] [ Recommended ]", price: "8000", minQuantity: 10, maxQuantity: 100000 },
-                { id: "4302", name: "Instagram Followers [ High Quality ] [ Lifetime Refill ] Low Drops", price: "10000", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2279", name: "Followers [Good Quality] [30D Refill]", price: "317", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3703", name: "Followers [High Quality] [365D Refill]", price: "435", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3774", name: "Followers [High Quality] [Lifetime Refill]", price: "540", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4301", name: "Followers [High Quality] [365D Refill] [Recommended]", price: "522", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4302", name: "Followers [High Quality] [Lifetime Refill] Low Drops", price: "465", minQuantity: 50, maxQuantity: 100000 },
             ]
         },
         {
@@ -72,8 +72,14 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-600",
             bg: "bg-pink-600/10",
             packages: [
-                { id: "3246", name: "Instagram Likes [ Real Profiles ] [ USA Insights ]", price: "300", minQuantity: 5, maxQuantity: 3000 },
-                { id: "3724", name: "Instagram Likes [ Foreign Profiles ] [ Real + Mix ]", price: "500", minQuantity: 10, maxQuantity: 1000 }
+                { id: "3790", name: "HIGH Quality Likes", price: "140", minQuantity: 100, maxQuantity: 100000 },
+                { id: "3200", name: "GOOD Quality Likes", price: "74", minQuantity: 50, maxQuantity: 2000000 },
+                { id: "3741", name: "HQ Likes - Auto Refill 🌟", price: "122", minQuantity: 100, maxQuantity: 500000 },
+                { id: "4245", name: "Foreign Quality Likes", price: "70", minQuantity: 10, maxQuantity: 100000 },
+                { id: "3981", name: "MIX Indian Likes", price: "110", minQuantity: 50, maxQuantity: 100000 },
+                { id: "2936", name: "REAL Indian Likes", price: "425", minQuantity: 10, maxQuantity: 50000 },
+                { id: "2685", name: "REAL USA Likes", price: "688", minQuantity: 10, maxQuantity: 50000000 },
+                { id: "3246", name: "Likes [Real Profiles] [USA Insights]", price: "671", minQuantity: 5, maxQuantity: 3000 },
             ]
         },
         {
@@ -84,7 +90,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             packages: [
-                { id: "2495", name: "Instagram Traffic/Views from Stories", price: "50", minQuantity: 100, maxQuantity: 1000000 }
+                { id: "2495", name: "Story Views", price: "99", minQuantity: 100, maxQuantity: 1000000 }
             ]
         },
         {
@@ -95,8 +101,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "4252", name: "Instagram Repost [ Global ]", price: "1200", minQuantity: 50, maxQuantity: 100000 },
-                { id: "4279", name: "Instagram Repost [ Cheapest ]", price: "800", minQuantity: 10, maxQuantity: 100000 }
+                { id: "4252", name: "Repost [Global]", price: "2759", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4279", name: "Repost [Cheapest]", price: "185", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -107,8 +113,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
             packages: [
-                { id: "3463", name: "Instagram Comments [ Mix Indian ]", price: "800", minQuantity: 10, maxQuantity: 500000 },
-                { id: "4219", name: "Instagram Comments [ Super REAL ] [ Foreign Insights ]", price: "6000", minQuantity: 10, maxQuantity: 100 }
+                { id: "3463", name: "Comments [Mix Indian]", price: "174", minQuantity: 50, maxQuantity: 500000 },
+                { id: "4219", name: "Comments [Super REAL] [Foreign Insights]", price: "13488", minQuantity: 50, maxQuantity: 100 }
             ]
         },
         {
@@ -134,10 +140,10 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-purple-500",
             bg: "bg-purple-500/10",
             packages: [
-                { id: "3694", name: "IG Reel Views - Cheap S2", price: "7", minQuantity: 100, maxQuantity: 100000 },
-                { id: "4030", name: "IG Reel Views - Cheap", price: "7", minQuantity: 100, maxQuantity: 100000 },
-                { id: "3294", name: "IG Reel Views - Good ⚡️", price: "18", minQuantity: 100, maxQuantity: 100000 },
-                { id: "3651", name: "IG Reel Views - Best ⚡️", price: "25", minQuantity: 100, maxQuantity: 100000 }
+                { id: "3694", name: "Reel Views - Cheap S2", price: "2", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4030", name: "Reel Views - Cheap", price: "2", minQuantity: 100, maxQuantity: 100000 },
+                { id: "3294", name: "Reel Views - Good", price: "4", minQuantity: 100, maxQuantity: 100000 },
+                { id: "3651", name: "Reel Views - Best", price: "5", minQuantity: 100, maxQuantity: 100000 }
             ]
         },
         {
@@ -148,8 +154,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "3964", name: "Instagram Channel Member [ Global ]", price: "150", minQuantity: 10, maxQuantity: 1000000 },
-                { id: "3971", name: "Instagram Channel Member [ India ]", price: "120", minQuantity: 10, maxQuantity: 1000000 }
+                { id: "3964", name: "Channel Member [Global]", price: "282", minQuantity: 50, maxQuantity: 1000000 },
+                { id: "3971", name: "Channel Member [India]", price: "282", minQuantity: 50, maxQuantity: 1000000 }
             ]
         },
         {
@@ -160,14 +166,14 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-purple-600",
             bg: "bg-purple-600/10",
             packages: [
-                { id: "4031", name: "Vote For [ 1st Option or 'A' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
-                { id: "4032", name: "Vote For [ 2nd Option or 'B' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
-                { id: "4033", name: "Vote For [ 3rd Option or 'C' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
-                { id: "4034", name: "Vote For [ 4th Option or 'D' ]", price: "268", minQuantity: 10, maxQuantity: 100000 },
-                { id: "4035", name: "Vote For [ 1st Option or 'A' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 },
-                { id: "4036", name: "Vote For [ 2nd Option or 'B' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 },
-                { id: "4037", name: "Vote For [ 3rd Option or 'C' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 },
-                { id: "4038", name: "Vote For [ 4th Option or 'D' ] [Price for 100]", price: "26.8", minQuantity: 100, maxQuantity: 100000 }
+                { id: "4031", name: "Story Vote [1st Option/A]", price: "535", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4032", name: "Story Vote [2nd Option/B]", price: "535", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4033", name: "Story Vote [3rd Option/C]", price: "535", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4034", name: "Story Vote [4th Option/D]", price: "535", minQuantity: 50, maxQuantity: 100000 },
+                { id: "4035", name: "Story Vote [A] [Price for 100]", price: "277", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4036", name: "Story Vote [B] [Price for 100]", price: "1186", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4037", name: "Vote For [ 3rd Option or 'C' ] [Price for 100]", price: "54", minQuantity: 100, maxQuantity: 100000 },
+                { id: "4038", name: "Vote For [ 4th Option or 'D' ] [Price for 100]", price: "54", minQuantity: 100, maxQuantity: 100000 }
             ]
         }
     ],
@@ -180,9 +186,9 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-900",
             bg: "bg-slate-900/10",
             packages: [
-                { id: "2779", name: "TikTok Followers [ High Quality ] [ No Refill ] [ Less Drops ]", price: "210", minQuantity: 10, maxQuantity: 100000 },
-                { id: "2781", name: "TikTok Followers [ High Quality ] [ Lifetime Refill ] [ Recommended ]", price: "290", minQuantity: 10, maxQuantity: 100000 },
-                { id: "2782", name: "TikTok Followers [ High Quality ] [ 30D Refill ] [ Less Drops ]", price: "250", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2779", name: "Followers [High Quality] [No Refill]", price: "240", minQuantity: 50, maxQuantity: 100000 },
+                { id: "2781", name: "Followers [High Quality] [Lifetime Refill]", price: "323", minQuantity: 50, maxQuantity: 100000 },
+                { id: "2782", name: "Followers [High Quality] [30D Refill]", price: "264", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -193,7 +199,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             packages: [
-                { id: "2130", name: "TikTok Likes [⚡️ BEST ]", price: "140", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2130", name: "Likes [BEST]", price: "25", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -204,9 +210,9 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "2125", name: "TikTok Video Views [ S2 ]", price: "5", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "2127", name: "Tiktok Video Views [ Lifetime ]", price: "15", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "2128", name: "TikTok Video Views [ S1 ]", price: "10", minQuantity: 100, maxQuantity: 10000000 }
+                { id: "2125", name: "Video Views [S2]", price: "5", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "2127", name: "Video Views [Lifetime]", price: "22", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "2128", name: "Video Views [S1]", price: "10", minQuantity: 100, maxQuantity: 10000000 }
             ]
         }
     ],
@@ -219,7 +225,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-700",
             bg: "bg-blue-700/10",
             packages: [
-                { id: "4002", name: "Linkedin Profile Followers", price: "20", minQuantity: 10, maxQuantity: 100000 }
+                { id: "4002", name: "Profile Followers", price: "5243", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -230,7 +236,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "4005", name: "Linkedin Post Likes", price: "10", minQuantity: 10, maxQuantity: 100000 }
+                { id: "4005", name: "Post Likes", price: "3226", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -241,7 +247,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "4006", name: "Linkedin Post Share", price: "1200", minQuantity: 10, maxQuantity: 100000 }
+                { id: "4006", name: "Post Share", price: "5243", minQuantity: 50, maxQuantity: 100000 }
             ]
         }
     ],
@@ -254,8 +260,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "2292", name: "YouTube Subscriber [ Lifetime Guaranteed ] [ Slow speed ]⚡️", price: "850", minQuantity: 10, maxQuantity: 100000 },
-                { id: "2837", name: "YouTube Subscriber [ Lifetime Guaranteed ] [ Best Service ]⚡️", price: "1200", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2292", name: "Subscribers [Slow]", price: "1700", minQuantity: 50, maxQuantity: 100000 },
+                { id: "2837", name: "Subscribers [Best Service]", price: "7495", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -266,15 +272,15 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-500",
             bg: "bg-red-500/10",
             packages: [
-                { id: "4293", name: "100 Views [ Nondrop ] [ Lifetime ]", price: "190", minQuantity: 100, maxQuantity: 100 },
-                { id: "3032", name: "500 Views [ Nondrop ] [ Lifetime ]", price: "770", minQuantity: 500, maxQuantity: 500 },
-                { id: "3718", name: "1000 Views [ Nondrop ] [ Lifetime ]", price: "1490", minQuantity: 1000, maxQuantity: 1000 },
-                { id: "4081", name: "3000 Views [ Nondrop ] [ Lifetime ]", price: "3660", minQuantity: 3000, maxQuantity: 3000 },
-                { id: "3546", name: "Youtube Views with Full Watchtime + Likes + Ads clicks [ worldwide - 2 Minutes ]", price: "4200", minQuantity: 100, maxQuantity: 100000 },
-                { id: "3860", name: "YouTube Views + Likes [ Real Engagement ] [ Nondrop ] [ Lifetime Guarantee ]", price: "280", minQuantity: 100, maxQuantity: 100000 },
-                { id: "3985", name: "YouTube Views [ Lifetime Refill ] [ Nondrop ] [ Normal Speed ] - 2 Minutes", price: "120", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "3986", name: "YouTube Views [ Lifetime Refill ] [ Nondrop ] [ Normal Speed ] - 3 Minutes", price: "115", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "4148", name: "YouTube Views [ Lifetime Refill ] [ Nondrop ] [ Normal Speed ] - 1 Minute", price: "150", minQuantity: 100, maxQuantity: 10000000 }
+                { id: "4293", name: "100 Views [Nondrop]", price: "38", minQuantity: 100, maxQuantity: 100 },
+                { id: "3032", name: "500 Views [Nondrop]", price: "154", minQuantity: 500, maxQuantity: 500 },
+                { id: "3718", name: "1000 Views [Nondrop]", price: "304", minQuantity: 1000, maxQuantity: 1000 },
+                { id: "4081", name: "3000 Views [Nondrop]", price: "746", minQuantity: 3000, maxQuantity: 3000 },
+                { id: "3546", name: "Views with Full Watchtime + Likes", price: "8387", minQuantity: 100, maxQuantity: 100000 },
+                { id: "3860", name: "Views + Likes [Real Engagement]", price: "696", minQuantity: 100, maxQuantity: 100000 },
+                { id: "3985", name: "Views [Lifetime] - 2 Min", price: "249", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "3986", name: "Views [Lifetime] - 3 Min", price: "238", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "4148", name: "Views [Lifetime] - 1 Min", price: "311", minQuantity: 100, maxQuantity: 10000000 }
             ]
         },
         {
@@ -285,7 +291,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-700",
             bg: "bg-red-700/10",
             packages: [
-                { id: "2349", name: "YT Watchtime [ Monetization ]", price: "950", minQuantity: 1000, maxQuantity: 100000 }
+                { id: "2349", name: "Watchtime [Monetization]", price: "7610", minQuantity: 1000, maxQuantity: 100000 }
             ]
         }
     ],
@@ -298,8 +304,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-900",
             bg: "bg-slate-900/10",
             packages: [
-                { id: "3562", name: "[X] Twitter Followers [ Lifetime Refill ] [ Premium ] [ Slow ]", price: "320", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3788", name: "[X] Twitter Followers [ Premium ] [ Stable ] [ Refill: 30 Days ]", price: "480", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3562", name: "Followers [Lifetime Refill]", price: "11838", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3788", name: "Followers [30 Day Refill]", price: "3998", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -310,7 +316,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-600",
             bg: "bg-pink-600/10",
             packages: [
-                { id: "3909", name: "X/Twitter Likes - working", price: "180", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3909", name: "Likes", price: "1287", minQuantity: 50, maxQuantity: 100000 }
             ]
         }
     ],
@@ -323,7 +329,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-slate-900",
             bg: "bg-slate-900/10",
             packages: [
-                { id: "3642", name: "Threads Followers [ Affordable ]", price: "150", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3642", name: "Followers", price: "300", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -334,7 +340,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             packages: [
-                { id: "3638", name: "Threads Likes [ High Quality ]", price: "240", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3638", name: "Likes [High Quality]", price: "494", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -345,8 +351,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "3639", name: "Threads Reshare [ Real ]", price: "600", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3640", name: "Threads Reshare [ SuperFast ]", price: "1100", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3639", name: "Reshare [Real]", price: "1249", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3640", name: "Reshare [SuperFast]", price: "2196", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -357,7 +363,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
             packages: [
-                { id: "3641", name: "Threads Custom Comments", price: "6000", minQuantity: 10, maxQuantity: 100 }
+                { id: "3641", name: "Custom Comments", price: "12114", minQuantity: 50, maxQuantity: 100 }
             ]
         }
     ],
@@ -370,8 +376,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "2950", name: "Pinterest Followers ( MQ )", price: "1100", minQuantity: 10, maxQuantity: 100000 },
-                { id: "2953", name: "Pinterest Followers ( HQ )", price: "2700", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2950", name: "Followers (MQ)", price: "2215", minQuantity: 50, maxQuantity: 100000 },
+                { id: "2953", name: "Followers (HQ)", price: "5395", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -382,7 +388,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-500",
             bg: "bg-red-500/10",
             packages: [
-                { id: "2951", name: "Pinterest Likes ( 1.5k/D )", price: "1800", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2951", name: "Likes (1.5k/D)", price: "3603", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -393,7 +399,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-500",
             bg: "bg-red-500/10",
             packages: [
-                { id: "2952", name: "Pinterest Repins ( HQ )", price: "1300", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2952", name: "Repins (HQ)", price: "2636", minQuantity: 50, maxQuantity: 100000 }
             ]
         }
     ],
@@ -406,8 +412,8 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-600",
             bg: "bg-blue-600/10",
             packages: [
-                { id: "2085", name: "FB Post Likes - Mix Indian", price: "970", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3251", name: "FB Post Likes [ Lifetime Refill ]⚡️", price: "180", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2085", name: "Post Likes - Mix Indian", price: "1973", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3251", name: "Post Likes [Lifetime Refill]", price: "373", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -418,7 +424,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             packages: [
-                { id: "2517", name: "FB Followers + Like [ Affordable] [ 30 Day Refill ] [ Good Service ]", price: "90", minQuantity: 10, maxQuantity: 100000 }
+                { id: "2517", name: "Followers + Like", price: "180", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -429,10 +435,10 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-blue-700",
             bg: "bg-blue-700/10",
             packages: [
-                { id: "3391", name: "Facebook Reel & Video Views [ 100k View Pack ] [ High Quality ]", price: "8", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "3392", name: "Facebook Reel & Video Views [ High Quality ] [ 3 Sec Retention ]", price: "37", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "3394", name: "Facebook Reel & Video Views [ Real Quality ] [ Good Speed ]", price: "15", minQuantity: 100, maxQuantity: 10000000 },
-                { id: "4043", name: "Facebook Reel & Video Views [ Real Quality ] [⚡️Good Speed ]", price: "10", minQuantity: 100, maxQuantity: 10000000 }
+                { id: "3391", name: "Reel & Video Views [100k Pack]", price: "15", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "3392", name: "Reel & Video Views [3 Sec Retention]", price: "74", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "3394", name: "Reel & Video Views [Good Speed]", price: "20", minQuantity: 100, maxQuantity: 10000000 },
+                { id: "4043", name: "Reel & Video Views [Real Quality]", price: "37", minQuantity: 100, maxQuantity: 10000000 }
             ]
         }
     ],
@@ -445,11 +451,11 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-green-500",
             bg: "bg-green-500/10",
             packages: [
-                { id: "3339", name: "Spotify Podcast Followers [ High Quality ] [ Lifetime Guaranteed ]", price: "42", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3340", name: "Spotify Artist Followers [ High Quality ] [ Lifetime Guaranteed ]", price: "42", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3341", name: "Spotify Playlist Followers [ High Quality ] [ Lifetime Guaranteed ]", price: "68", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3342", name: "Spotify User Followers [ High Quality ] [ Lifetime Guaranteed ]", price: "42", minQuantity: 10, maxQuantity: 100000 },
-                { id: "3343", name: "Spotify Followers [ All links ] [ High Quality ] [ Lifetime Guaranteed ]", price: "40", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3339", name: "Podcast Followers", price: "85", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3340", name: "Artist Followers", price: "85", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3341", name: "Playlist Followers", price: "138", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3342", name: "User Followers", price: "85", minQuantity: 50, maxQuantity: 100000 },
+                { id: "3343", name: "Followers [All links]", price: "82", minQuantity: 50, maxQuantity: 100000 }
             ]
         }
     ],
@@ -486,7 +492,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-700",
             bg: "bg-red-700/10",
             packages: [
-                { id: "3794", name: "Quora.com Follower [ Real - 100/Day ]", price: "1170", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3794", name: "Followers", price: "2340", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -497,7 +503,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "3791", name: "Quora.com View [ Real - NonDrop ]", price: "221", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3791", name: "Views", price: "442", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -508,7 +514,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-500",
             bg: "bg-red-500/10",
             packages: [
-                { id: "3792", name: "Quora.com Likes [ Real - 100/Day ]", price: "1124", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3792", name: "Likes", price: "2247", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -519,7 +525,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-400",
             bg: "bg-red-400/10",
             packages: [
-                { id: "3793", name: "Quora.com Shares [ Real - 10-100/Day ]", price: "1124", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3793", name: "Shares", price: "2247", minQuantity: 50, maxQuantity: 100000 }
             ]
         },
         {
@@ -530,7 +536,7 @@ export const servicesData: Record<string, ServiceCategory[]> = {
             color: "text-red-600",
             bg: "bg-red-600/10",
             packages: [
-                { id: "3795", name: "Quora.com Upvotes [ speed: 1-2K/Day ]", price: "2654", minQuantity: 10, maxQuantity: 100000 }
+                { id: "3795", name: "Upvotes", price: "5307", minQuantity: 50, maxQuantity: 100000 }
             ]
         }
     ]

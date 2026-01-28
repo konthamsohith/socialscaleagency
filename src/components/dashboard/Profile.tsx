@@ -165,8 +165,8 @@ export const Profile = () => {
 
                         <div className="grid grid-cols-2 w-full border-t border-slate-100 pt-6 gap-4">
                             <div>
-                                <div className="text-xl font-bold text-slate-900">{(user.credits?.balance || 0).toFixed(2)}</div>
-                                <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Credits</div>
+                                <div className="text-xl font-bold text-slate-900">₹{(user.wallet?.balance || 0).toFixed(2)}</div>
+                                <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Wallet</div>
                             </div>
                             <div>
                                 <div className="text-xl font-bold text-slate-900">{user.role === 'SUPER_ADMIN' ? 'Admin' : 'User'}</div>
@@ -221,11 +221,11 @@ export const Profile = () => {
                                 </span>
                             </div>
 
-                            {/* Credits */}
+                            {/* Wallet Balance */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Credits Balance</label>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Wallet Balance</label>
                                 <div className="font-semibold text-slate-900 pl-1">
-                                    {user.credits?.balance || 0}
+                                    ₹{(user.wallet?.balance || 0).toFixed(2)}
                                 </div>
                             </div>
 

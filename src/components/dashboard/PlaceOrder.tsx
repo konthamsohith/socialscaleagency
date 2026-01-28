@@ -38,94 +38,6 @@ const getNetworkStyle = (networkName: string = '') => {
     if (n.includes('tiktok')) return { bg: 'bg-gradient-to-br from-black to-slate-800', text: 'text-slate-900', light: 'bg-slate-50', border: 'border-slate-200', shadow: 'shadow-slate-500/20' };
     return { bg: 'bg-gradient-to-br from-indigo-500 to-purple-600', text: 'text-indigo-600', light: 'bg-indigo-50', border: 'border-indigo-100', shadow: 'shadow-indigo-500/20' };
 };
-const getPlatformAndServiceType = (categoryId: string) => {
-    const platformMap: Record<string, string> = {
-        'INST-FOLLOWERS': 'instagram',
-        'INST-LIKES': 'instagram',
-        'INST-STORY': 'instagram',
-        'INST-REPOST': 'instagram',
-        'INST-RANDOM-COMM': 'instagram',
-        'INST-LIVE-VIEWS': 'instagram',
-        'INST-REELS-VIEWS': 'instagram',
-        'INST-CHANNEL-MEM': 'instagram',
-        'INST-STORY-VOTES': 'instagram',
-        'TIK-FOLLOWERS': 'tiktok',
-        'TIK-LIKES': 'tiktok',
-        'TIK-VIEWS': 'tiktok',
-        'LNK-FOLLOWERS': 'linkedin',
-        'LNK-LIKES': 'linkedin',
-        'LNK-SHARES': 'linkedin',
-        'YT-SUBS': 'youtube',
-        'YT-VIEWS': 'youtube',
-        'YT-WATCH': 'youtube',
-        'X-FOLLOWERS': 'twitter',
-        'X-LIKES': 'twitter',
-        'THR-FOL': 'threads',
-        'THR-LIKES': 'threads',
-        'THR-RESHARES': 'threads',
-        'THR-COMMENTS': 'threads',
-        'PIN-FOL': 'pinterest',
-        'PIN-LIKES': 'pinterest',
-        'PIN-REPINS': 'pinterest',
-        'FB-LIKES': 'facebook',
-        'FB-FOLLOWERS': 'facebook',
-        'FB-VIEWS': 'facebook',
-        'SPT-FOLLOWERS': 'spotify',
-        'TG-MEM': 'telegram',
-        'TG-VIEWS': 'telegram',
-        'QR-FOLLOWERS': 'quora',
-        'QR-VIEWS': 'quora',
-        'QR-LIKES': 'quora',
-        'QR-SHARES': 'quora',
-        'QR-UPVOTES': 'quora'
-    };
-
-    const serviceTypeMap: Record<string, string> = {
-        'INST-FOLLOWERS': 'follower',
-        'INST-LIKES': 'like',
-        'INST-STORY': 'view',
-        'INST-REPOST': 'repost',
-        'INST-RANDOM-COMM': 'comment',
-        'INST-LIVE-VIEWS': 'live_view',
-        'INST-REELS-VIEWS': 'view',
-        'INST-CHANNEL-MEM': 'channel_member',
-        'INST-STORY-VOTES': 'vote',
-        'TIK-FOLLOWERS': 'follower',
-        'TIK-LIKES': 'like',
-        'TIK-VIEWS': 'view',
-        'LNK-FOLLOWERS': 'follower',
-        'LNK-LIKES': 'like',
-        'LNK-SHARES': 'share',
-        'YT-SUBS': 'subscriber',
-        'YT-VIEWS': 'view',
-        'YT-WATCH': 'watch_time',
-        'X-FOLLOWERS': 'follower',
-        'X-LIKES': 'like',
-        'THR-FOL': 'follower',
-        'THR-LIKES': 'like',
-        'THR-RESHARES': 'reshare',
-        'THR-COMMENTS': 'comment',
-        'PIN-FOL': 'follower',
-        'PIN-LIKES': 'like',
-        'PIN-REPINS': 'repin',
-        'FB-LIKES': 'like',
-        'FB-FOLLOWERS': 'follower',
-        'FB-VIEWS': 'view',
-        'SPT-FOLLOWERS': 'follower',
-        'TG-MEM': 'member',
-        'TG-VIEWS': 'view',
-        'QR-FOLLOWERS': 'follower',
-        'QR-VIEWS': 'view',
-        'QR-LIKES': 'like',
-        'QR-SHARES': 'share',
-        'QR-UPVOTES': 'upvote'
-    };
-
-    return {
-        platform: platformMap[categoryId] || 'unknown',
-        serviceType: serviceTypeMap[categoryId] || 'unknown'
-    };
-};
 
 export const PlaceOrder = () => {
     const location = useLocation();
@@ -171,23 +83,24 @@ export const PlaceOrder = () => {
 
         setPriceLoading(true);
         try {
-            const { platform, serviceType } = getPlatformAndServiceType(packageData.id);
+            // Fetch services from Fampage via backend
+            const response = await apiService.getFampageServices();
+            // The API returns { success, data: [...] }
+            const services = response.data || [];
+            const service = services.find((s: any) => s.service?.toString() === packageData.id.toString());
 
-            if (platform === 'unknown' || serviceType === 'unknown') {
-                console.warn('Unknown platform/service type for package:', packageData.id);
-                setRealPrice(parseFloat(packageData.price) || 0);
-                return;
+            if (service) {
+                // Fampage rate is per 1000 units in INR
+                setRealPrice(parseFloat(String(service.rate)) || 0);
+            } else {
+                console.warn('Service not found in Fampage:', packageData.id);
+                setRealPrice(null);
+                setError('Unable to fetch pricing for this service. Please try again.');
             }
-
-            // Use the pricing API to get real-time pricing
-            const response = await apiService.calculateCredits(platform, serviceType, quantity);
-
-            const creditsRequired = response.data.credits;
-            setRealPrice(creditsRequired); // This is the price for the specified quantity
         } catch (error) {
             console.error('Failed to fetch real pricing:', error);
-            // Fallback to static price
-            setRealPrice(parseFloat(packageData.price) || 0);
+            setRealPrice(null);
+            setError('Unable to fetch live pricing. Please refresh and try again.');
         } finally {
             setPriceLoading(false);
         }
@@ -197,7 +110,7 @@ export const PlaceOrder = () => {
 
     const minQty = pkg.minQuantity || 100;
     const maxQty = pkg.maxQuantity || 100000;
-    const pricePerThousand = realPrice || parseFloat(pkg.price) || 0;
+    const pricePerThousand = realPrice || 0; // Only use live price from Fampage
     const totalCost = (quantity / 1000) * pricePerThousand;
 
 
@@ -210,7 +123,12 @@ export const PlaceOrder = () => {
         if (quantity > maxQty) return setError(`Maximum order quantity is ${maxQty}`);
         if (!user) return setError('You must be logged in to place an order');
 
-        if (!user) return setError('User not authenticated');
+        // Check if user has sufficient balance
+        const userBalance = user.wallet?.balance || 0;
+        if (userBalance < totalCost) {
+            setError(`Insufficient balance. Required: ₹${totalCost.toFixed(2)}, Available: ₹${userBalance.toFixed(2)}. Please add funds to your wallet.`);
+            return;
+        }
 
         setLoading(true);
 
@@ -221,13 +139,20 @@ export const PlaceOrder = () => {
                 quantity: quantity
             };
 
+            console.log('Creating order with data:', orderData);
+            console.log('Data types:', {
+                service: typeof orderData.service,
+                link: typeof orderData.link,
+                quantity: typeof orderData.quantity
+            });
+
             const response = await apiService.createOrder(orderData);
 
             if (response.success) {
                 const order = response.data.order;
                 setSuccessOrderIds(prev => [...prev, order._id]);
 
-                // Refresh user data to update credits
+                // Refresh user data to update wallet balance
                 await refreshUser();
 
                 // Add notification
@@ -247,7 +172,17 @@ export const PlaceOrder = () => {
 
         } catch (err: any) {
             console.error('Order submission error:', err);
-            const errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Failed to place order';
+            console.error('Error response:', err.response?.data);
+            
+            let errorMessage = 'Failed to place order';
+            
+            // Check for validation errors
+            if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+                errorMessage = err.response.data.errors.join(', ');
+            } else {
+                errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Failed to place order';
+            }
+            
             setError(errorMessage);
 
         } finally {
@@ -344,7 +279,7 @@ export const PlaceOrder = () => {
                                         required
                                     />
                                     <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none">
-                                        <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">Credits</span>
+                                        <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">Units</span>
                                     </div>
                                 </div>
                                 {/* Range Slider for better UX */}
@@ -401,7 +336,7 @@ export const PlaceOrder = () => {
                                 <div className="flex justify-between items-center">
                                     <span className="text-white/70 font-medium">Service Rate</span>
                                     <span className="font-bold text-lg">
-                                        {priceLoading ? '...' : `${pricePerThousand.toLocaleString()} CR / 1K`}
+                                        {priceLoading ? '...' : `₹${pricePerThousand.toLocaleString()} / 1K`}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -411,15 +346,29 @@ export const PlaceOrder = () => {
 
                                 <div className="h-px w-full bg-white/20" />
 
+                                <div className="flex justify-between items-center">
+                                    <span className="text-white/70 font-medium">Your Balance</span>
+                                    <span className="font-bold text-lg">₹{(user?.wallet?.balance || 0).toFixed(2)}</span>
+                                </div>
+
                                 <div className="flex justify-between items-end">
                                     <span className="text-white/90 font-bold text-lg">Total Cost</span>
-                                    <span className="text-4xl font-black">{totalCost.toFixed(2)} CR</span>
+                                    <span className="text-4xl font-black">₹{totalCost.toFixed(2)}</span>
                                 </div>
+
+                                {user?.wallet?.balance && user.wallet.balance < totalCost && (
+                                    <div className="bg-red-500/20 border border-red-300/30 rounded-xl p-3 mt-4">
+                                        <p className="text-sm font-semibold text-white">⚠️ Insufficient Balance</p>
+                                        <p className="text-xs text-white/80 mt-1">
+                                            Need ₹{(totalCost - user.wallet.balance).toFixed(2)} more to place this order
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <button
                                 onClick={handleSubmit}
-                                disabled={loading}
+                                disabled={loading || priceLoading || !realPrice}
                                 className="w-full mt-10 bg-white text-slate-900 py-4 rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                             >
                                 {loading ? (
@@ -427,6 +376,13 @@ export const PlaceOrder = () => {
                                         <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
                                         <span>Processing...</span>
                                     </>
+                                ) : priceLoading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
+                                        <span>Loading Price...</span>
+                                    </>
+                                ) : !realPrice ? (
+                                    <span>Price Unavailable</span>
                                 ) : (
                                     <>
                                         <span>Confirm Order</span>

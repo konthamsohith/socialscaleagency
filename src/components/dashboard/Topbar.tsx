@@ -1,17 +1,55 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, ChevronDown, User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { Bell, ChevronDown, User as UserIcon, Settings, LogOut, Plus } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from '../../context/NotificationContext';
+import { AddMoneyModal } from './AddMoneyModal';
+import { apiService } from '../../services/api';
 
 export const Topbar = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, refreshUser } = useAuth();
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showAddMoney, setShowAddMoney] = useState(false);
+    const [balance, setBalance] = useState<number>(0);
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const notifRef = useRef<HTMLDivElement>(null);
     const userMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        loadBalance();
+    }, [user]);
+
+    // Update balance when user wallet changes
+    useEffect(() => {
+        if (user?.wallet?.balance !== undefined && user?.role !== 'SUPER_ADMIN') {
+            setBalance(user.wallet.balance);
+        }
+    }, [user?.wallet?.balance, user?.role]);
+
+    const loadBalance = async () => {
+        try {
+            if (user?.role === 'SUPER_ADMIN') {
+                // Admin sees Fampage balance
+                const response = await apiService.getBalance();
+                const fampageBalance = parseFloat(response.data.balance as any) || 0;
+                setBalance(fampageBalance);
+            } else if (user) {
+                // Regular users see wallet balance
+                const response = await apiService.getWalletBalance();
+                const walletBalance = parseFloat(response.data.balance as any) || 0;
+                setBalance(walletBalance);
+            }
+        } catch (error) {
+            console.error('Failed to load balance:', error);
+        }
+    };
+
+    const handleAddMoneySuccess = async () => {
+        await refreshUser();
+        await loadBalance();
+    };
 
     const getDisplayRole = (userType?: string) => {
         const roleMap = {
@@ -50,6 +88,18 @@ export const Topbar = () => {
             <div className="flex-1" />
 
             <div className="flex items-center gap-4">
+                {/* Add Funds Button */}
+                <button
+                    onClick={() => setShowAddMoney(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all"
+                >
+                    <span className="text-blue-600 font-bold">₹{balance.toFixed(2)}</span>
+                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                        <Plus className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <span className="font-semibold text-blue-600">Add funds</span>
+                </button>
+
                 <div className="relative" ref={notifRef}>
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
@@ -214,6 +264,13 @@ export const Topbar = () => {
                     </AnimatePresence>
                 </div>
             </div>
+
+            {/* Add Money Modal */}
+            <AddMoneyModal
+                isOpen={showAddMoney}
+                onClose={() => setShowAddMoney(false)}
+                onSuccess={handleAddMoneySuccess}
+            />
         </header>
     );
 };

@@ -213,6 +213,11 @@ class ApiService {
     return response.data;
   }
 
+  async getFampageServices(): Promise<{ success: boolean; data: any[] }> {
+    const response = await this.api.get('/orders/services');
+    return response.data;
+  }
+
   async getBalance(): Promise<{ success: boolean; data: { balance: number; currency: string } }> {
     const response = await this.api.get('/api-integrations/balance');
     return response.data;
@@ -246,6 +251,22 @@ class ApiService {
 
   async updateOrderStatus(orderId: string, status: string): Promise<{ success: boolean; data: Order }> {
     const response = await this.api.put(`/orders/${orderId}/status`, { status });
+    return response.data;
+  }
+
+  // ==================== WALLET ====================
+  async getWalletBalance(): Promise<{ success: boolean; data: { balance: number; totalAdded: number; totalSpent: number } }> {
+    const response = await this.api.get('/wallet/balance');
+    return response.data;
+  }
+
+  async createPaymentOrder(amount: number): Promise<{ success: boolean; data: { orderId: string; amount: number; currency: string; keyId: string } }> {
+    const response = await this.api.post('/wallet/create-order', { amount });
+    return response.data;
+  }
+
+  async verifyPayment(paymentData: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }): Promise<{ success: boolean; data: { amount: number; newBalance: number } }> {
+    const response = await this.api.post('/wallet/verify-payment', paymentData);
     return response.data;
   }
 

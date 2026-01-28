@@ -167,7 +167,7 @@ export const MyOrders = () => {
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Service</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Link</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Quantity</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Credits</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Status</th>
                             </tr>
                         </thead>
@@ -219,7 +219,7 @@ export const MyOrders = () => {
                                             <span className="text-sm font-medium text-slate-700">{order.quantity.toLocaleString()}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-sm font-medium text-slate-900">{order.creditsUsed?.toFixed(2) || '0.00'}</span>
+                                            <span className="text-sm font-medium text-slate-900">₹{order.cost?.toFixed(2) || '0.00'}</span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <StatusBadge status={order.status} />

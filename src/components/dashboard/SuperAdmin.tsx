@@ -24,9 +24,9 @@ interface AdminUser {
     _id: string;
     name: string;
     email: string;
-    credits: {
+    wallet: {
         balance: number;
-        totalPurchased: number;
+        totalAdded: number;
         totalSpent: number;
     };
     status: 'active' | 'inactive' | 'suspended';
@@ -64,7 +64,7 @@ export const SuperAdmin = () => {
                 _id: user._id || user.userId,
                 name: user.name,
                 email: user.email,
-                credits: user.credits,
+                wallet: user.wallet || { balance: 0, totalAdded: 0, totalSpent: 0 },
                 status: user.status,
                 createdAt: user.createdAt,
                 lastLogin: user.lastLogin
@@ -157,7 +157,7 @@ export const SuperAdmin = () => {
 
         try {
             const amount = parseFloat(fundAmount);
-            const currentBalance = selectedUser.credits?.balance || 0;
+            const currentBalance = selectedUser.wallet?.balance || 0;
             const newBalance = fundAction === 'add'
                 ? currentBalance + amount
                 : currentBalance - amount;
@@ -169,24 +169,24 @@ export const SuperAdmin = () => {
             }
 
             await apiService.updateUser(selectedUser._id, {
-                credits: {
-                    ...selectedUser.credits,
+                wallet: {
+                    ...selectedUser.wallet,
                     balance: newBalance,
-                    totalPurchased: fundAction === 'add'
-                        ? (selectedUser.credits?.totalPurchased || 0) + amount
-                        : selectedUser.credits?.totalPurchased || 0
+                    totalAdded: fundAction === 'add'
+                        ? (selectedUser.wallet?.totalAdded || 0) + amount
+                        : selectedUser.wallet?.totalAdded || 0
                 }
             });
 
             // Update local state
             const updatedUser = {
                 ...selectedUser,
-                credits: {
-                    ...selectedUser.credits,
+                wallet: {
+                    ...selectedUser.wallet,
                     balance: newBalance,
-                    totalPurchased: fundAction === 'add'
-                        ? (selectedUser.credits?.totalPurchased || 0) + amount
-                        : selectedUser.credits?.totalPurchased || 0
+                    totalAdded: fundAction === 'add'
+                        ? (selectedUser.wallet?.totalAdded || 0) + amount
+                        : selectedUser.wallet?.totalAdded || 0
                 }
             };
 
@@ -202,7 +202,7 @@ export const SuperAdmin = () => {
             }, 2000);
         } catch (error) {
             console.error('Failed to manage funds:', error);
-            alert('Failed to update user credits');
+            alert('Failed to update user wallet');
         } finally {
             setIsProcessing(false);
         }
@@ -212,7 +212,7 @@ export const SuperAdmin = () => {
     const handleExportCSV = () => {
         const csvHeaders = 'Name,Email,Balance,Total Purchased,Status,Joined\n';
         const csvData = filteredUsers.map(user =>
-            `"${user.name || 'N/A'}","${user.email}","${user.credits?.balance || 0}","${user.credits?.totalPurchased || 0}","${user.status}","${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}"`
+            `"${user.name || 'N/A'}","${user.email}","${user.wallet?.balance || 0}","${user.wallet?.totalAdded || 0}","${user.status}","${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}"`
         ).join('\n');
 
         const blob = new Blob([csvHeaders + csvData], { type: 'text/csv' });
@@ -308,7 +308,7 @@ export const SuperAdmin = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm text-slate-500">Current Balance</p>
-                                        <p className="text-2xl font-bold text-slate-900">{selectedUser.credits?.balance || 0}</p>
+                                        <p className="text-2xl font-bold text-slate-900">₹{(selectedUser.wallet?.balance || 0).toFixed(2)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -318,8 +318,8 @@ export const SuperAdmin = () => {
                                         <Coins className="w-6 h-6 text-blue-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-slate-500">Total Purchased</p>
-                                        <p className="text-2xl font-bold text-slate-900">{selectedUser.credits?.totalPurchased || 0}</p>
+                                        <p className="text-sm text-slate-500">Total Added</p>
+                                        <p className="text-2xl font-bold text-slate-900">₹{(selectedUser.wallet?.totalAdded || 0).toFixed(2)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -330,7 +330,7 @@ export const SuperAdmin = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm text-slate-500">Total Spent</p>
-                                        <p className="text-2xl font-bold text-slate-900">{selectedUser.credits?.totalSpent || 0}</p>
+                                        <p className="text-2xl font-bold text-slate-900">₹{(selectedUser.wallet?.totalSpent || 0).toFixed(2)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -441,7 +441,7 @@ export const SuperAdmin = () => {
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Order ID</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Service</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Quantity</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Credits</th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Price</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Date</th>
                                             </tr>
@@ -462,7 +462,7 @@ export const SuperAdmin = () => {
                                                         {order.quantity?.toLocaleString() || 0}
                                                     </td>
                                                     <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                                                        {order.creditsUsed?.toLocaleString() || 0}
+                                                        ₹{order.cost?.toFixed(2) || '0.00'}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className={`inline-flex px-2 py-1 text-xs font-bold rounded ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
@@ -579,17 +579,17 @@ export const SuperAdmin = () => {
                                                     </td>
                                                     <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap">
                                                         <span className="font-mono font-medium text-slate-900 text-sm">
-                                                            {user.credits?.balance || 0}
+                                                            ₹{(user.wallet?.balance || 0).toFixed(2)}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap hidden sm:table-cell">
                                                         <span className="font-mono text-slate-600 text-sm">
-                                                            {user.credits?.totalPurchased || 0}
+                                                            ₹{(user.wallet?.totalAdded || 0).toFixed(2)}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap hidden lg:table-cell">
                                                         <span className="font-mono text-slate-600 text-sm">
-                                                            {user.credits?.totalSpent || 0}
+                                                            ₹{(user.wallet?.totalSpent || 0).toFixed(2)}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 md:px-6 py-3 md:py-4 text-slate-600 text-sm whitespace-nowrap hidden md:table-cell">
@@ -671,7 +671,7 @@ export const SuperAdmin = () => {
                             <div className="p-4 md:p-6 space-y-4 md:space-y-6">
                                 <div className="p-4 bg-slate-50 rounded-xl">
                                     <p className="text-sm text-slate-600">Current Balance</p>
-                                    <p className="text-2xl md:text-3xl font-bold text-slate-900">{selectedUser.credits?.balance || 0} Credits</p>
+                                    <p className="text-2xl md:text-3xl font-bold text-slate-900">₹{(selectedUser.wallet?.balance || 0).toFixed(2)}</p>
                                 </div>
 
                                 <div className="space-y-2">
@@ -685,7 +685,7 @@ export const SuperAdmin = () => {
                                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                         >
-                                            Add Credits
+                                            Add Funds
                                         </button>
                                         <button
                                             onClick={() => setFundAction('deduct')}
@@ -695,7 +695,7 @@ export const SuperAdmin = () => {
                                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                         >
-                                            Deduct Credits
+                                            Deduct Funds
                                         </button>
                                     </div>
                                 </div>
@@ -740,7 +740,7 @@ export const SuperAdmin = () => {
                                         : 'bg-red-600 hover:bg-red-700 text-white'
                                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
-                                    {isProcessing ? 'Processing...' : `${fundAction === 'add' ? 'Add' : 'Deduct'} Credits`}
+                                    {isProcessing ? 'Processing...' : `${fundAction === 'add' ? 'Add' : 'Deduct'} Funds`}
                                 </button>
                             </div>
                         </motion.div>

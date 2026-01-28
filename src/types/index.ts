@@ -11,10 +11,17 @@ export interface User {
     industry?: 'fashion' | 'lifestyle' | 'fitness' | 'entertainment' | 'business' | 'other';
     goal?: 'growth' | 'engagement' | 'visibility';
   };
+  wallet?: {
+    balance: number;
+    totalAdded: number;
+    totalSpent: number;
+  };
+  // Legacy credits field for backwards compatibility
   credits?: {
     balance: number;
-    totalPurchased: number;
+    totalAdded?: number;
     totalSpent: number;
+    totalPurchased?: number; // Alternative field name used in some places
   };
   // Profile Fields
   phone?: string;
