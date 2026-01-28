@@ -217,7 +217,7 @@ export const Admin = () => {
         activeOrders: number;
         netMargin: number;
         fampageBalance: number;
-        users: { id: string; name: string; email: string; spend: number; orders: number; joined: string; status: string }[];
+        users: { id: string; name: string; email: string; balance: number; purchased: number; spent: number; orders: number; joined: string; status: string }[];
     }>({
         totalRevenue: 0,
         totalUsers: 0,
@@ -272,7 +272,7 @@ export const Admin = () => {
                         _id: u._id || u.userId,
                         name: u.name,
                         email: u.email,
-                        credits: u.credits,
+                        wallet: u.wallet || { balance: 0, totalAdded: 0, totalSpent: 0 },
                         status: u.status,
                         createdAt: u.createdAt,
                         lastLogin: u.lastLogin
@@ -300,7 +300,9 @@ export const Admin = () => {
                         id: u._id,
                         name: u.name,
                         email: u.email,
-                        spend: u.credits?.balance || 0,
+                        balance: u.wallet?.balance || 0,
+                        purchased: u.wallet?.totalAdded || 0,
+                        spent: u.wallet?.totalSpent || 0,
                         orders: 0,
                         joined: new Date(u.createdAt).toLocaleDateString(),
                         status: u.status === 'active' ? 'Active' : 'Inactive'
@@ -522,7 +524,7 @@ export const Admin = () => {
                 return;
             }
 
-            console.log(`Updating price for ${platform} - ${serviceType} to ${newPrice} credits per 1000 units`);
+            console.log(`Updating price for ${platform} - ${serviceType} to ₹${newPrice} per 1000 units`);
 
             // Create or update global pricing rule with HIGH priority to override defaults
             const ruleData = {
@@ -532,7 +534,7 @@ export const Admin = () => {
                 servicePricing: [{
                     platform,
                     serviceType,
-                    creditsPerUnit: newPrice / 1000, // Convert to per unit (e.g., 5000 credits for 1000 = 5 credits per unit)
+                    creditsPerUnit: newPrice / 1000, // Convert to per unit (e.g., ₹5000 for 1000 = ₹5 per unit)
                     minQuantity: 10,
                     maxQuantity: 100000
                 }],
@@ -581,7 +583,7 @@ export const Admin = () => {
 
             setEditingPrice(null);
             setPriceInput('');
-            alert(`✓ Price updated successfully!\n\nAll users will now see ${newPrice} credits for ${platform} ${serviceType} (per 1000 units).\n\nThis change is applied globally across the entire system.`);
+            alert(`✓ Price updated successfully!\n\nAll users will now see ₹${newPrice} for ${platform} ${serviceType} (per 1000 units).\n\nThis change is applied globally across the entire system.`);
         } catch (error: any) {
             console.error('Error updating price:', error);
             alert(`Failed to update price: ${error.response?.data?.message || error.message || 'Unknown error'}`);
@@ -669,7 +671,7 @@ export const Admin = () => {
                                                 </div>
                                             </div>
                                             <div>
-                                                <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `${adminData.totalRevenue.toFixed(2)} Credits`}</p>
+                                                <p className="text-2xl font-bold text-slate-900">{loading ? '...' : `₹${adminData.totalRevenue.toFixed(2)}`}</p>
                                                 <p className="text-sm text-slate-500 mt-1">Total Revenue</p>
                                             </div>
                                         </motion.div>
@@ -764,7 +766,9 @@ export const Admin = () => {
                                     <thead className="bg-slate-50">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Spend</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Balance</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Purchased</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Spent</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Orders</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Joined</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
@@ -773,7 +777,7 @@ export const Admin = () => {
                                     <tbody className="divide-y divide-slate-200">
                                         {loading ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                                     Loading users...
                                                 </td>
                                             </tr>
@@ -798,7 +802,13 @@ export const Admin = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                        {user.spend.toLocaleString()} Credits
+                                                        ₹{user.balance.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                                        ₹{user.purchased.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                                        ₹{user.spent.toLocaleString()}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                                         {user.orders}
@@ -815,7 +825,7 @@ export const Admin = () => {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                                <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                                     No users found
                                                 </td>
                                             </tr>
