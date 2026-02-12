@@ -1,10 +1,22 @@
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { SEO } from '../components/common/SEO';
 
 export const Terms = () => {
     return (
         <div className="min-h-screen bg-white">
+            <SEO 
+                title="Terms of Service | SocialScale"
+                description="Operational protocols and terms of engagement for SocialScale services. Review our service agreement."
+                keywords="terms of service, service agreement, agency terms, legal protocols"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Terms of Service",
+                    "description": "SocialScale Terms of Service and Usage Agreement."
+                }}
+            />
             <Navbar />
             <main className="pt-32 pb-20">
                 <div className="max-w-4xl mx-auto px-6">

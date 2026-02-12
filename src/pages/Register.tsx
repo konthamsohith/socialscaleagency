@@ -58,7 +58,11 @@ export const Register = () => {
 
     return (
         <>
-            <SEO title="Sign Up - SocialScale" description="Create your SocialScale account" />
+            <SEO 
+                title="Sign Up - SocialScale" 
+                description="Create your SocialScale account and start scaling your social media presence with AI-driven strategies." 
+                keywords="sign up, create account, social media tools, marketing platform registration"
+            />
             <div className="min-h-screen flex bg-white font-archivo overflow-hidden">
                 {/* Left Side: Marketing */}
                 <div className="hidden lg:flex lg:w-1/2 bg-[#3B82F6] p-12 flex-col justify-center relative overflow-hidden">

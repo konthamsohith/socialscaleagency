@@ -1,10 +1,22 @@
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { SEO } from '../components/common/SEO';
 
 export const CookiePolicy = () => {
     return (
         <div className="min-h-screen bg-white">
+            <SEO 
+                title="Cookie Registry | SocialScale"
+                description="Understanding our digital tracking protocols. How we use cookies to optimize your growth experience."
+                keywords="cookie policy, tracking policy, digital privacy, website cookies"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Cookie Policy",
+                    "description": "SocialScale Cookie and Tracking Policy."
+                }}
+            />
             <Navbar />
             <main className="pt-32 pb-20">
                 <div className="max-w-4xl mx-auto px-6">

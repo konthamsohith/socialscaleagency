@@ -60,6 +60,30 @@ export const BlogPost = () => {
         description={post.excerpt}
         image={post.image}
         type="article"
+        keywords={`${post.category}, social media growth, digital marketing, content strategy, ${post.category} strategy`}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": post.title,
+          "image": [post.image],
+          "datePublished": post.date, // Note: Should ideally be ISO 8601 format
+          "dateModified": post.date,
+          "author": [{
+              "@type": "Person",
+              "name": post.author,
+              "url": "https://socialscale.agency/about" 
+          }],
+          "publisher": {
+            "@type": "Organization",
+            "name": "SocialScale Agency",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://socialscale.agency/logo.png"
+            }
+          },
+          "description": post.excerpt,
+          "articleBody": post.excerpt // Using excerpt as body summary to avoid HTML parsing complexity here
+        }}
       />
       <Navbar />
 

@@ -19,6 +19,25 @@ export const Home = () => {
             <SEO 
                 title="SocialScale | High-Velocity Social Media Growth Engine"
                 description="Scale your social presence with AI-driven strategies. Specializing in LinkedIn, Instagram, and TikTok growth for modern brands and creators."
+                keywords="social media growth, AI marketing, viral content strategy, instagram scaling, linkedin growth, tiktok agency, content automation, digital marketing agency"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "SocialScale Agency",
+                    "url": "https://socialscale.agency",
+                    "logo": "https://socialscale.agency/logo.png",
+                    "sameAs": [
+                        "https://twitter.com/SocialScale",
+                        "https://linkedin.com/company/socialscale",
+                        "https://instagram.com/socialscale"
+                    ],
+                    "contactPoint": {
+                        "@type": "ContactPoint",
+                        "telephone": "+1-555-0123",
+                        "contactType": "customer service",
+                        "areaServed": "Global"
+                    }
+                }}
             />
             <Navbar />
             <main>

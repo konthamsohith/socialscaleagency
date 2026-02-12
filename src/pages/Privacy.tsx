@@ -1,10 +1,22 @@
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { SEO } from '../components/common/SEO';
 
 export const Privacy = () => {
     return (
         <div className="min-h-screen bg-white">
+            <SEO 
+                title="Privacy Registry | SocialScale"
+                description="Our commitment to data sovereignty and algorithmic privacy. Review how we protect your digital footprint."
+                keywords="privacy policy, data protection, gdpr compliance, social media privacy, agency privacy policy"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Privacy Policy",
+                    "description": "SocialScale Privacy Policy and Data Protection Guidelines."
+                }}
+            />
             <Navbar />
             <main className="pt-32 pb-20">
                 <div className="max-w-4xl mx-auto px-6">

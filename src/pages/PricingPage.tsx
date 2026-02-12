@@ -13,6 +13,17 @@ export const PricingPage = () => {
       <SEO 
         title="Deployment Investment & Pricing | SocialScale"
         description="Transparent pricing for high-impact social growth. Choose your protocol: Standard, Enterprise, or Custom Support Modules."
+        keywords="social media pricing, agency pricing, growth packages, social media marketing cost"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "PriceSpecification",
+          "priceCurrency": "USD",
+          "price": "997.00", // Example starting price
+          "minPrice": "997.00",
+          "maxPrice": "4997.00",
+          "name": "Social Growth Protocols",
+          "description": "Standard to Enterprise social media growth packages."
+        }}
       />
       <Navbar />
       <main>
