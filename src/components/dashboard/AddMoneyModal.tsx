@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Wallet, CreditCard } from 'lucide-react';
+import { X, Wallet, CreditCard, AlertTriangle, RefreshCw } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -17,14 +17,88 @@ interface AddMoneyModalProps {
   onSuccess: () => void;
 }
 
+interface PendingPayment {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  amount: number;
+  savedAt: string;
+}
+
+const pendingKey = (userId: string) => `pending_wallet_payment_${userId}`;
+
 export const AddMoneyModal = ({ isOpen, onClose, onSuccess }: AddMoneyModalProps) => {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [retryLoading, setRetryLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ show: boolean; amount: number }>({ show: false, amount: 0 });
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
   const { user, refreshUser } = useAuth();
 
   const quickAmounts = [500, 1000, 2000, 5000, 10000];
+
+  // On open, check for any unverified payment left from a previous session
+  useEffect(() => {
+    if (isOpen && user?.userId) {
+      const stored = localStorage.getItem(pendingKey(user.userId));
+      if (stored) {
+        try {
+          setPendingPayment(JSON.parse(stored));
+        } catch {
+          localStorage.removeItem(pendingKey(user.userId));
+        }
+      }
+    }
+  }, [isOpen, user?.userId]);
+
+  // Retry verify-payment up to 3 times; resolves on success, throws on final failure
+  const verifyWithRetry = async (
+    paymentData: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+    maxRetries = 3,
+    delayMs = 2000,
+  ) => {
+    let lastError: any;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await apiService.verifyPayment(paymentData);
+      } catch (err: any) {
+        lastError = err;
+        if (attempt < maxRetries) await new Promise(r => setTimeout(r, delayMs));
+      }
+    }
+    throw lastError;
+  };
+
+  // Called when user clicks "Restore Payment" for a previously captured but unverified payment
+  const handleRestorePayment = async () => {
+    if (!pendingPayment || !user?.userId) return;
+    setRetryLoading(true);
+    setError('');
+    try {
+      await verifyWithRetry({
+        razorpay_order_id: pendingPayment.razorpay_order_id,
+        razorpay_payment_id: pendingPayment.razorpay_payment_id,
+        razorpay_signature: pendingPayment.razorpay_signature,
+      });
+      localStorage.removeItem(pendingKey(user.userId));
+      setPendingPayment(null);
+      await refreshUser();
+      setSuccess({ show: true, amount: pendingPayment.amount });
+      setRetryLoading(false);
+      setTimeout(() => {
+        setSuccess({ show: false, amount: 0 });
+        onSuccess();
+        onClose();
+      }, 2000);
+    } catch (err: any) {
+      const payId = pendingPayment.razorpay_payment_id;
+      setError(
+        `Verification still failing. Please contact support with payment ID: ${payId}`
+      );
+      setRetryLoading(false);
+    }
+  };
 
   const handleAddMoney = async () => {
     try {
@@ -56,29 +130,42 @@ export const AddMoneyModal = ({ isOpen, onClose, onSuccess }: AddMoneyModalProps
         description: 'Add Money to Wallet',
         order_id: orderId,
         handler: async function (response: any) {
+          // STEP 1: Persist payment data to localStorage BEFORE hitting the network.
+          // If verify-payment fails (network drop, token expiry, tab close), the data
+          // survives and the user can restore the credit on their next visit.
+          const pending: PendingPayment = {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            amount: amountNum,
+            savedAt: new Date().toISOString(),
+          };
+          if (user?.userId) {
+            localStorage.setItem(pendingKey(user.userId), JSON.stringify(pending));
+          }
+
+          // STEP 2: Try verify-payment with automatic retries.
           try {
-            // Verify payment on backend
-            await apiService.verifyPayment({
+            await verifyWithRetry({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
-
-            // Refresh user data
+            // Success — clear saved state
+            if (user?.userId) localStorage.removeItem(pendingKey(user.userId));
+            setPendingPayment(null);
             await refreshUser();
-            
-            // Show success message in modal
             setSuccess({ show: true, amount: amountNum });
             setLoading(false);
-            
-            // Auto close after 2 seconds
             setTimeout(() => {
               setSuccess({ show: false, amount: 0 });
               onSuccess();
               onClose();
             }, 2000);
-          } catch (error: any) {
-            setError(error.response?.data?.message || 'Payment verification failed');
+          } catch {
+            // All retries failed — surface the Restore banner so the user can try again
+            setPendingPayment(pending);
+            setError('Payment was collected but could not be verified right now. Use "Restore Payment" below to credit your wallet.');
             setLoading(false);
           }
         },
@@ -159,6 +246,50 @@ export const AddMoneyModal = ({ isOpen, onClose, onSuccess }: AddMoneyModalProps
               </motion.div>
             ) : (
               <>
+                {/* Pending Payment Banner — shown when verify-payment previously failed */}
+                {pendingPayment && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-2"
+                  >
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-amber-800 text-sm">Unverified Payment Detected</p>
+                        <p className="text-amber-700 text-xs mt-0.5">
+                          ₹{pendingPayment.amount.toLocaleString()} was collected by Razorpay on{' '}
+                          {new Date(pendingPayment.savedAt).toLocaleString()} but your wallet wasn't updated.
+                        </p>
+                        <p className="text-amber-600 text-xs mt-1 font-mono break-all">
+                          ID: {pendingPayment.razorpay_payment_id}
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleRestorePayment}
+                        disabled={retryLoading}
+                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white text-xs font-bold rounded-xl transition-colors"
+                      >
+                        {retryLoading ? (
+                          <>
+                            <motion.span
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                              className="w-3 h-3 border border-white/40 border-t-white rounded-full block"
+                            />
+                            Restoring…
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="w-3 h-3" />
+                            Restore ₹{pendingPayment.amount.toLocaleString()}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* Header */}
                 <div className="text-center mb-8">
                   <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
