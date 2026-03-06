@@ -1,10 +1,22 @@
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { SEO } from '../components/common/SEO';
 
 export const CancellationAndRefund = () => {
     return (
         <div className="min-h-screen bg-white">
+             <SEO 
+                title="Refund Protocols | SocialScale"
+                description="Clear, transparent protocols for service cancellation and refunds. Your satisfaction is our primary metric."
+                keywords="refund policy, cancellation policy, service guarantee, agency refunds"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Cancellation & Refund Policy",
+                    "description": "SocialScale Cancellation and Refund Policy."
+                }}
+            />
             <Navbar />
             <main className="pt-32 pb-20">
                 <div className="max-w-4xl mx-auto px-6">

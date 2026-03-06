@@ -13,6 +13,45 @@ export const ServicesPage = () => {
       <SEO 
         title="Growth Protocols & Services | SocialScale"
         description="Advanced social media growth services including algorithmic scaling, platform synchronization, and high-velocity content deployment."
+        keywords="growth protocols, social media services, algorithmic scaling, platform synchronization, content deployment, digital agency"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "serviceType": "Social Media Marketing",
+          "provider": {
+            "@type": "Organization",
+            "name": "SocialScale Agency",
+             "url": "https://socialscale.agency"
+          },
+          "areaServed": "Global",
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Growth Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Algorithmic Scaling"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Platform Synchronization"
+                }
+              },
+               {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "High-Velocity Content Deployment"
+                }
+              }
+            ]
+          }
+        }}
       />
       <Navbar />
       <main>

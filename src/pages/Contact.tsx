@@ -17,6 +17,24 @@ export const Contact = () => {
       <SEO 
         title="Initialize Uplink | Contact SocialScale"
         description="Secure a direct uplink with our growth architects. Start your scaling protocol today with SocialScale's enterprise-grade support."
+        keywords="contact socialscale, get in touch, social media agency contact, hire digital agency"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact SocialScale",
+          "description": "Secure a direct uplink with our growth architects.",
+           "mainEntity": {
+            "@type": "Organization",
+            "name": "SocialScale Agency",
+            "url": "https://socialscale.agency",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "telephone": "+1-555-0123",
+              "contactType": "customer service",
+              "areaServed": "Global"
+            }
+          }
+        }}
       />
       <Navbar />
       <main>

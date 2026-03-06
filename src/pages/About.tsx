@@ -16,6 +16,18 @@ export const About = () => {
       <SEO
         title="About The Collective | SocialScale Intelligence"
         description="Meet the architects behind the social algorithms. Our mission is to engineer the future of influence through predictive modeling and neural synergy."
+        keywords="about socialscale, social media experts, growth architects, ai marketing team, digital agency team"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "SocialScale Agency",
+            "description": "Meet the architects behind the social algorithms. Our mission is to engineer the future of influence through predictive modeling and neural synergy.",
+            "url": "https://socialscale.agency",
+            "logo": "https://socialscale.agency/logo.png"
+          }
+        }}
       />
       <Navbar />
       <main>

@@ -8,6 +8,8 @@ interface SEOProps {
   image?: string;
   canonical?: string;
   type?: string;
+  keywords?: string;
+  schema?: Record<string, any>;
 }
 
 export const SEO = ({
@@ -16,6 +18,8 @@ export const SEO = ({
   image = "/og-image.png", // Assuming an OG image exists or will be added
   canonical = "https://socialscale.agency",
   type = "website",
+  keywords = "social media growth, AI marketing, instagram growth, linkedin scaling, tiktok strategy, social media agency",
+  schema
 }: SEOProps) => {
   const siteTitle = title.includes("SocialScale")
     ? title
@@ -26,6 +30,7 @@ export const SEO = ({
       {/* Standard Metadata */}
       <title>{siteTitle}</title>
       <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
       <link rel="canonical" href={canonical} />
 
       {/* Open Graph / Facebook */}
@@ -37,6 +42,8 @@ export const SEO = ({
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@SocialScale" />
+      <meta name="twitter:creator" content="@SocialScale" />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
@@ -44,6 +51,13 @@ export const SEO = ({
       {/* Industrial Tech Brand Meta */}
       <meta name="theme-color" content="#0037FF" />
       <meta name="robots" content="index, follow" />
+      
+      {/* Schema.org JSON-LD */}
+      {schema && (
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      )}
     </Helmet>
   );
 };
