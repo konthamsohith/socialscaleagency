@@ -72,7 +72,7 @@ export const MyOrders = () => {
     const loadOrders = async () => {
         try {
             setLoading(true);
-            const data = await apiService.getOrders();
+            const data = await apiService.getOrders({ limit: 10000 });
             setOrders(data?.data || []);
         } catch (error) {
             console.error('Failed to load orders:', error);

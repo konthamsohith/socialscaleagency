@@ -36,25 +36,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'SUPER_ADMIN';
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from localStorage, then validate token in background
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('accessToken');
       const savedUser = localStorage.getItem('user');
 
       if (token && savedUser) {
+        // 1. Hydrate from cache instantly so ProtectedRoute renders the dashboard
+        //    without waiting for a network round-trip.
         try {
           setUser(JSON.parse(savedUser));
-          // Don't verify token on init to avoid 404 when server is down
-          // const response = await apiService.getCurrentUser();
-          // setUser(response.data);
-          // localStorage.setItem('user', JSON.stringify(response.data));
-        } catch (error) {
-          console.error('Failed to load saved user:', error);
+        } catch {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
-          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // 2. Validate the token against the server in the background.
+        //    - If the access token is still valid: updates user data silently.
+        //    - If expired but refresh token is valid: the axios interceptor
+        //      auto-refreshes the access token and retries the request.
+        //    - If both tokens are expired: the interceptor clears localStorage
+        //      and hard-redirects to /login.
+        //    - If the server is unreachable (network error): we keep the cached
+        //      user so the user isn't needlessly kicked out.
+        try {
+          const response = await apiService.getCurrentUser();
+          setUser(response.data);
+          localStorage.setItem('user', JSON.stringify(response.data));
+        } catch (error: any) {
+          if (!error?.response) {
+            // Network / server unreachable — keep cached user
+          } else {
+            // The interceptor already cleared tokens and will redirect to /login
+            setUser(null);
+          }
         }
       }
       setIsLoading(false);

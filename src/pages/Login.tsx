@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { SEO } from '../components/common/SEO';
@@ -15,7 +15,14 @@ export const Login = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { login, register } = useAuth();
+    const { login, register, isAuthenticated, isLoading: authLoading, isAdmin } = useAuth();
+
+    // Already authenticated — send straight to the dashboard
+    if (!authLoading && isAuthenticated) {
+        const from = (location.state as any)?.from?.pathname;
+        const dest = from || (isAdmin ? '/dashboard/admin-panel' : '/dashboard');
+        return <Navigate to={dest} replace />;
+    }
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
