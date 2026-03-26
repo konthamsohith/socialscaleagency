@@ -33,13 +33,12 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('accessToken');
-        console.log('API Request:', config.url);
-        console.log('Token present:', !!token);
-        if (token) {
-          console.log('Token:', token.substring(0, 20) + '...');
+        const requestUrl = config.url || '';
+        const isAuthRoute = /\/auth\/(login|register|refresh-token|forgot-password|reset-password)$/.test(requestUrl);
+
+        // Do not attach bearer token for auth endpoints.
+        if (token && !isAuthRoute) {
           config.headers.Authorization = `Bearer ${token}`;
-        } else {
-          console.warn('⚠️ No access token found in localStorage!');
         }
         return config;
       },

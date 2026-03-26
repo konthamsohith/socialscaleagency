@@ -84,7 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response: LoginResponse = await apiService.login(email, password);
+      const normalizedEmail = email.trim().toLowerCase();
+      const response: LoginResponse = await apiService.login(normalizedEmail, password);
       const { user: userData, accessToken, refreshToken } = response.data;
 
       localStorage.setItem('accessToken', accessToken);
@@ -100,7 +101,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error: any) {
       console.error('Login failed:', error);
-      throw new Error(error.response?.data?.error?.message || 'Login failed');
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.[0] ||
+        error.response?.data?.error?.message ||
+        'Login failed';
+      throw new Error(message);
     }
   };
 
