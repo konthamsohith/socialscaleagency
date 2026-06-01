@@ -72,8 +72,20 @@ export const MyOrders = () => {
     const loadOrders = async () => {
         try {
             setLoading(true);
-            const data = await apiService.getOrders({ limit: 10000 });
-            setOrders(data?.data || []);
+            const PAGE_SIZE = 500;
+            const all: Order[] = [];
+            let page = 1;
+            while (true) {
+                const res = await apiService.getOrders({ page, limit: PAGE_SIZE });
+                const batch = res?.data || [];
+                all.push(...batch);
+                const totalPages = res?.pagination?.totalPages;
+                if (batch.length < PAGE_SIZE) break;
+                if (typeof totalPages === 'number' && page >= totalPages) break;
+                page++;
+                if (page > 1000) break;
+            }
+            setOrders(all);
         } catch (error) {
             console.error('Failed to load orders:', error);
             setOrders([]);
